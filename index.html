@@ -5,6 +5,7 @@
   <title>نظام متابعة الطلبات الملغاة - Crispy Chicken</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -76,6 +77,106 @@
       height: 100%;
       background-color: #dc2626;
     }
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      color: #1f2937;
+      border-bottom: 2px solid #dc2626;
+      padding-bottom: 0.5rem;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      color: #374151;
+    }
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 5px;
+      color: white;
+      font-weight: 500;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .notification.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .notification.success {
+      background-color: #10b981;
+    }
+    .notification.error {
+      background-color: #ef4444;
+    }
+    .notification.info {
+      background-color: #3b82f6;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+      background-color: #fefefe;
+      margin: 10% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 800px;
+      border-radius: 0.5rem;
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover {
+      color: black;
+    }
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin-bottom: 2rem;
+    }
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    .pagination button {
+      margin: 0 5px;
+      padding: 5px 10px;
+      border: 1px solid #ddd;
+      background-color: white;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+    .pagination button.active {
+      background-color: #dc2626;
+      color: white;
+      border-color: #dc2626;
+    }
+    .pagination button:hover:not(.active) {
+      background-color: #f3f4f6;
+    }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -94,8 +195,15 @@
           <p class="text-sm text-gray-600">التاريخ الهجري: <span id="hijriDate" class="font-medium"></span></p>
         </div>
         <div class="flex flex-wrap gap-2">
-          <button onclick="exportData()" class="btn-secondary"><i class="fas fa-file-export ml-1"></i> تصدير البيانات</button>
-          <button onclick="generateDashboardReport()" class="btn-success"><i class="fas fa-chart-bar ml-1"></i> تقرير لوحة التحكم</button>
+          <button onclick="openDataEntryModal()" class="btn-primary">
+            <i class="fas fa-plus ml-1"></i> إدخال بيانات جديدة
+          </button>
+          <button onclick="exportData()" class="btn-secondary">
+            <i class="fas fa-file-export ml-1"></i> تصدير البيانات
+          </button>
+          <button onclick="generateDashboardReport()" class="btn-success">
+            <i class="fas fa-chart-bar ml-1"></i> تقرير لوحة التحكم
+          </button>
         </div>
       </div>
     </div>
@@ -124,64 +232,7 @@
       </div>
     </div>
     
-    <!-- نموذج إدخال البيانات -->
-    <div class="bg-white rounded-lg shadow p-4 mb-6 no-print">
-      <h2 class="text-lg font-semibold mb-4">إدخال بيانات الطلبات الملغاة</h2>
-      <form id="orderForm" class="grid grid-cols-1 md:grid-cols-6 gap-4">
-        <div>
-          <label class="block text-sm font-medium mb-1">العلامة التجارية</label>
-          <select id="brand" class="form-input w-full" required>
-            <option value="Crispy Chicken">Crispy Chicken</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">القناة</label>
-          <select id="channel" class="form-input w-full" required>
-            <option value="Talabat">Talabat</option>
-            <option value="Careem Now">Careem Now</option>
-            <option value="Deliveroo">Deliveroo</option>
-            <option value="Noon Food">Noon Food</option>
-            <option value="Smiles">Smiles</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">الموقع</label>
-          <select id="location" class="form-input w-full" required>
-            <option value="Electra">Electra</option>
-            <option value="Mouroor">Mouroor</option>
-            <option value="Khalydiha">Khalydiha</option>
-            <option value="Satwa">Satwa</option>
-            <option value="Hamdan">Hamdan</option>
-            <option value="Barsha">Barsha</option>
-            <option value="Shabiha">Shabiha</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">الحالة</label>
-          <select id="status" class="form-input w-full" required>
-            <option value="Order Cancelled">Order Cancelled</option>
-            <option value="Order Refunded">Order Refunded</option>
-            <option value="Order Disputed">Order Disputed</option>
-            <option value="Unanswered">Unanswered</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">السعر</label>
-          <input type="text" id="price" class="form-input w-full" placeholder="AED 0.00" required>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">عدد الطلبات</label>
-          <input type="number" id="orderCount" class="form-input w-full" min="1" value="1" required>
-        </div>
-        <div class="md:col-span-6">
-          <button type="submit" class="btn-primary w-full md:w-auto">
-            <i class="fas fa-plus ml-1"></i> إضافة الطلب
-          </button>
-        </div>
-      </form>
-    </div>
-    
-    <!-- لوحة التحكم -->
+    <!-- لوحة التحكم الديناميكية -->
     <div class="bg-white rounded-lg shadow p-4 mb-6 no-print">
       <div class="flex flex-wrap gap-2 mb-4">
         <button class="tab-button active px-4 py-2 rounded-lg" onclick="showTab('channels')">
@@ -190,73 +241,119 @@
         <button class="tab-button px-4 py-2 rounded-lg" onclick="showTab('branches')">
           <i class="fas fa-store ml-1"></i> الفروع
         </button>
+        <button class="tab-button px-4 py-2 rounded-lg" onclick="showTab('trends')">
+          <i class="fas fa-chart-line ml-1"></i> الاتجاهات
+        </button>
       </div>
       
       <!-- محتوى تبويب القنوات -->
       <div id="channels-tab" class="tab-content active">
-        <h3 class="text-lg font-semibold mb-4">لوحة تحكم القنوات</h3>
-        <div class="overflow-x-auto">
-          <table class="dashboard-table">
-            <thead>
-              <tr>
-                <th>القناة</th>
-                <th>الطلبات الملغاة</th>
-                <th>الطلبات المستردة</th>
-                <th>الطلبات المتنازع عليها</th>
-                <th>الطلبات بدون رد</th>
-                <th>الإجمالي</th>
-                <th>نسبة الإلغاء</th>
-              </tr>
-            </thead>
-            <tbody id="channelTableBody">
-              <!-- سيتم تحميل البيانات هنا -->
-            </tbody>
-          </table>
+        <h3 class="section-title">لوحة تحكم القنوات</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <div class="chart-container">
+              <canvas id="channelChart"></canvas>
+            </div>
+          </div>
+          <div>
+            <div class="overflow-x-auto">
+              <table class="dashboard-table">
+                <thead>
+                  <tr>
+                    <th>القناة</th>
+                    <th>الطلبات الملغاة</th>
+                    <th>الطلبات المستردة</th>
+                    <th>الطلبات المتنازع عليها</th>
+                    <th>الطلبات بدون رد</th>
+                    <th>الإجمالي</th>
+                    <th>نسبة الإلغاء</th>
+                  </tr>
+                </thead>
+                <tbody id="channelTableBody">
+                  <!-- سيتم تحميل البيانات هنا -->
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
       
       <!-- محتوى تبويب الفروع -->
       <div id="branches-tab" class="tab-content">
-        <h3 class="text-lg font-semibold mb-4">لوحة تحكم الفروع</h3>
-        <div class="overflow-x-auto">
-          <table class="dashboard-table">
-            <thead>
-              <tr>
-                <th>الفرع</th>
-                <th>الطلبات الملغاة</th>
-                <th>الطلبات المستردة</th>
-                <th>الطلبات العالقة</th>
-                <th>الإجمالي</th>
-                <th>نسبة الإلغاء</th>
-                <th>جهة الاتصال</th>
-              </tr>
-            </thead>
-            <tbody id="branchTableBody">
-              <!-- سيتم تحميل البيانات هنا -->
-            </tbody>
-          </table>
+        <h3 class="section-title">لوحة تحكم الفروع</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <div class="chart-container">
+              <canvas id="branchChart"></canvas>
+            </div>
+          </div>
+          <div>
+            <div class="overflow-x-auto">
+              <table class="dashboard-table">
+                <thead>
+                  <tr>
+                    <th>الفرع</th>
+                    <th>الطلبات الملغاة</th>
+                    <th>الطلبات المستردة</th>
+                    <th>الطلبات العالقة</th>
+                    <th>الإجمالي</th>
+                    <th>نسبة الإلغاء</th>
+                    <th>جهة الاتصال</th>
+                  </tr>
+                </thead>
+                <tbody id="branchTableBody">
+                  <!-- سيتم تحميل البيانات هنا -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- محتوى تبويب الاتجاهات -->
+      <div id="trends-tab" class="tab-content">
+        <h3 class="section-title">اتجاهات الطلبات الملغاة</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <div class="chart-container">
+              <canvas id="trendChart"></canvas>
+            </div>
+          </div>
+          <div>
+            <div class="chart-container">
+              <canvas id="statusChart"></canvas>
+            </div>
+          </div>
         </div>
       </div>
     </div>
     
     <!-- الجدول -->
-    <div class="overflow-x-auto bg-white rounded-lg shadow mb-6 no-print">
-      <table id="reportTable" class="w-full border text-center text-sm">
-        <thead class="bg-red-100">
-          <tr>
-            <th class="border px-2 py-1">العلامة التجارية</th>
-            <th class="border px-2 py-1">القناة</th>
-            <th class="border px-2 py-1">الموقع</th>
-            <th class="border px-2 py-1">الحالة</th>
-            <th class="border px-2 py-1">السعر</th>
-            <th class="border px-2 py-1">عدد الطلبات</th>
-            <th class="border px-2 py-1">الإجراءات</th>
-          </tr>
-        </thead>
-        <tbody id="reportBody">
-          <!-- سيتم تحميل الصفوف من البيانات المدخلة -->
-        </tbody>
-      </table>
+    <div class="bg-white rounded-lg shadow p-4 mb-6 no-print">
+      <h3 class="section-title">آخر الطلبات المدخلة</h3>
+      <div class="overflow-x-auto">
+        <table id="reportTable" class="w-full border text-center text-sm">
+          <thead class="bg-red-100">
+            <tr>
+              <th class="border px-2 py-1">#</th>
+              <th class="border px-2 py-1">العلامة التجارية</th>
+              <th class="border px-2 py-1">القناة</th>
+              <th class="border px-2 py-1">الموقع</th>
+              <th class="border px-2 py-1">الحالة</th>
+              <th class="border px-2 py-1">السعر</th>
+              <th class="border px-2 py-1">عدد الطلبات</th>
+              <th class="border px-2 py-1">التاريخ</th>
+              <th class="border px-2 py-1">الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="reportBody">
+            <!-- سيتم تحميل الصفوف من البيانات المدخلة -->
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination">
+        <!-- سيتم تحميل أزرار التصفح هنا -->
+      </div>
     </div>
     
     <!-- التقرير الرسمي والرسالة الجاهزة -->
@@ -275,7 +372,7 @@
         </div>
         
         <div class="mb-6">
-          <h3 class="font-semibold text-lg mb-4 border-b pb-2">الأسئلة المطلوب التأكد منها</h3>
+          <h3 class="section-title">الأسئلة المطلوب التأكد منها</h3>
           <div class="space-y-3">
             <div class="flex items-center p-2 bg-gray-50 rounded">
               <span class="font-medium ml-2 w-48">1) هل تم تسليم الطلب؟</span>
@@ -293,14 +390,14 @@
         </div>
         
         <div class="mb-6">
-          <h3 class="font-semibold text-lg mb-3 border-b pb-2">التأثير:</h3>
+          <h3 class="section-title">التأثير:</h3>
           <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
             <p class="text-gray-700">الإلغاء قد يؤدي إلى خصومات مالية من الطرفين (مثل دفع قيمة الطعام أو رسوم التحضير)، لذا التأكيد والتوثيق ضروري.</p>
           </div>
         </div>
         
         <div class="mb-6">
-          <h3 class="font-semibold text-lg mb-3 border-b pb-2">الخطوات التالية:</h3>
+          <h3 class="section-title">الخطوات التالية:</h3>
           <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
             <ul class="list-disc pr-5 space-y-2 text-gray-700">
               <li>إرسال إشعار للعميل</li>
@@ -339,7 +436,7 @@
       
       <!-- رسالة WhatsApp جاهزة -->
       <div class="whatsapp-template no-print">
-        <h3 class="font-semibold text-lg mb-2">رسالة WhatsApp جاهزة للإرسال</h3>
+        <h3 class="section-title">رسالة WhatsApp جاهزة للإرسال</h3>
         <div class="mb-3">
           <button onclick="copyWhatsAppMessage()" class="btn-success">
             <i class="fab fa-whatsapp ml-1"></i> نسخ الرسالة
@@ -351,9 +448,71 @@
     </div>
   </main>
   
+  <!-- نافذة إدخال البيانات -->
+  <div id="dataEntryModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeDataEntryModal()">&times;</span>
+      <h2 class="section-title">إدخال بيانات الطلبات الملغاة</h2>
+      <form id="orderForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="form-group">
+          <label for="brand" class="form-label">العلامة التجارية</label>
+          <select id="brand" class="form-input w-full" required>
+            <option value="Crispy Chicken">Crispy Chicken</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="channel" class="form-label">القناة</label>
+          <select id="channel" class="form-input w-full" required>
+            <option value="Talabat">Talabat</option>
+            <option value="Careem Now">Careem Now</option>
+            <option value="Deliveroo">Deliveroo</option>
+            <option value="Noon Food">Noon Food</option>
+            <option value="Smiles">Smiles</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="location" class="form-label">الموقع</label>
+          <select id="location" class="form-input w-full" required>
+            <option value="Electra">Electra</option>
+            <option value="Mouroor">Mouroor</option>
+            <option value="Khalydiha">Khalydiha</option>
+            <option value="Satwa">Satwa</option>
+            <option value="Hamdan">Hamdan</option>
+            <option value="Barsha">Barsha</option>
+            <option value="Shabiha">Shabiha</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="status" class="form-label">الحالة</label>
+          <select id="status" class="form-input w-full" required>
+            <option value="Order Cancelled">Order Cancelled</option>
+            <option value="Order Refunded">Order Refunded</option>
+            <option value="Order Disputed">Order Disputed</option>
+            <option value="Unanswered">Unanswered</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="price" class="form-label">السعر</label>
+          <input type="text" id="price" class="form-input w-full" placeholder="AED 0.00" required>
+        </div>
+        <div class="form-group">
+          <label for="orderCount" class="form-label">عدد الطلبات</label>
+          <input type="number" id="orderCount" class="form-input w-full" min="1" value="1" required>
+        </div>
+        <div class="form-group md:col-span-2">
+          <button type="submit" class="btn-primary w-full">
+            <i class="fas fa-plus ml-1"></i> إضافة الطلب
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
   <script>
     // ---- DATA STORAGE ----
     let orders = [];
+    let currentPage = 1;
+    const ordersPerPage = 15;
     
     // ---- CONTACTS DATA ----
     const contacts = {
@@ -393,6 +552,9 @@
       "Shabiha": "#6366F1"
     };
     
+    // ---- CHARTS ----
+    let channelChart, branchChart, trendChart, statusChart;
+    
     // ---- INITIALIZE ----
     window.addEventListener('DOMContentLoaded', init);
     
@@ -409,6 +571,8 @@
       // تحديث لوحات التحكم
       updateDashboards();
       updateGeneralStats();
+      displayOrders();
+      initializeCharts();
     }
     
     // ---- UPDATE DATES ----
@@ -433,9 +597,6 @@
       const savedData = localStorage.getItem('cancelledOrders');
       if (savedData) {
         orders = JSON.parse(savedData);
-        displayOrders();
-        updateDashboards();
-        updateGeneralStats();
       }
     }
     
@@ -464,10 +625,12 @@
       displayOrders();
       updateDashboards();
       updateGeneralStats();
+      updateCharts();
       
-      // إعادة تعيين النموذج
+      // إعادة تعيين النموذج وإغلاق النافذة
       document.getElementById('orderForm').reset();
       document.getElementById('orderCount').value = 1;
+      closeDataEntryModal();
       
       // إظهار رسالة نجاح
       showNotification('تمت إضافة الطلب بنجاح', 'success');
@@ -478,15 +641,24 @@
       const tbody = document.getElementById('reportBody');
       tbody.innerHTML = '';
       
-      orders.forEach(order => {
+      // حساب الصفحات
+      const totalPages = Math.ceil(orders.length / ordersPerPage);
+      const startIndex = (currentPage - 1) * ordersPerPage;
+      const endIndex = startIndex + ordersPerPage;
+      const paginatedOrders = orders.slice(startIndex, endIndex);
+      
+      // عرض الطلبات في الصفحة الحالية
+      paginatedOrders.forEach((order, index) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
+          <td class="border px-2 py-1">${startIndex + index + 1}</td>
           <td class="border px-2 py-1">${order.brand}</td>
           <td class="border px-2 py-1">${order.channel}</td>
           <td class="border px-2 py-1">${order.location}</td>
           <td class="border px-2 py-1">${order.status}</td>
           <td class="border px-2 py-1">${order.price}</td>
           <td class="border px-2 py-1">${order.orderCount}</td>
+          <td class="border px-2 py-1">${new Date(order.date).toLocaleDateString('ar-SA')}</td>
           <td class="border px-2 py-1">
             <button onclick="generateDetailedReport(${order.id})" class="btn-secondary text-sm mr-1">
               <i class="fas fa-file-alt"></i>
@@ -498,6 +670,51 @@
         `;
         tbody.appendChild(tr);
       });
+      
+      // تحديث أزرار التصفح
+      updatePagination(totalPages);
+    }
+    
+    // ---- UPDATE PAGINATION ----
+    function updatePagination(totalPages) {
+      const pagination = document.getElementById('pagination');
+      pagination.innerHTML = '';
+      
+      // زر السابق
+      const prevButton = document.createElement('button');
+      prevButton.textContent = 'السابق';
+      prevButton.disabled = currentPage === 1;
+      prevButton.onclick = () => {
+        if (currentPage > 1) {
+          currentPage--;
+          displayOrders();
+        }
+      };
+      pagination.appendChild(prevButton);
+      
+      // أرقام الصفحات
+      for (let i = 1; i <= totalPages; i++) {
+        const pageButton = document.createElement('button');
+        pageButton.textContent = i;
+        pageButton.className = i === currentPage ? 'active' : '';
+        pageButton.onclick = () => {
+          currentPage = i;
+          displayOrders();
+        };
+        pagination.appendChild(pageButton);
+      }
+      
+      // زر التالي
+      const nextButton = document.createElement('button');
+      nextButton.textContent = 'التالي';
+      nextButton.disabled = currentPage === totalPages;
+      nextButton.onclick = () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          displayOrders();
+        }
+      };
+      pagination.appendChild(nextButton);
     }
     
     // ---- UPDATE GENERAL STATS ----
@@ -604,6 +821,188 @@
       });
     }
     
+    // ---- INITIALIZE CHARTS ----
+    function initializeCharts() {
+      // إعداد الرسوم البيانية
+      const channelCtx = document.getElementById('channelChart').getContext('2d');
+      const branchCtx = document.getElementById('branchChart').getContext('2d');
+      const trendCtx = document.getElementById('trendChart').getContext('2d');
+      const statusCtx = document.getElementById('statusChart').getContext('2d');
+      
+      // رسم بياني للقنوات
+      channelChart = new Chart(channelCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Talabat', 'Careem Now', 'Deliveroo', 'Noon Food', 'Smiles'],
+          datasets: [{
+            label: 'الطلبات الملغاة',
+            data: [0, 0, 0, 0, 0],
+            backgroundColor: channelColors["Talabat"]
+          }, {
+            label: 'الطلبات المستردة',
+            data: [0, 0, 0, 0, 0],
+            backgroundColor: channelColors["Careem Now"]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: 'إحصائيات القنوات'
+            }
+          }
+        }
+      });
+      
+      // رسم بياني للفروع
+      branchChart = new Chart(branchCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Electra', 'Mouroor', 'Khalydiha', 'Satwa', 'Hamdan', 'Barsha', 'Shabiha'],
+          datasets: [{
+            label: 'الطلبات الملغاة',
+            data: [0, 0, 0, 0, 0, 0, 0],
+            backgroundColor: branchColors["Electra"]
+          }, {
+            label: 'الطلبات المستردة',
+            data: [0, 0, 0, 0, 0, 0, 0],
+            backgroundColor: branchColors["Mouroor"]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: 'إحصائيات الفروع'
+            }
+          }
+        }
+      });
+      
+      // رسم بياني للاتجاهات
+      trendChart = new Chart(trendCtx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'الطلبات الملغاة',
+            data: [],
+            borderColor: '#dc2626',
+            backgroundColor: 'rgba(220, 38, 38, 0.1)',
+            tension: 0.1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: 'اتجاه الطلبات الملغاة'
+            }
+          }
+        }
+      });
+      
+      // رسم بياني للحالات
+      statusChart = new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['ملغاة', 'مستردة', 'متنازع عليها', 'بدون رد'],
+          datasets: [{
+            data: [0, 0, 0, 0],
+            backgroundColor: ['#dc2626', '#2563eb', '#f59e0b', '#6b7280']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: 'توزيع الحالات'
+            }
+          }
+        }
+      });
+      
+      // تحديث الرسوم البيانية
+      updateCharts();
+    }
+    
+    // ---- UPDATE CHARTS ----
+    function updateCharts() {
+      if (!channelChart || !branchChart || !trendChart || !statusChart) return;
+      
+      // تحديث بيانات القنوات
+      const channels = ["Talabat", "Careem Now", "Deliveroo", "Noon Food", "Smiles"];
+      const channelCancelled = channels.map(channel => 
+        orders.filter(order => order.channel === channel && order.status === 'Order Cancelled')
+          .reduce((sum, order) => sum + order.orderCount, 0)
+      );
+      const channelRefunded = channels.map(channel => 
+        orders.filter(order => order.channel === channel && order.status === 'Order Refunded')
+          .reduce((sum, order) => sum + order.orderCount, 0)
+      );
+      
+      channelChart.data.datasets[0].data = channelCancelled;
+      channelChart.data.datasets[1].data = channelRefunded;
+      channelChart.update();
+      
+      // تحديث بيانات الفروع
+      const branches = ["Electra", "Mouroor", "Khalydiha", "Satwa", "Hamdan", "Barsha", "Shabiha"];
+      const branchCancelled = branches.map(branch => 
+        orders.filter(order => order.location === branch && order.status === 'Order Cancelled')
+          .reduce((sum, order) => sum + order.orderCount, 0)
+      );
+      const branchRefunded = branches.map(branch => 
+        orders.filter(order => order.location === branch && order.status === 'Order Refunded')
+          .reduce((sum, order) => sum + order.orderCount, 0)
+      );
+      
+      branchChart.data.datasets[0].data = branchCancelled;
+      branchChart.data.datasets[1].data = branchRefunded;
+      branchChart.update();
+      
+      // تحديث بيانات الاتجاهات (آخر 7 أيام)
+      const last7Days = [];
+      const trendData = [];
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toLocaleDateString('ar-SA');
+        last7Days.push(dateStr);
+        
+        const dayOrders = orders.filter(order => {
+          const orderDate = new Date(order.date);
+          return orderDate.toDateString() === date.toDateString();
+        });
+        
+        trendData.push(dayOrders.reduce((sum, order) => sum + order.orderCount, 0));
+      }
+      
+      trendChart.data.labels = last7Days;
+      trendChart.data.datasets[0].data = trendData;
+      trendChart.update();
+      
+      // تحديث بيانات الحالات
+      const statusCancelled = orders.filter(order => order.status === 'Order Cancelled')
+        .reduce((sum, order) => sum + order.orderCount, 0);
+      const statusRefunded = orders.filter(order => order.status === 'Order Refunded')
+        .reduce((sum, order) => sum + order.orderCount, 0);
+      const statusDisputed = orders.filter(order => order.status === 'Order Disputed')
+        .reduce((sum, order) => sum + order.orderCount, 0);
+      const statusUnanswered = orders.filter(order => order.status === 'Unanswered')
+        .reduce((sum, order) => sum + order.orderCount, 0);
+      
+      statusChart.data.datasets[0].data = [statusCancelled, statusRefunded, statusDisputed, statusUnanswered];
+      statusChart.update();
+    }
+    
     // ---- DELETE ORDER ----
     function deleteOrder(id) {
       if (confirm('هل تريد حذف هذا الطلب؟')) {
@@ -612,6 +1011,7 @@
         displayOrders();
         updateDashboards();
         updateGeneralStats();
+        updateCharts();
         showNotification('تم حذف الطلب بنجاح', 'success');
       }
     }
@@ -619,10 +1019,10 @@
     // ---- EXPORT DATA ----
     function exportData() {
       let csvContent = "data:text/csv;charset=utf-8,";
-      csvContent += "BRAND,CHANNEL,LOCATION,STATUS,ORDER PRICE,NUMBER OF ORDERS\n";
+      csvContent += "BRAND,CHANNEL,LOCATION,STATUS,ORDER PRICE,NUMBER OF ORDERS,DATE\n";
       
       orders.forEach(order => {
-        csvContent += `${order.brand},${order.channel},${order.location},${order.status},${order.price},${order.orderCount}\n`;
+        csvContent += `${order.brand},${order.channel},${order.location},${order.status},${order.price},${order.orderCount},${new Date(order.date).toLocaleDateString('ar-SA')}\n`;
       });
       
       const encodedUri = encodeURI(csvContent);
@@ -837,6 +1237,15 @@
       event.target.classList.add('active');
     }
     
+    // ---- DATA ENTRY MODAL ----
+    function openDataEntryModal() {
+      document.getElementById('dataEntryModal').style.display = 'block';
+    }
+    
+    function closeDataEntryModal() {
+      document.getElementById('dataEntryModal').style.display = 'none';
+    }
+    
     // ---- DETAILED REPORT ----
     function generateDetailedReport(orderId) {
       const order = orders.find(o => o.id == orderId);
@@ -891,13 +1300,26 @@
     
     // ---- EXPORT TO PDF ----
     function exportToPDF() {
-      // في تطبيق حقيقي، ستحتاج إلى مكتبة مثل jsPDF أو html2canvas
-      // هذا مجرد محاكاة للوظيفة
-      showNotification('سيتم تحويل التقرير إلى PDF...', 'info');
+      // تحويل التقرير إلى PDF باستخدام html2canvas و jsPDF
+      const { jsPDF } = window.jspdf;
       
-      setTimeout(() => {
+      const element = document.getElementById('detailedReport');
+      html2canvas(element, {
+        scale: 2,
+        logging: true,
+        useCORS: true
+      }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`تقرير_طلب_ملغي_${new Date().toISOString().slice(0, 10)}.pdf`);
+        
         showNotification('تم تصدير التقرير كملف PDF بنجاح', 'success');
-      }, 1500);
+      });
     }
     
     // ---- SEND REPORT EMAIL ----
@@ -961,547 +1383,41 @@
     
     // ---- SHOW NOTIFICATION ----
     function showNotification(message, type) {
+      // إزالة أي إشعارات موجودة
+      const existingNotifications = document.querySelectorAll('.notification');
+      existingNotifications.forEach(notification => notification.remove());
+      
+      // إنشاء إشعار جديد
       const notification = document.createElement('div');
-      notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg text-white ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'}`;
+      notification.className = `notification ${type}`;
       notification.textContent = message;
       document.body.appendChild(notification);
       
+      // إظهار الإشعار
       setTimeout(() => {
-        notification.remove();
+        notification.classList.add('show');
+      }, 10);
+      
+      // إخفاء الإشعار بعد 3 ثواني
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+          notification.remove();
+        }, 300);
       }, 3000);
     }
-  </script>
-</body>
-</html><html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <title>نظام متابعة الطلبات الملغاة</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    body { font-family: 'Tajawal', sans-serif; }
-    .english { font-family: 'Roboto', sans-serif; direction: ltr; }
-    .form-input { border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.5rem; }
-    .btn-primary { background-color: #dc2626; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; }
-    .btn-secondary { background-color: #2563eb; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; }
-    .btn-success { background-color: #16a34a; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; }
-    .report-section { border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; }
-    .report-title { font-size: 1.25rem; font-weight: bold; margin-bottom: 0.75rem; }
-    .whatsapp-template { background-color: #f0fdf4; border: 1px dashed #4ade80; border-radius: 0.5rem; padding: 1rem; }
-  </style>
-</head>
-<body class="bg-gray-50 text-gray-900">
-  <header class="bg-red-600 p-4 text-white text-center">
-    <h1 class="text-2xl font-bold">نظام متابعة الطلبات الملغاة</h1>
-    <p class="text-sm">Crispy Chicken - نظام إدخال البيانات اليومية</p>
-  </header>
-  
-  <main class="max-w-6xl mx-auto p-4">
-    <!-- معلومات التقرير -->
-    <div class="bg-white rounded-lg shadow p-4 mb-4">
-      <div class="flex justify-between items-center">
-        <div>
-          <h2 class="text-lg font-semibold">لوحة التحكم</h2>
-          <p class="text-sm text-gray-600">التاريخ: <span id="reportDate" class="font-medium"></span></p>
-        </div>
-        <div class="flex gap-2">
-          <button onclick="toggleLanguage()" class="btn-secondary">تبديل اللغة</button>
-          <button onclick="exportData()" class="btn-secondary"><i class="fas fa-file-export ml-1"></i> تصدير البيانات</button>
-          <button onclick="sendReport()" class="btn-success"><i class="fas fa-paper-plane ml-1"></i> إرسال التقرير</button>
-        </div>
-      </div>
-    </div>
     
-    <!-- نموذج إدخال البيانات -->
-    <div class="bg-white rounded-lg shadow p-4 mb-6">
-      <h2 class="text-lg font-semibold mb-4">إدخال بيانات الطلبات الملغاة</h2>
-      <form id="orderForm" class="grid grid-cols-1 md:grid-cols-6 gap-4">
-        <div>
-          <label class="block text-sm font-medium mb-1">العلامة التجارية</label>
-          <select id="brand" class="form-input w-full" required>
-            <option value="Crispy Chicken">Crispy Chicken</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">القناة</label>
-          <select id="channel" class="form-input w-full" required>
-            <option value="Noon">Noon</option>
-            <option value="Talabat">Talabat</option>
-            <option value="Careem">Careem</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">الموقع</label>
-          <input type="text" id="location" class="form-input w-full" required>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">الحالة</label>
-          <select id="status" class="form-input w-full" required>
-            <option value="Order Cancelled">Order Cancelled</option>
-            <option value="Order Disputed">Order Disputed</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">السعر</label>
-          <input type="text" id="price" class="form-input w-full" placeholder="AED 0.00" required>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">عدد الطلبات</label>
-          <input type="number" id="orderCount" class="form-input w-full" min="1" value="1" required>
-        </div>
-        <div class="md:col-span-6">
-          <button type="submit" class="btn-primary w-full md:w-auto">
-            <i class="fas fa-plus ml-1"></i> إضافة الطلب
-          </button>
-        </div>
-      </form>
-    </div>
-    
-    <!-- إحصائيات التقرير -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <div class="bg-white rounded-lg shadow p-4 text-center">
-        <h3 class="font-semibold">إجمالي الطلبات</h3>
-        <p id="totalOrders" class="text-2xl font-bold">0</p>
-      </div>
-      <div class="bg-white rounded-lg shadow p-4 text-center">
-        <h3 class="font-semibold">إجمالي القيمة</h3>
-        <p id="totalValue" class="text-2xl font-bold text-blue-600">AED 0.00</p>
-      </div>
-      <div class="bg-white rounded-lg shadow p-4 text-center">
-        <h3 class="font-semibold">طلبات Noon</h3>
-        <p id="noonOrders" class="text-2xl font-bold text-yellow-600">0</p>
-      </div>
-      <div class="bg-white rounded-lg shadow p-4 text-center">
-        <h3 class="font-semibold">طلبات Talabat</h3>
-        <p id="talabatOrders" class="text-2xl font-bold text-green-600">0</p>
-      </div>
-    </div>
-    
-    <!-- الجدول -->
-    <div class="overflow-x-auto bg-white rounded-lg shadow mb-6">
-      <table id="reportTable" class="w-full border text-center text-sm">
-        <thead class="bg-red-100">
-          <tr>
-            <th class="border px-2 py-1">العلامة التجارية</th>
-            <th class="border px-2 py-1">القناة</th>
-            <th class="border px-2 py-1">الموقع</th>
-            <th class="border px-2 py-1">الحالة</th>
-            <th class="border px-2 py-1">السعر</th>
-            <th class="border px-2 py-1">عدد الطلبات</th>
-            <th class="border px-2 py-1">الإجراءات</th>
-          </tr>
-        </thead>
-        <tbody id="reportBody">
-          <!-- سيتم تحميل الصفوف من البيانات المدخلة -->
-        </tbody>
-      </table>
-    </div>
-    
-    <!-- التقرير الرسمي والرسالة الجاهزة -->
-    <div id="detailedReport" class="hidden">
-      <!-- التقرير الرسمي -->
-      <div class="report-section">
-        <h2 class="report-title">تقرير رسمي للطلب الملغي</h2>
-        
-        <div class="mb-4">
-          <h3 class="font-semibold text-lg mb-2">1. معلومات الطلب</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <div class="report-item">
-                <span class="report-label">العلامة التجارية:</span> <span id="reportBrand">-</span>
-              </div>
-              <div class="report-item">
-                <span class="report-label">القناة:</span> <span id="reportChannel">-</span>
-              </div>
-            </div>
-            <div>
-              <div class="report-item">
-                <span class="report-label">الموقع:</span> <span id="reportLocation">-</span>
-              </div>
-              <div class="report-item">
-                <span class="report-label">الحالة:</span> <span id="reportStatus">-</span>
-              </div>
-            </div>
-          </div>
-          <div class="report-item">
-            <span class="report-label">السعر:</span> <span id="reportPrice">-</span>
-          </div>
-          <div class="report-item">
-            <span class="report-label">عدد الطلبات:</span> <span id="reportOrderCount">-</span>
-          </div>
-        </div>
-        
-        <div class="mb-4">
-          <h3 class="font-semibold text-lg mb-2">2. الأسئلة المطلوب التأكد منها</h3>
-          <table class="w-full border text-sm">
-            <thead>
-              <tr class="bg-gray-100">
-                <th class="border px-2 py-1 text-right">السؤال</th>
-                <th class="border px-2 py-1 text-right">غرض السؤال</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="border px-2 py-1">هل تم تسليم الطلب؟</td>
-                <td class="border px-2 py-1">التأكد من السبب الحقيقي للإلغاء</td>
-              </tr>
-              <tr>
-                <td class="border px-2 py-1">هل الإلغاء تم بناءً على طلب العميل؟</td>
-                <td class="border px-2 py-1">لتحديد ما إذا كان الإلغاء طوعي أو من طرف الطباخ/التطبيق</td>
-              </tr>
-              <tr>
-                <td class="border px-2 py-1">هل لديك إثبات (رسائل أو لقطات شاشة) لتأكيد موافقتك على الإلغاء؟</td>
-                <td class="border px-2 py-1">لتجنب أي خصومات أو مستحقات مالية</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        
-        <div class="mb-4">
-          <h3 class="font-semibold text-lg mb-2">3. التأثير المقترن بالإلغاء</h3>
-          <p>الإلغاء قد يؤدي إلى خصومات مالية من الطرفين (مثل دفع قيمة الطعام أو رسوم التحضير)، لذا التأكيد والتوثيق ضروري.</p>
-        </div>
-        
-        <div>
-          <h3 class="font-semibold text-lg mb-2">4. الخطوات التالية المقترحة</h3>
-          <ol class="list-decimal pl-5 space-y-1">
-            <li>توجيه تنبيه فوري للعميل بشأن الإلغاء.</li>
-            <li>استلام الرد على الأسئلة أعلاه.</li>
-            <li>تحليل ما إذا كان يجب استرجاع رسوم أو اتخاذ إجراء آخر حسب الموقف.</li>
-            <li>الحفاظ على المستندات والتراسل كدليل في حال وجود مزيد من الإجراءات.</li>
-          </ol>
-        </div>
-      </div>
-      
-      <!-- رسالة WhatsApp جاهزة -->
-      <div class="whatsapp-template">
-        <h3 class="font-semibold text-lg mb-2">رسالة WhatsApp جاهزة للإرسال</h3>
-        <div class="mb-3">
-          <button onclick="copyWhatsAppMessage()" class="btn-success">
-            <i class="fab fa-whatsapp ml-1"></i> نسخ الرسالة
-          </button>
-        </div>
-        <textarea id="whatsappMessage" class="w-full h-40 p-2 border rounded" readonly></textarea>
-        <p class="text-sm text-gray-600 mt-2">يمكنك نسخ هذه الرسالة ولصقها في WhatsApp وإرسالها للعميل</p>
-      </div>
-    </div>
-  </main>
-  
-  <script>
-    // ---- LANGUAGE SUPPORT ----
-    let currentLanguage = 'ar';
-    const translations = {
-      ar: {
-        orderNumber: "رقم الطلب",
-        brand: "العلامة التجارية",
-        channel: "القناة",
-        location: "الموقع",
-        status: "الحالة",
-        price: "السعر",
-        orderCount: "عدد الطلبات",
-        cancelled: "ملغى",
-        disputed: "متنازع عليه",
-        questions: "الأسئلة المطلوب التأكد منها",
-        question: "السؤال",
-        purpose: "غرض السؤال",
-        q1: "هل تم تسليم الطلب؟",
-        p1: "التأكد من السبب الحقيقي للإلغاء",
-        q2: "هل الإلغاء تم بناءً على طلب العميل؟",
-        p2: "لتحديد ما إذا كان الإلغاء طوعي أو من طرف الطباخ/التطبيق",
-        q3: "هل لديك إثبات (رسائل أو لقطات شاشة) لتأكيد موافقتك على الإلغاء؟",
-        p3: "لتجنب أي خصومات أو مستحقات مالية",
-        impact: "التأثير المقترن بالإلغاء",
-        impactText: "الإلغاء قد يؤدي إلى خصومات مالية من الطرفين (مثل دفع قيمة الطعام أو رسوم التحضير)، لذا التأكيد والتوثيق ضروري.",
-        nextSteps: "الخطوات التالية المقترحة",
-        step1: "توجيه تنبيه فوري للعميل بشأن الإلغاء.",
-        step2: "استلام الرد على الأسئلة أعلاه.",
-        step3: "تحليل ما إذا كان يجب استرجاع رسوم أو اتخاذ إجراء آخر حسب الموقف.",
-        step4: "الحفاظ على المستندات والتراسل كدليل في حال وجود مزيد من الإجراءات.",
-        whatsappTitle: "رسالة WhatsApp جاهزة للإرسال",
-        copyMessage: "نسخ الرسالة",
-        whatsappNote: "يمكنك نسخ هذه الرسالة ولصقها في WhatsApp وإرسالها للعميل",
-        whatsappTemplate: `مرحباً،
-طلبك من {brand} عبر {channel} ({location}) تم إلغاؤه بتاريخ {date}.
-قيمة الطلب: {price}
-هل تم تسليمه؟
-هل طلبت الإلغاء؟ أم حدث بالإعداد من الطرف الآخر؟
-هل لديك إثبات (رسالة أو لقطة شاشة) لموافقتك؟
-يرجى الرد على هذه الأسئلة في أقرب وقت لتسوية الأمر وتجنب أي خصومات لاحقة. شكراً لتعاونك.`,
-        dataExported: "تم تصدير البيانات بنجاح",
-        reportSent: "تم إرسال التقرير بنجاح",
-        confirmReport: "هل تريد إرسال التقرير الآن؟",
-        confirmDelete: "هل تريد حذف هذا الطلب؟"
-      },
-      en: {
-        orderNumber: "Order Number",
-        brand: "Brand",
-        channel: "Channel",
-        location: "Location",
-        status: "Status",
-        price: "Price",
-        orderCount: "Number of Orders",
-        cancelled: "Cancelled",
-        disputed: "Disputed",
-        questions: "Required Questions to Confirm",
-        question: "Question",
-        purpose: "Purpose of Question",
-        q1: "Was the order delivered?",
-        p1: "To confirm the real reason for cancellation",
-        q2: "Was the cancellation made at the customer's request?",
-        p2: "To determine if the cancellation was voluntary or by the cook/application",
-        q3: "Do you have proof (messages or screenshots) to confirm your consent to the cancellation?",
-        p3: "To avoid any financial deductions or liabilities",
-        impact: "Impact Associated with Cancellation",
-        impactText: "Cancellation may lead to financial deductions from both parties (such as paying for the food or preparation fees), so confirmation and documentation are essential.",
-        nextSteps: "Proposed Next Steps",
-        step1: "Send an immediate alert to the customer regarding the cancellation.",
-        step2: "Receive responses to the above questions.",
-        step3: "Analyze whether fees should be refunded or other action taken based on the situation.",
-        step4: "Maintain documents and correspondence as evidence in case of further actions.",
-        whatsappTitle: "Ready-to-Send WhatsApp Message",
-        copyMessage: "Copy Message",
-        whatsappNote: "You can copy this message and paste it into WhatsApp to send to the customer",
-        whatsappTemplate: `Hello,
-Your order from {brand} via {channel} ({location}) was cancelled on {date}.
-Order value: {price}
-Was the order delivered?
-Did you request the cancellation? Or did it happen on the other party's end?
-Do you have proof (message or screenshot) of your consent?
-Please reply to these questions as soon as possible to resolve the matter and avoid any subsequent deductions. Thank you for your cooperation.`,
-        dataExported: "Data exported successfully",
-        reportSent: "Report sent successfully",
-        confirmReport: "Do you want to send the report now?",
-        confirmDelete: "Do you want to delete this order?"
+    // ---- CLOSE MODAL WHEN CLICKING OUTSIDE ----
+    window.onclick = function(event) {
+      const modal = document.getElementById('dataEntryModal');
+      if (event.target == modal) {
+        closeDataEntryModal();
       }
-    };
-    
-    // ---- DATA STORAGE ----
-    let orders = [];
-    
-    // ---- INITIALIZE ----
-    window.addEventListener('DOMContentLoaded', init);
-    
-    function init() {
-      // عرض التاريخ الحالي
-      document.getElementById('reportDate').textContent = new Date().toLocaleDateString('ar-SA');
-      
-      // تحميل البيانات من التخزين المحلي
-      loadData();
-      
-      // إعداد نموذج الإدخال
-      document.getElementById('orderForm').addEventListener('submit', handleFormSubmit);
-    }
-    
-    // ---- LOAD DATA ----
-    function loadData() {
-      const savedData = localStorage.getItem('cancelledOrders');
-      if (savedData) {
-        orders = JSON.parse(savedData);
-        displayOrders();
-        updateStatistics();
-      }
-    }
-    
-    // ---- SAVE DATA ----
-    function saveData() {
-      localStorage.setItem('cancelledOrders', JSON.stringify(orders));
-    }
-    
-    // ---- HANDLE FORM SUBMIT ----
-    function handleFormSubmit(e) {
-      e.preventDefault();
-      
-      const order = {
-        id: Date.now(),
-        brand: document.getElementById('brand').value,
-        channel: document.getElementById('channel').value,
-        location: document.getElementById('location').value,
-        status: document.getElementById('status').value,
-        price: document.getElementById('price').value,
-        orderCount: parseInt(document.getElementById('orderCount').value),
-        date: new Date().toISOString()
-      };
-      
-      orders.push(order);
-      saveData();
-      displayOrders();
-      updateStatistics();
-      
-      // إعادة تعيين النموذج
-      document.getElementById('orderForm').reset();
-      document.getElementById('orderCount').value = 1;
-      
-      // إظهار رسالة نجاح
-      showNotification('تمت إضافة الطلب بنجاح', 'success');
-    }
-    
-    // ---- DISPLAY ORDERS ----
-    function displayOrders() {
-      const tbody = document.getElementById('reportBody');
-      tbody.innerHTML = '';
-      
-      orders.forEach(order => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="border px-2 py-1">${order.brand}</td>
-          <td class="border px-2 py-1">${order.channel}</td>
-          <td class="border px-2 py-1">${order.location}</td>
-          <td class="border px-2 py-1">${order.status}</td>
-          <td class="border px-2 py-1">${order.price}</td>
-          <td class="border px-2 py-1">${order.orderCount}</td>
-          <td class="border px-2 py-1">
-            <button onclick="generateDetailedReport(${order.id})" class="btn-secondary text-sm mr-1">
-              <i class="fas fa-file-alt"></i>
-            </button>
-            <button onclick="deleteOrder(${order.id})" class="bg-red-500 text-white px-2 py-1 rounded text-sm">
-              <i class="fas fa-trash"></i>
-            </button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-    
-    // ---- UPDATE STATISTICS ----
-    function updateStatistics() {
-      const totalOrders = orders.reduce((sum, order) => sum + order.orderCount, 0);
-      const noonOrders = orders.filter(order => order.channel === 'Noon').reduce((sum, order) => sum + order.orderCount, 0);
-      const talabatOrders = orders.filter(order => order.channel === 'Talabat').reduce((sum, order) => sum + order.orderCount, 0);
-      
-      // حساب إجمالي القيمة (تحويل السعر إلى رقم)
-      const totalValue = orders.reduce((sum, order) => {
-        const price = parseFloat(order.price.replace(/[^0-9.-]+/g, ''));
-        return sum + (price * order.orderCount);
-      }, 0);
-      
-      document.getElementById('totalOrders').textContent = totalOrders;
-      document.getElementById('totalValue').textContent = `AED ${totalValue.toFixed(2)}`;
-      document.getElementById('noonOrders').textContent = noonOrders;
-      document.getElementById('talabatOrders').textContent = talabatOrders;
-    }
-    
-    // ---- DELETE ORDER ----
-    function deleteOrder(id) {
-      if (confirm(translations[currentLanguage].confirmDelete)) {
-        orders = orders.filter(order => order.id !== id);
-        saveData();
-        displayOrders();
-        updateStatistics();
-        showNotification('تم حذف الطلب بنجاح', 'success');
-      }
-    }
-    
-    // ---- EXPORT DATA ----
-    function exportData() {
-      let csvContent = "data:text/csv;charset=utf-8,";
-      csvContent += "BRAND,CHANNEL,LOCATION,STATUS,ORDER PRICE,NUMBER OF ORDERS\n";
-      
-      orders.forEach(order => {
-        csvContent += `${order.brand},${order.channel},${order.location},${order.status},${order.price},${order.orderCount}\n`;
-      });
-      
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `cancelled_orders_${new Date().toISOString().slice(0, 10)}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      showNotification(translations[currentLanguage].dataExported, 'success');
-    }
-    
-    // ---- SEND REPORT ----
-    function sendReport() {
-      if (confirm(translations[currentLanguage].confirmReport)) {
-        // هنا يمكنك إضافة كود إرسال التقرير عبر البريد الإلكتروني
-        showNotification(translations[currentLanguage].reportSent, 'success');
-      }
-    }
-    
-    // ---- LANGUAGE TOGGLE ----
-    function toggleLanguage() {
-      currentLanguage = currentLanguage === 'ar' ? 'en' : 'ar';
-      document.body.dir = currentLanguage === 'ar' ? 'rtl' : 'ltr';
-      document.body.className = currentLanguage === 'ar' ? 'bg-gray-50 text-gray-900' : 'bg-gray-50 text-gray-900 english';
-      
-      // تحديث التاريخ حسب اللغة
-      if (currentLanguage === 'ar') {
-        document.getElementById('reportDate').textContent = new Date().toLocaleDateString('ar-SA');
-      } else {
-        document.getElementById('reportDate').textContent = new Date().toLocaleDateString('en-US');
-      }
-      
-      // إذا كان هناك تقرير مفصل معروض، قم بتحديثه
-      const detailedReport = document.getElementById('detailedReport');
-      if (!detailedReport.classList.contains('hidden')) {
-        const orderId = detailedReport.dataset.orderId;
-        generateDetailedReport(orderId);
-      }
-    }
-    
-    // ---- DETAILED REPORT ----
-    function generateDetailedReport(orderId) {
-      const order = orders.find(o => o.id == orderId);
-      if (!order) return;
-      
-      // تحديث التقرير الرسمي
-      document.getElementById('reportBrand').textContent = order.brand;
-      document.getElementById('reportChannel').textContent = order.channel;
-      document.getElementById('reportLocation').textContent = order.location;
-      document.getElementById('reportStatus').textContent = order.status;
-      document.getElementById('reportPrice').textContent = order.price;
-      document.getElementById('reportOrderCount').textContent = order.orderCount;
-      
-      // تحديث رسالة WhatsApp
-      const whatsappTemplate = translations[currentLanguage].whatsappTemplate;
-      const whatsappMessage = whatsappTemplate
-        .replace('{brand}', order.brand)
-        .replace('{channel}', order.channel)
-        .replace('{location}', order.location)
-        .replace('{date}', new Date(order.date).toLocaleDateString(currentLanguage === 'ar' ? 'ar-SA' : 'en-US'))
-        .replace('{price}', order.price);
-      
-      document.getElementById('whatsappMessage').value = whatsappMessage;
-      
-      // حفظ معرف الطلب الحالي
-      const detailedReport = document.getElementById('detailedReport');
-      detailedReport.dataset.orderId = orderId;
-      detailedReport.classList.remove('hidden');
-      
-      // التمرير إلى التقرير المفصل
-      detailedReport.scrollIntoView({ behavior: 'smooth' });
-    }
-    
-    // ---- COPY WHATSAPP MESSAGE ----
-    function copyWhatsAppMessage() {
-      const whatsappMessage = document.getElementById('whatsappMessage');
-      whatsappMessage.select();
-      document.execCommand('copy');
-      
-      // تغيير نص الزر مؤقتاً
-      const button = event.target;
-      const originalText = button.innerHTML;
-      button.innerHTML = '<i class="fas fa-check ml-1"></i> ' + (currentLanguage === 'ar' ? 'تم النسخ!' : 'Copied!');
-      
-      setTimeout(() => {
-        button.innerHTML = originalText;
-      }, 2000);
-    }
-    
-    // ---- SHOW NOTIFICATION ----
-    function showNotification(message, type) {
-      const notification = document.createElement('div');
-      notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg text-white ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
-      notification.textContent = message;
-      document.body.appendChild(notification);
-      
-      setTimeout(() => {
-        notification.remove();
-      }, 3000);
     }
   </script>
+  
+  <!-- إضافة مكتبات PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </body>
 </html>
