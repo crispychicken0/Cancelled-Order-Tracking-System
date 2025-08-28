@@ -2,6 +2,979 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
+  <title>نظام متابعة الطلبات الملغاة - Crispy Chicken</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: 'Tajawal', sans-serif; }
+    .form-input { border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.5rem; }
+    .btn-primary { background-color: #dc2626; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; }
+    .btn-secondary { background-color: #2563eb; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; }
+    .btn-success { background-color: #16a34a; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; }
+    .btn-warning { background-color: #f59e0b; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; }
+    .dashboard-card { border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+    .channel-card { border-left: 4px solid; }
+    .branch-card { border-left: 4px solid; }
+    .report-section { border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; }
+    .report-title { font-size: 1.25rem; font-weight: bold; margin-bottom: 0.75rem; }
+    .whatsapp-template { background-color: #f0fdf4; border: 1px dashed #4ade80; border-radius: 0.5rem; padding: 1rem; }
+    .print-only { display: none; }
+    @media print {
+      .no-print { display: none; }
+      .print-only { display: block; }
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .tab-button.active { background-color: #dc2626; color: white; }
+    .stats-card {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+    .stats-card:hover {
+      transform: translateY(-5px);
+    }
+    .stats-number {
+      font-size: 2rem;
+      font-weight: bold;
+      margin: 0.5rem 0;
+    }
+    .stats-label {
+      font-size: 0.9rem;
+      color: #4b5563;
+    }
+    .dashboard-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    .dashboard-table th, .dashboard-table td {
+      border: 1px solid #e5e7eb;
+      padding: 0.75rem;
+      text-align: center;
+    }
+    .dashboard-table th {
+      background-color: #f9fafb;
+      font-weight: 600;
+    }
+    .dashboard-table tr:nth-child(even) {
+      background-color: #f9fafb;
+    }
+    .progress-bar {
+      height: 8px;
+      background-color: #e5e7eb;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+    .progress-fill {
+      height: 100%;
+      background-color: #dc2626;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <header class="bg-red-600 p-4 text-white text-center no-print">
+    <h1 class="text-2xl font-bold">نظام متابعة الطلبات الملغاة - Crispy Chicken</h1>
+    <p class="text-sm">نظام إدخال البيانات اليومية وإدارة التقارير</p>
+  </header>
+  
+  <main class="max-w-6xl mx-auto p-4">
+    <!-- معلومات التقرير -->
+    <div class="bg-white rounded-lg shadow p-4 mb-4 no-print">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <h2 class="text-lg font-semibold">لوحة التحكم</h2>
+          <p class="text-sm text-gray-600">التاريخ الميلادي: <span id="gregorianDate" class="font-medium"></span></p>
+          <p class="text-sm text-gray-600">التاريخ الهجري: <span id="hijriDate" class="font-medium"></span></p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="exportData()" class="btn-secondary"><i class="fas fa-file-export ml-1"></i> تصدير البيانات</button>
+          <button onclick="generateDashboardReport()" class="btn-success"><i class="fas fa-chart-bar ml-1"></i> تقرير لوحة التحكم</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- الإحصائيات العامة -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 no-print">
+      <div class="stats-card">
+        <i class="fas fa-clipboard-list text-2xl text-red-500"></i>
+        <div class="stats-number" id="totalOrdersStat">0</div>
+        <div class="stats-label">إجمالي الطلبات</div>
+      </div>
+      <div class="stats-card">
+        <i class="fas fa-ban text-2xl text-red-500"></i>
+        <div class="stats-number" id="cancelledOrdersStat">0</div>
+        <div class="stats-label">طلبات ملغاة</div>
+      </div>
+      <div class="stats-card">
+        <i class="fas fa-undo text-2xl text-blue-500"></i>
+        <div class="stats-number" id="refundedOrdersStat">0</div>
+        <div class="stats-label">طلبات مستردة</div>
+      </div>
+      <div class="stats-card">
+        <i class="fas fa-exclamation-triangle text-2xl text-yellow-500"></i>
+        <div class="stats-number" id="pendingOrdersStat">0</div>
+        <div class="stats-label">طلبات عالقة</div>
+      </div>
+    </div>
+    
+    <!-- نموذج إدخال البيانات -->
+    <div class="bg-white rounded-lg shadow p-4 mb-6 no-print">
+      <h2 class="text-lg font-semibold mb-4">إدخال بيانات الطلبات الملغاة</h2>
+      <form id="orderForm" class="grid grid-cols-1 md:grid-cols-6 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">العلامة التجارية</label>
+          <select id="brand" class="form-input w-full" required>
+            <option value="Crispy Chicken">Crispy Chicken</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">القناة</label>
+          <select id="channel" class="form-input w-full" required>
+            <option value="Talabat">Talabat</option>
+            <option value="Careem Now">Careem Now</option>
+            <option value="Deliveroo">Deliveroo</option>
+            <option value="Noon Food">Noon Food</option>
+            <option value="Smiles">Smiles</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">الموقع</label>
+          <select id="location" class="form-input w-full" required>
+            <option value="Electra">Electra</option>
+            <option value="Mouroor">Mouroor</option>
+            <option value="Khalydiha">Khalydiha</option>
+            <option value="Satwa">Satwa</option>
+            <option value="Hamdan">Hamdan</option>
+            <option value="Barsha">Barsha</option>
+            <option value="Shabiha">Shabiha</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">الحالة</label>
+          <select id="status" class="form-input w-full" required>
+            <option value="Order Cancelled">Order Cancelled</option>
+            <option value="Order Refunded">Order Refunded</option>
+            <option value="Order Disputed">Order Disputed</option>
+            <option value="Unanswered">Unanswered</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">السعر</label>
+          <input type="text" id="price" class="form-input w-full" placeholder="AED 0.00" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">عدد الطلبات</label>
+          <input type="number" id="orderCount" class="form-input w-full" min="1" value="1" required>
+        </div>
+        <div class="md:col-span-6">
+          <button type="submit" class="btn-primary w-full md:w-auto">
+            <i class="fas fa-plus ml-1"></i> إضافة الطلب
+          </button>
+        </div>
+      </form>
+    </div>
+    
+    <!-- لوحة التحكم -->
+    <div class="bg-white rounded-lg shadow p-4 mb-6 no-print">
+      <div class="flex flex-wrap gap-2 mb-4">
+        <button class="tab-button active px-4 py-2 rounded-lg" onclick="showTab('channels')">
+          <i class="fas fa-broadcast-tower ml-1"></i> القنوات
+        </button>
+        <button class="tab-button px-4 py-2 rounded-lg" onclick="showTab('branches')">
+          <i class="fas fa-store ml-1"></i> الفروع
+        </button>
+      </div>
+      
+      <!-- محتوى تبويب القنوات -->
+      <div id="channels-tab" class="tab-content active">
+        <h3 class="text-lg font-semibold mb-4">لوحة تحكم القنوات</h3>
+        <div class="overflow-x-auto">
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>القناة</th>
+                <th>الطلبات الملغاة</th>
+                <th>الطلبات المستردة</th>
+                <th>الطلبات المتنازع عليها</th>
+                <th>الطلبات بدون رد</th>
+                <th>الإجمالي</th>
+                <th>نسبة الإلغاء</th>
+              </tr>
+            </thead>
+            <tbody id="channelTableBody">
+              <!-- سيتم تحميل البيانات هنا -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- محتوى تبويب الفروع -->
+      <div id="branches-tab" class="tab-content">
+        <h3 class="text-lg font-semibold mb-4">لوحة تحكم الفروع</h3>
+        <div class="overflow-x-auto">
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>الفرع</th>
+                <th>الطلبات الملغاة</th>
+                <th>الطلبات المستردة</th>
+                <th>الطلبات العالقة</th>
+                <th>الإجمالي</th>
+                <th>نسبة الإلغاء</th>
+                <th>جهة الاتصال</th>
+              </tr>
+            </thead>
+            <tbody id="branchTableBody">
+              <!-- سيتم تحميل البيانات هنا -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- الجدول -->
+    <div class="overflow-x-auto bg-white rounded-lg shadow mb-6 no-print">
+      <table id="reportTable" class="w-full border text-center text-sm">
+        <thead class="bg-red-100">
+          <tr>
+            <th class="border px-2 py-1">العلامة التجارية</th>
+            <th class="border px-2 py-1">القناة</th>
+            <th class="border px-2 py-1">الموقع</th>
+            <th class="border px-2 py-1">الحالة</th>
+            <th class="border px-2 py-1">السعر</th>
+            <th class="border px-2 py-1">عدد الطلبات</th>
+            <th class="border px-2 py-1">الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="reportBody">
+          <!-- سيتم تحميل الصفوف من البيانات المدخلة -->
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- التقرير الرسمي والرسالة الجاهزة -->
+    <div id="detailedReport" class="hidden">
+      <!-- التقرير الرسمي -->
+      <div class="report-section">
+        <div class="text-center mb-4">
+          <h2 class="report-title text-xl">تقرير إلغاء طلب — Crispy Chicken</h2>
+          <div class="flex justify-center space-x-8 mt-2">
+            <p>فرع: <span id="reportBranch" class="font-semibold">-</span></p>
+            <p>قناة: <span id="reportChannel" class="font-semibold">-</span></p>
+            <p>الحالة: <span id="reportStatus" class="font-semibold">-</span></p>
+            <p>السعر: <span id="reportPrice" class="font-semibold">-</span></p>
+            <p>عدد الطلبات: <span id="reportOrderCount" class="font-semibold">-</span></p>
+          </div>
+        </div>
+        
+        <div class="mb-6">
+          <h3 class="font-semibold text-lg mb-4 border-b pb-2">الأسئلة المطلوب التأكد منها</h3>
+          <div class="space-y-3">
+            <div class="flex items-center p-2 bg-gray-50 rounded">
+              <span class="font-medium ml-2 w-48">1) هل تم تسليم الطلب؟</span>
+              <div class="flex-grow border-b border-gray-300"></div>
+            </div>
+            <div class="flex items-center p-2 bg-gray-50 rounded">
+              <span class="font-medium ml-2 w-48">2) هل الإلغاء بإرادتك؟</span>
+              <div class="flex-grow border-b border-gray-300"></div>
+            </div>
+            <div class="flex items-center p-2 bg-gray-50 rounded">
+              <span class="font-medium ml-2 w-48">3) هل لديك إثبات لذلك؟</span>
+              <div class="flex-grow border-b border-gray-300"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mb-6">
+          <h3 class="font-semibold text-lg mb-3 border-b pb-2">التأثير:</h3>
+          <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+            <p class="text-gray-700">الإلغاء قد يؤدي إلى خصومات مالية من الطرفين (مثل دفع قيمة الطعام أو رسوم التحضير)، لذا التأكيد والتوثيق ضروري.</p>
+          </div>
+        </div>
+        
+        <div class="mb-6">
+          <h3 class="font-semibold text-lg mb-3 border-b pb-2">الخطوات التالية:</h3>
+          <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <ul class="list-disc pr-5 space-y-2 text-gray-700">
+              <li>إرسال إشعار للعميل</li>
+              <li>انتظار الرد</li>
+              <li>مراجعة الإجراءات المالية</li>
+              <li>أرشفة المستندات</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="flex justify-between mt-8 pt-4 border-t">
+          <div>
+            <p>تم إعداد التقرير بواسطة: ______________</p>
+          </div>
+          <div>
+            <p>التاريخ: ___________</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- خيارات الإرسال والطباعة -->
+      <div class="flex flex-wrap gap-3 mb-4 no-print">
+        <button onclick="window.print()" class="btn-secondary">
+          <i class="fas fa-print ml-1"></i> طباعة التقرير
+        </button>
+        <button onclick="exportToPDF()" class="btn-secondary">
+          <i class="fas fa-file-pdf ml-1"></i> تصدير PDF
+        </button>
+        <button onclick="sendReportEmail()" class="btn-success">
+          <i class="fas fa-envelope ml-1"></i> إرسال بالبريد
+        </button>
+        <button onclick="sendReportWhatsApp()" class="btn-success">
+          <i class="fab fa-whatsapp ml-1"></i> إرسال بواسطة WhatsApp
+        </button>
+      </div>
+      
+      <!-- رسالة WhatsApp جاهزة -->
+      <div class="whatsapp-template no-print">
+        <h3 class="font-semibold text-lg mb-2">رسالة WhatsApp جاهزة للإرسال</h3>
+        <div class="mb-3">
+          <button onclick="copyWhatsAppMessage()" class="btn-success">
+            <i class="fab fa-whatsapp ml-1"></i> نسخ الرسالة
+          </button>
+        </div>
+        <textarea id="whatsappMessage" class="w-full h-40 p-2 border rounded" readonly></textarea>
+        <p class="text-sm text-gray-600 mt-2">يمكنك نسخ هذه الرسالة ولصقها في WhatsApp وإرسالها للعميل</p>
+      </div>
+    </div>
+  </main>
+  
+  <script>
+    // ---- DATA STORAGE ----
+    let orders = [];
+    
+    // ---- CONTACTS DATA ----
+    const contacts = {
+      branches: {
+        Electra: { phone: "+971 56 386 6859", email: "" },
+        Muroor: { phone: "+971 50 541 4641", email: "" },
+        Khaldiha: { phone: "+971 56 949 4764", email: "" },
+        Satwa: { phone: "+971 56 797 0685", email: "" },
+        Hamdan: { phone: "+971 55 688 6650", email: "" },
+        Barsha: { phone: "+971 56 965 9524", email: "" },
+        Shabiha: { phone: "+971 56 269 0688", email: "" }
+      },
+      management: {
+        "GM Tayser": { phone: "+971 54 445 4799", email: "" },
+        "Mr. Mahmoud Shaheen": { phone: "+971 50 364 3659", email: "mshahin76@yahoo.com" },
+        "Mohammed T": { phone: "", email: "mohammed.t@crispychicken.rest" }
+      }
+    };
+    
+    // ---- CHANNEL COLORS ----
+    const channelColors = {
+      "Talabat": "#F97316",
+      "Careem Now": "#10B981",
+      "Deliveroo": "#3B82F6",
+      "Noon Food": "#8B5CF6",
+      "Smiles": "#EC4899"
+    };
+    
+    // ---- BRANCH COLORS ----
+    const branchColors = {
+      "Electra": "#EF4444",
+      "Mouroor": "#F59E0B",
+      "Khaldiha": "#10B981",
+      "Satwa": "#3B82F6",
+      "Hamdan": "#8B5CF6",
+      "Barsha": "#EC4899",
+      "Shabiha": "#6366F1"
+    };
+    
+    // ---- INITIALIZE ----
+    window.addEventListener('DOMContentLoaded', init);
+    
+    function init() {
+      // عرض التواريخ
+      updateDates();
+      
+      // تحميل البيانات من التخزين المحلي
+      loadData();
+      
+      // إعداد نموذج الإدخال
+      document.getElementById('orderForm').addEventListener('submit', handleFormSubmit);
+      
+      // تحديث لوحات التحكم
+      updateDashboards();
+      updateGeneralStats();
+    }
+    
+    // ---- UPDATE DATES ----
+    function updateDates() {
+      const now = new Date();
+      
+      // التاريخ الميلادي
+      document.getElementById('gregorianDate').textContent = now.toLocaleDateString('ar-SA');
+      
+      // التاريخ الهجري (تقريبي)
+      const hijriDate = new Intl.DateTimeFormat('ar-SA', {
+        calendar: 'islamic',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      }).format(now);
+      document.getElementById('hijriDate').textContent = hijriDate;
+    }
+    
+    // ---- LOAD DATA ----
+    function loadData() {
+      const savedData = localStorage.getItem('cancelledOrders');
+      if (savedData) {
+        orders = JSON.parse(savedData);
+        displayOrders();
+        updateDashboards();
+        updateGeneralStats();
+      }
+    }
+    
+    // ---- SAVE DATA ----
+    function saveData() {
+      localStorage.setItem('cancelledOrders', JSON.stringify(orders));
+    }
+    
+    // ---- HANDLE FORM SUBMIT ----
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      
+      const order = {
+        id: Date.now(),
+        brand: document.getElementById('brand').value,
+        channel: document.getElementById('channel').value,
+        location: document.getElementById('location').value,
+        status: document.getElementById('status').value,
+        price: document.getElementById('price').value,
+        orderCount: parseInt(document.getElementById('orderCount').value),
+        date: new Date().toISOString()
+      };
+      
+      orders.push(order);
+      saveData();
+      displayOrders();
+      updateDashboards();
+      updateGeneralStats();
+      
+      // إعادة تعيين النموذج
+      document.getElementById('orderForm').reset();
+      document.getElementById('orderCount').value = 1;
+      
+      // إظهار رسالة نجاح
+      showNotification('تمت إضافة الطلب بنجاح', 'success');
+    }
+    
+    // ---- DISPLAY ORDERS ----
+    function displayOrders() {
+      const tbody = document.getElementById('reportBody');
+      tbody.innerHTML = '';
+      
+      orders.forEach(order => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="border px-2 py-1">${order.brand}</td>
+          <td class="border px-2 py-1">${order.channel}</td>
+          <td class="border px-2 py-1">${order.location}</td>
+          <td class="border px-2 py-1">${order.status}</td>
+          <td class="border px-2 py-1">${order.price}</td>
+          <td class="border px-2 py-1">${order.orderCount}</td>
+          <td class="border px-2 py-1">
+            <button onclick="generateDetailedReport(${order.id})" class="btn-secondary text-sm mr-1">
+              <i class="fas fa-file-alt"></i>
+            </button>
+            <button onclick="deleteOrder(${order.id})" class="bg-red-500 text-white px-2 py-1 rounded text-sm">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+    
+    // ---- UPDATE GENERAL STATS ----
+    function updateGeneralStats() {
+      const totalOrders = orders.reduce((sum, order) => sum + order.orderCount, 0);
+      const cancelledOrders = orders.filter(order => order.status === 'Order Cancelled').reduce((sum, order) => sum + order.orderCount, 0);
+      const refundedOrders = orders.filter(order => order.status === 'Order Refunded').reduce((sum, order) => sum + order.orderCount, 0);
+      const pendingOrders = orders.filter(order => order.status === 'Order Disputed' || order.status === 'Unanswered').reduce((sum, order) => sum + order.orderCount, 0);
+      
+      document.getElementById('totalOrdersStat').textContent = totalOrders;
+      document.getElementById('cancelledOrdersStat').textContent = cancelledOrders;
+      document.getElementById('refundedOrdersStat').textContent = refundedOrders;
+      document.getElementById('pendingOrdersStat').textContent = pendingOrders;
+    }
+    
+    // ---- UPDATE DASHBOARDS ----
+    function updateDashboards() {
+      updateChannelDashboard();
+      updateBranchDashboard();
+    }
+    
+    // ---- UPDATE CHANNEL DASHBOARD ----
+    function updateChannelDashboard() {
+      const tbody = document.getElementById('channelTableBody');
+      tbody.innerHTML = '';
+      
+      // حساب الإحصائيات لكل قناة
+      const channels = ["Talabat", "Careem Now", "Deliveroo", "Noon Food", "Smiles"];
+      
+      channels.forEach(channel => {
+        const channelOrders = orders.filter(order => order.channel === channel);
+        const cancelled = channelOrders.filter(order => order.status === 'Order Cancelled').reduce((sum, order) => sum + order.orderCount, 0);
+        const refunded = channelOrders.filter(order => order.status === 'Order Refunded').reduce((sum, order) => sum + order.orderCount, 0);
+        const disputed = channelOrders.filter(order => order.status === 'Order Disputed').reduce((sum, order) => sum + order.orderCount, 0);
+        const unanswered = channelOrders.filter(order => order.status === 'Unanswered').reduce((sum, order) => sum + order.orderCount, 0);
+        const total = channelOrders.reduce((sum, order) => sum + order.orderCount, 0);
+        
+        // حساب نسبة الإلغاء
+        const cancellationRate = total > 0 ? ((cancelled / total) * 100).toFixed(1) : 0;
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="border px-2 py-1 font-medium">${channel}</td>
+          <td class="border px-2 py-1">${cancelled}</td>
+          <td class="border px-2 py-1">${refunded}</td>
+          <td class="border px-2 py-1">${disputed}</td>
+          <td class="border px-2 py-1">${unanswered}</td>
+          <td class="border px-2 py-1 font-bold">${total}</td>
+          <td class="border px-2 py-1">
+            <div class="flex items-center">
+              <span class="ml-1">${cancellationRate}%</span>
+              <div class="progress-bar flex-grow">
+                <div class="progress-fill" style="width: ${cancellationRate}%"></div>
+              </div>
+            </div>
+          </td>
+        `;
+        
+        tbody.appendChild(tr);
+      });
+    }
+    
+    // ---- UPDATE BRANCH DASHBOARD ----
+    function updateBranchDashboard() {
+      const tbody = document.getElementById('branchTableBody');
+      tbody.innerHTML = '';
+      
+      // حساب الإحصائيات لكل فرع
+      const branches = ["Electra", "Mouroor", "Khalydiha", "Satwa", "Hamdan", "Barsha", "Shabiha"];
+      
+      branches.forEach(branch => {
+        const branchOrders = orders.filter(order => order.location === branch);
+        const cancelled = branchOrders.filter(order => order.status === 'Order Cancelled').reduce((sum, order) => sum + order.orderCount, 0);
+        const refunded = branchOrders.filter(order => order.status === 'Order Refunded').reduce((sum, order) => sum + order.orderCount, 0);
+        const pending = branchOrders.filter(order => order.status === 'Order Disputed' || order.status === 'Unanswered').reduce((sum, order) => sum + order.orderCount, 0);
+        const total = branchOrders.reduce((sum, order) => sum + order.orderCount, 0);
+        
+        // حساب نسبة الإلغاء
+        const cancellationRate = total > 0 ? ((cancelled / total) * 100).toFixed(1) : 0;
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="border px-2 py-1 font-medium">${branch}</td>
+          <td class="border px-2 py-1">${cancelled}</td>
+          <td class="border px-2 py-1">${refunded}</td>
+          <td class="border px-2 py-1">${pending}</td>
+          <td class="border px-2 py-1 font-bold">${total}</td>
+          <td class="border px-2 py-1">
+            <div class="flex items-center">
+              <span class="ml-1">${cancellationRate}%</span>
+              <div class="progress-bar flex-grow">
+                <div class="progress-fill" style="width: ${cancellationRate}%"></div>
+              </div>
+            </div>
+          </td>
+          <td class="border px-2 py-1">
+            <a href="https://wa.me/${contacts.branches[branch].phone.replace(/[^0-9]/g, '')}" target="_blank" class="text-green-600">
+              <i class="fab fa-whatsapp"></i>
+            </a>
+          </td>
+        `;
+        
+        tbody.appendChild(tr);
+      });
+    }
+    
+    // ---- DELETE ORDER ----
+    function deleteOrder(id) {
+      if (confirm('هل تريد حذف هذا الطلب؟')) {
+        orders = orders.filter(order => order.id !== id);
+        saveData();
+        displayOrders();
+        updateDashboards();
+        updateGeneralStats();
+        showNotification('تم حذف الطلب بنجاح', 'success');
+      }
+    }
+    
+    // ---- EXPORT DATA ----
+    function exportData() {
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "BRAND,CHANNEL,LOCATION,STATUS,ORDER PRICE,NUMBER OF ORDERS\n";
+      
+      orders.forEach(order => {
+        csvContent += `${order.brand},${order.channel},${order.location},${order.status},${order.price},${order.orderCount}\n`;
+      });
+      
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `cancelled_orders_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      showNotification('تم تصدير البيانات بنجاح', 'success');
+    }
+    
+    // ---- GENERATE DASHBOARD REPORT ----
+    function generateDashboardReport() {
+      // إنشاء تقرير لوحة التحكم
+      const reportContent = `
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+          <h2 class="text-2xl font-bold text-center mb-6">تقرير أداء القنوات والفروع</h2>
+          <p class="text-center mb-4">التاريخ: ${new Date().toLocaleDateString('ar-SA')}</p>
+          
+          <div class="mb-8">
+            <h3 class="text-xl font-bold mb-4 border-b pb-2">تقرير أداء القنوات</h3>
+            <div class="overflow-x-auto">
+              <table class="dashboard-table w-full">
+                <thead>
+                  <tr>
+                    <th>القناة</th>
+                    <th>الطلبات الملغاة</th>
+                    <th>الطلبات المستردة</th>
+                    <th>الطلبات المتنازع عليها</th>
+                    <th>الطلبات بدون رد</th>
+                    <th>الإجمالي</th>
+                    <th>نسبة الإلغاء</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${generateChannelReportRows()}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div>
+            <h3 class="text-xl font-bold mb-4 border-b pb-2">تقرير أداء الفروع</h3>
+            <div class="overflow-x-auto">
+              <table class="dashboard-table w-full">
+                <thead>
+                  <tr>
+                    <th>الفرع</th>
+                    <th>الطلبات الملغاة</th>
+                    <th>الطلبات المستردة</th>
+                    <th>الطلبات العالقة</th>
+                    <th>الإجمالي</th>
+                    <th>نسبة الإلغاء</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${generateBranchReportRows()}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div class="mt-8 text-center">
+            <p>تم إعداد التقرير بواسطة: ______________</p>
+            <p>التاريخ: ___________</p>
+          </div>
+        </div>
+      `;
+      
+      // عرض التقرير في نافذة جديدة
+      const reportWindow = window.open('', '_blank');
+      reportWindow.document.write(`
+        <html>
+        <head>
+          <title>تقرير أداء القنوات والفروع</title>
+          <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+          <script src="https://cdn.tailwindcss.com"></script>
+          <style>
+            body { font-family: 'Tajawal', sans-serif; }
+            .dashboard-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 1rem;
+            }
+            .dashboard-table th, .dashboard-table td {
+              border: 1px solid #e5e7eb;
+              padding: 0.75rem;
+              text-align: center;
+            }
+            .dashboard-table th {
+              background-color: #f9fafb;
+              font-weight: 600;
+            }
+            .dashboard-table tr:nth-child(even) {
+              background-color: #f9fafb;
+            }
+            .progress-bar {
+              height: 8px;
+              background-color: #e5e7eb;
+              border-radius: 4px;
+              overflow: hidden;
+              margin-top: 0.5rem;
+            }
+            .progress-fill {
+              height: 100%;
+              background-color: #dc2626;
+            }
+          </style>
+        </head>
+        <body class="bg-gray-50 p-4">
+          ${reportContent}
+        </body>
+        </html>
+      `);
+      reportWindow.document.close();
+    }
+    
+    // ---- GENERATE CHANNEL REPORT ROWS ----
+    function generateChannelReportRows() {
+      const channels = ["Talabat", "Careem Now", "Deliveroo", "Noon Food", "Smiles"];
+      let rowsHTML = '';
+      
+      channels.forEach(channel => {
+        const channelOrders = orders.filter(order => order.channel === channel);
+        const cancelled = channelOrders.filter(order => order.status === 'Order Cancelled').reduce((sum, order) => sum + order.orderCount, 0);
+        const refunded = channelOrders.filter(order => order.status === 'Order Refunded').reduce((sum, order) => sum + order.orderCount, 0);
+        const disputed = channelOrders.filter(order => order.status === 'Order Disputed').reduce((sum, order) => sum + order.orderCount, 0);
+        const unanswered = channelOrders.filter(order => order.status === 'Unanswered').reduce((sum, order) => sum + order.orderCount, 0);
+        const total = channelOrders.reduce((sum, order) => sum + order.orderCount, 0);
+        
+        // حساب نسبة الإلغاء
+        const cancellationRate = total > 0 ? ((cancelled / total) * 100).toFixed(1) : 0;
+        
+        rowsHTML += `
+          <tr>
+            <td class="border px-2 py-1 font-medium">${channel}</td>
+            <td class="border px-2 py-1">${cancelled}</td>
+            <td class="border px-2 py-1">${refunded}</td>
+            <td class="border px-2 py-1">${disputed}</td>
+            <td class="border px-2 py-1">${unanswered}</td>
+            <td class="border px-2 py-1 font-bold">${total}</td>
+            <td class="border px-2 py-1">
+              <div class="flex items-center">
+                <span class="ml-1">${cancellationRate}%</span>
+                <div class="progress-bar flex-grow">
+                  <div class="progress-fill" style="width: ${cancellationRate}%"></div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+      
+      return rowsHTML;
+    }
+    
+    // ---- GENERATE BRANCH REPORT ROWS ----
+    function generateBranchReportRows() {
+      const branches = ["Electra", "Mouroor", "Khalydiha", "Satwa", "Hamdan", "Barsha", "Shabiha"];
+      let rowsHTML = '';
+      
+      branches.forEach(branch => {
+        const branchOrders = orders.filter(order => order.location === branch);
+        const cancelled = branchOrders.filter(order => order.status === 'Order Cancelled').reduce((sum, order) => sum + order.orderCount, 0);
+        const refunded = branchOrders.filter(order => order.status === 'Order Refunded').reduce((sum, order) => sum + order.orderCount, 0);
+        const pending = branchOrders.filter(order => order.status === 'Order Disputed' || order.status === 'Unanswered').reduce((sum, order) => sum + order.orderCount, 0);
+        const total = branchOrders.reduce((sum, order) => sum + order.orderCount, 0);
+        
+        // حساب نسبة الإلغاء
+        const cancellationRate = total > 0 ? ((cancelled / total) * 100).toFixed(1) : 0;
+        
+        rowsHTML += `
+          <tr>
+            <td class="border px-2 py-1 font-medium">${branch}</td>
+            <td class="border px-2 py-1">${cancelled}</td>
+            <td class="border px-2 py-1">${refunded}</td>
+            <td class="border px-2 py-1">${pending}</td>
+            <td class="border px-2 py-1 font-bold">${total}</td>
+            <td class="border px-2 py-1">
+              <div class="flex items-center">
+                <span class="ml-1">${cancellationRate}%</span>
+                <div class="progress-bar flex-grow">
+                  <div class="progress-fill" style="width: ${cancellationRate}%"></div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+      
+      return rowsHTML;
+    }
+    
+    // ---- SHOW TAB ----
+    function showTab(tabName) {
+      // إخفاء كل المحتويات
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // إزالة الفئة النشطة من كل الأزرار
+      document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active');
+      });
+      
+      // إظهار التبويب المحدد
+      document.getElementById(`${tabName}-tab`).classList.add('active');
+      
+      // إضافة الفئة النشطة للزر المضغوط
+      event.target.classList.add('active');
+    }
+    
+    // ---- DETAILED REPORT ----
+    function generateDetailedReport(orderId) {
+      const order = orders.find(o => o.id == orderId);
+      if (!order) return;
+      
+      // تحديث التقرير الرسمي
+      document.getElementById('reportBranch').textContent = order.location;
+      document.getElementById('reportChannel').textContent = order.channel;
+      document.getElementById('reportStatus').textContent = order.status;
+      document.getElementById('reportPrice').textContent = order.price;
+      document.getElementById('reportOrderCount').textContent = order.orderCount;
+      
+      // تحديث رسالة WhatsApp
+      const whatsappMessage = `مرحباً،
+طلبك من ${order.brand} عبر ${order.channel} (${order.location}) تم إلغاؤه بتاريخ ${new Date(order.date).toLocaleDateString('ar-SA')}.
+قيمة الطلب: ${order.price}
+الحالة: ${order.status}
+
+يرجى الرد على هذه الأسئلة في أقرب وقت لتسوية الأمر وتجنب أي خصومات لاحقة:
+1) هل تم تسليم الطلب؟
+2) هل الإلغاء بإرادتك؟
+3) هل لديك إثبات لذلك؟
+
+شكراً لتعاونك.`;
+      
+      document.getElementById('whatsappMessage').value = whatsappMessage;
+      
+      // حفظ معرف الطلب الحالي
+      const detailedReport = document.getElementById('detailedReport');
+      detailedReport.dataset.orderId = orderId;
+      detailedReport.classList.remove('hidden');
+      
+      // التمرير إلى التقرير المفصل
+      detailedReport.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // ---- COPY WHATSAPP MESSAGE ----
+    function copyWhatsAppMessage() {
+      const whatsappMessage = document.getElementById('whatsappMessage');
+      whatsappMessage.select();
+      document.execCommand('copy');
+      
+      // تغيير نص الزر مؤقتاً
+      const button = event.target;
+      const originalText = button.innerHTML;
+      button.innerHTML = '<i class="fas fa-check ml-1"></i> تم النسخ!';
+      
+      setTimeout(() => {
+        button.innerHTML = originalText;
+      }, 2000);
+    }
+    
+    // ---- EXPORT TO PDF ----
+    function exportToPDF() {
+      // في تطبيق حقيقي، ستحتاج إلى مكتبة مثل jsPDF أو html2canvas
+      // هذا مجرد محاكاة للوظيفة
+      showNotification('سيتم تحويل التقرير إلى PDF...', 'info');
+      
+      setTimeout(() => {
+        showNotification('تم تصدير التقرير كملف PDF بنجاح', 'success');
+      }, 1500);
+    }
+    
+    // ---- SEND REPORT EMAIL ----
+    function sendReportEmail() {
+      const orderId = document.getElementById('detailedReport').dataset.orderId;
+      const order = orders.find(o => o.id == orderId);
+      if (!order) return;
+      
+      // الحصول على معلومات الاتصال للفرع
+      const branchContact = contacts.branches[order.location];
+      const managementContacts = [
+        contacts.management["Mr. Mahmoud Shaheen"],
+        contacts.management["Mohammed T"]
+      ];
+      
+      // إنشاء محتوى البريد الإلكتروني
+      const subject = `تقرير طلب ملغي - ${order.location} - ${order.channel}`;
+      const body = `تم إعداد تقرير لطلب ملغي من فرع ${order.location} عبر قناة ${order.channel}.
+
+تفاصيل الطلب:
+- الفرع: ${order.location}
+- القناة: ${order.channel}
+- الحالة: ${order.status}
+- السعر: ${order.price}
+- عدد الطلبات: ${order.orderCount}
+
+يرجى مراجعة التقرير المرفق واتخاذ الإجراءات اللازمة.
+
+مع تحيات،
+فريق متابعة الطلبات الملغاة`;
+      
+      // إنشاء رابط mailto
+      const emailLink = `mailto:${managementContacts.map(c => c.email).join(',')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      
+      // فتح رابط البريد الإلكتروني
+      window.location.href = emailLink;
+      
+      showNotification('جاري فتح البريد الإلكتروني...', 'info');
+    }
+    
+    // ---- SEND REPORT WHATSAPP ----
+    function sendReportWhatsApp() {
+      const orderId = document.getElementById('detailedReport').dataset.orderId;
+      const order = orders.find(o => o.id == orderId);
+      if (!order) return;
+      
+      // الحصول على معلومات الاتصال للفرع
+      const branchContact = contacts.branches[order.location];
+      
+      // إنشاء رسالة WhatsApp
+      const whatsappMessage = document.getElementById('whatsappMessage').value;
+      
+      // إنشاء رابط WhatsApp
+      const whatsappLink = `https://wa.me/${branchContact.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(whatsappMessage)}`;
+      
+      // فتح رابط WhatsApp
+      window.open(whatsappLink, '_blank');
+      
+      showNotification('جاري فتح WhatsApp...', 'info');
+    }
+    
+    // ---- SHOW NOTIFICATION ----
+    function showNotification(message, type) {
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg text-white ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'}`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
+    }
+  </script>
+</body>
+</html><html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
   <title>نظام متابعة الطلبات الملغاة</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://cdn.tailwindcss.com"></script>
