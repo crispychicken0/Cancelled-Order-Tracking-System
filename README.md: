@@ -1,140 +1,34 @@
-نظام إدارة الطلبات الملغاة — Crispy Chicken
-نظرة عامة
-
-منصة ويب خفيفة لإدخال وتتبع وتحليل الطلبات الملغاة في قنوات التوصيل (مثل Talabat وCareem وZomato وغيرها). تساعد في حساب الخسائر، متابعة نسبة الإلغاء، وإنشاء تقارير جاهزة للمشاركة مع مزوّدي الخدمة عند المطالبة باستردادات.
-
-الأهداف
-
-تقليل ضياع الحقوق المالية الناتجة عن إلغاء الطلب بعد تسليمه للسائق.
-
-توحيد سجل يومي للطلبات عبر الفروع والقنوات.
-
-إنتاج تقارير واضحة يمكن إرسالها بالبريد أو واتساب.
-
-أبرز المزايا
-
-إضافة طلبات ببيانات: الماركة، القناة، الفرع، الحالة، السعر، وعدد الطلبات.
-
-لوحة معلومات تلخص: إجمالي الطلبات، الملغاة، المسلّمة، إجمالي الخسائر، إجمالي الإيرادات، ونسبة الإلغاء.
-
-فلاتر حسب القناة والفرع والحالة مع بحث سريع.
-
-تقارير إجمالية، حسب القناة، وحسب الفرع.
-
-تصدير التقارير إلى ملف CSV أو PDF.
-
-حفظ البيانات محليًا في المتصفح (لا حاجة لقاعدة بيانات).
-
-واجهة متجاوبة للعمل من الجوال والكمبيوتر.
-
-الحالات المدعومة
-
-ملغى.
-
-مُسلَّم.
-
-يمكن تخصيص الحالات لاحقًا (مثل: قيد النزاع، مسترد).
-
-البيانات المخزنة لكل طلب
-
-الماركة.
-
-القناة.
-
-الفرع.
-
-الحالة.
-
-السعر (بالدرهم).
-
-عدد الطلبات.
-
-المجموع (سعر × عدد).
-
-التاريخ.
-
-آلية العمل باختصار
-
-إدخال بيانات الطلبات أولًا بأول.
-
-استخدام الفلاتر لمراجعة طلبات قناة أو فرع معين.
-
-متابعة لوحة التحكم لمعرفة نسبة الإلغاء والخسائر والإيرادات.
-
-توليد التقارير وإرسالها للجهات المعنية (إيميل/واتساب).
-
-تصدير CSV أو PDF للأرشفة أو للمطالبة بالاسترداد.
-
-بنية الواجهة (ملخص)
-
-ترويسة تعرض إجمالي الطلبات والملغاة والمكتملة.
-
-نموذج إضافة طلب جديد.
-
-لوحات تحكم: إجمالي الخسائر، نسبة الإلغاء، الإيرادات، وأعلى قناة في الإلغاء.
-
-فلاتر وبحث.
-
-جدول الطلبات مع إجراءات الحذف.
-
-قسم التقارير (إجمالي، حسب القناة، حسب الفرع).
-
-إشعارات منبثقة للتأكيد والتنبيه.
-
-التصدير والمشاركة
-
-تصدير CSV لاستخدامه في Excel أو Google Sheets.
-
-تصدير PDF لتقارير جاهزة للمشاركة.
-
-مشاركة التقارير عبر البريد الإلكتروني أو واتساب (يمكن ربطها لاحقًا بـ API خارجي عند الحاجة).
-
-الأمان والخصوصية
-
-يتم تخزين البيانات محليًا على جهاز المستخدم عبر التخزين المحلي للمتصفح.
-
-لا يتم إرسال البيانات لأي خادم افتراضيًا.
-
-يُنصح بعمل نسخ احتياطي دوري عبر التصدير إلى CSV أو PDF.
-
-سيناريو عملي
-
-تم تسليم الطلب للسائق ثم أُلغي من قبل المنصة.
-
-يقوم الموظف بتسجيل الطلب في النظام.
-
-نهاية اليوم/الأسبوع يتم استخراج تقرير PDF للقناة المعنية وفروعها.
-
-يُرسل التقرير لمزود الخدمة لطلب الاسترداد مع أي إثباتات داعمة.
-
-تخصيص مستقبلي (اختياري)
-
-إضافة حقول رقم الطلب ووقت التسليم وسبب الإلغاء.
-
-ربط مع بوابة بريد لإرسال التقارير تلقائيًا.
-
-دعم حساب الضرائب أو خصومات المنصة.
-
-صلاحيات مستخدمين (إدخال/استعراض/تقارير فقط).
-
-دعم لغات إضافية.
-
-متطلبات التشغيل
-
-متصفح حديث يدعم التخزين المحلي وميزات الطباعة إلى PDF.
-
-اتصال بالإنترنت مطلوب فقط لتحميل الخطوط والمكتبات العامة (يمكن جعلها محلية لاحقًا).
-
-لقطات شاشة (ينصح بإضافتها)
-
-لوحة التحكم.
-
-شاشة الفلاتر والجدول.
-
-نموذج إضافة الطلب.
-
-نموذج من تقرير PDF.
-
-الدعم
-
-أُعدّ هذا النظام لفريق Crispy Chicken. لأي مقترحات تحسين أو طلبات تخصيص، يرجى التواصل مع مسؤول النظام الداخلي في الشركة.
+Key Improvements in English Version:
+1. Enhanced User Interface
+Modern gradient design with consistent color scheme
+Interactive cards with hover effects
+Professional typography and spacing
+Responsive layout for all devices
+2. Advanced Dashboard
+Statistical cards with animated hover effects
+Interactive bar chart showing cancellation rates by channel
+Real-time updates when data changes
+Visual indicators for order status
+3. Improved Functionality
+Edit orders through a modal dialog
+Advanced filtering with search capabilities
+Export to multiple formats (CSV, PDF, JSON)
+Confirmation dialogs for destructive actions
+4. Enhanced User Experience
+Toast notifications instead of alerts
+Loading states during export operations
+Visual feedback on all interactions
+Keyboard-friendly form controls
+5. Data Management
+Local storage persistence
+Unique ID for each order
+Automatic timestamping
+Efficient data filtering and sorting
+6. Interactive Charts
+Clickable bar chart elements that filter data
+Visual representation of cancellation rates
+Responsive chart sizing
+7. Professional Reports
+Detailed channel and branch reports
+Financial metrics (revenue/loss)
+Exportable reports with proper formatting
