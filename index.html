@@ -125,6 +125,21 @@
             box-shadow: 0 4px 8px rgba(46, 204, 113, 0.3);
         }
 
+        .whatsapp-btn {
+            background-color: #25D366;
+            border: none;
+            border-radius: 50px;
+            padding: 0.5rem 1.5rem;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .whatsapp-btn:hover {
+            background-color: #128C7E;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(37, 211, 102, 0.3);
+        }
+
         .toast-container {
             position: fixed;
             top: 20px;
@@ -240,74 +255,62 @@
             background-color: var(--primary-color);
         }
 
-        .upload-section {
+        .manual-entry-section {
             background: white;
             border-radius: 10px;
             padding: 2rem;
             margin-bottom: 2rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            text-align: center;
         }
 
-        .upload-area {
-            border: 2px dashed var(--primary-color);
-            border-radius: 10px;
-            padding: 2rem;
-            margin-bottom: 1rem;
+        .form-label {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 0.75rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
             transition: all 0.3s ease;
-            cursor: pointer;
         }
 
-        .upload-area:hover {
-            background-color: rgba(52, 152, 219, 0.05);
+        .btn-primary:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
         }
 
-        .upload-area.drag-over {
-            background-color: rgba(52, 152, 219, 0.1);
-            border-color: var(--dark-color);
+        .btn-danger {
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
         }
 
-        .upload-icon {
-            font-size: 3rem;
-            color: var(--primary-color);
-            margin-bottom: 1rem;
+        .btn-warning {
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
         }
 
-        .file-input {
-            display: none;
+        .modal-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 10px 10px 0 0;
         }
 
-        .recent-uploads {
-            margin-top: 1rem;
-            text-align: right;
-        }
-
-        .recent-upload-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.5rem;
-            border-bottom: 1px solid #eee;
-        }
-
-        .recent-upload-item:last-child {
-            border-bottom: none;
-        }
-
-        .upload-status {
-            font-size: 0.8rem;
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-        }
-
-        .status-success {
-            background-color: rgba(46, 204, 113, 0.1);
-            color: var(--success-color);
-        }
-
-        .status-pending {
-            background-color: rgba(241, 196, 15, 0.1);
-            color: var(--warning-color);
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
         }
 
         .archive-section {
@@ -373,64 +376,6 @@
 
         .notification-new {
             background-color: rgba(52, 152, 219, 0.1);
-        }
-
-        .manual-entry-section {
-            background: white;
-            border-radius: 10px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .form-label {
-            font-weight: 600;
-            color: var(--dark-color);
-        }
-
-        .form-control, .form-select {
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            padding: 0.75rem;
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
-        }
-
-        .btn-primary {
-            background-color: var(--primary-color);
-            border: none;
-            border-radius: 8px;
-            padding: 0.75rem 1.5rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            background-color: #2980b9;
-            transform: translateY(-2px);
-        }
-
-        .btn-danger {
-            border-radius: 8px;
-            padding: 0.5rem 1rem;
-        }
-
-        .btn-warning {
-            border-radius: 8px;
-            padding: 0.5rem 1rem;
-        }
-
-        .modal-header {
-            background-color: var(--primary-color);
-            color: white;
-            border-radius: 10px 10px 0 0;
-        }
-
-        .modal-header .btn-close {
-            filter: brightness(0) invert(1);
         }
     </style>
 </head>
@@ -528,39 +473,6 @@
                     </button>
                 </div>
             </form>
-        </div>
-
-        <!-- Upload Section -->
-        <div class="upload-section">
-            <h3 class="section-title">رفع ملف Excel اليومي</h3>
-            <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
-                <div class="upload-icon">
-                    <i class="bi bi-cloud-arrow-up"></i>
-                </div>
-                <h5>اسحب وأفلت ملف Excel هنا أو انقر للاختيار</h5>
-                <p class="text-muted">يدعم ملفات .xlsx و .xls فقط</p>
-            </div>
-            <input type="file" id="fileInput" class="file-input" accept=".xlsx, .xls" onchange="handleFileUpload(event)">
-            
-            <div class="recent-uploads">
-                <h6>الملفات المرفوعة حديثاً:</h6>
-                <div id="recentUploadsList">
-                    <div class="recent-upload-item">
-                        <div>
-                            <strong>daily_orders_20250829.xlsx</strong>
-                            <div class="text-muted small">تم الرفع: 2025-08-29 09:30</div>
-                        </div>
-                        <span class="upload-status status-success">تمت المعالجة</span>
-                    </div>
-                    <div class="recent-upload-item">
-                        <div>
-                            <strong>daily_orders_20250828.xlsx</strong>
-                            <div class="text-muted small">تم الرفع: 2025-08-28 09:15</div>
-                        </div>
-                        <span class="upload-status status-success">تمت المعالجة</span>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- General Statistics Cards -->
@@ -808,6 +720,9 @@
                     <button class="btn btn-primary me-2" onclick="sendDailyReport()">
                         <i class="bi bi-send me-1"></i> إرسال التقرير اليومي
                     </button>
+                    <button class="btn whatsapp-btn me-2" onclick="sendDailyReportToWhatsApp()">
+                        <i class="bi bi-whatsapp me-1"></i> إرسال لـ WhatsApp
+                    </button>
                     <button class="btn btn-success" onclick="sendAllReports()">
                         <i class="bi bi-send-fill me-1"></i> إرسال جميع التقارير
                     </button>
@@ -853,7 +768,7 @@
                             <i class="bi bi-bell"></i>
                         </div>
                         <div class="notification-content">
-                            <div>تمت إضافة 5 أوامر جديدة من ملف Excel</div>
+                            <div>تمت إضافة أمر جديد يدوياً</div>
                             <div class="notification-time">منذ 10 دقائق</div>
                         </div>
                     </div>
@@ -979,6 +894,9 @@
                     <button type="button" class="btn send-report-btn" onclick="sendReport()">
                         <i class="bi bi-send me-1"></i> إرسال التقرير
                     </button>
+                    <button type="button" class="btn whatsapp-btn" onclick="sendReportToWhatsApp()">
+                        <i class="bi bi-whatsapp me-1"></i> إرسال لـ WhatsApp
+                    </button>
                 </div>
             </div>
         </div>
@@ -1087,9 +1005,6 @@
             
             // Set today's date as default for manual entry
             document.getElementById('manualDate').value = new Date().toISOString().split('T')[0];
-            
-            // Setup drag and drop
-            setupDragAndDrop();
         });
 
         // Handle manual entry form submission
@@ -1284,248 +1199,6 @@
             addNotification(`تم حذف الأمر: ${orderId}`, 'error');
         }
 
-        // Setup drag and drop functionality
-        function setupDragAndDrop() {
-            const uploadArea = document.getElementById('uploadArea');
-            
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                uploadArea.addEventListener(eventName, preventDefaults, false);
-            });
-            
-            function preventDefaults(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            
-            ['dragenter', 'dragover'].forEach(eventName => {
-                uploadArea.addEventListener(eventName, highlight, false);
-            });
-            
-            ['dragleave', 'drop'].forEach(eventName => {
-                uploadArea.addEventListener(eventName, unhighlight, false);
-            });
-            
-            function highlight() {
-                uploadArea.classList.add('drag-over');
-            }
-            
-            function unhighlight() {
-                uploadArea.classList.remove('drag-over');
-            }
-            
-            uploadArea.addEventListener('drop', handleDrop, false);
-            
-            function handleDrop(e) {
-                const dt = e.dataTransfer;
-                const files = dt.files;
-                
-                if (files.length) {
-                    document.getElementById('fileInput').files = files;
-                    handleFileUpload({ target: { files: files } });
-                }
-            }
-        }
-
-        // Handle file upload
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const fileName = file.name;
-            const fileExtension = fileName.split('.').pop().toLowerCase();
-            
-            if (fileExtension !== 'xlsx' && fileExtension !== 'xls') {
-                showToast('يرجى رفع ملف Excel بصيغة .xlsx أو .xls', 'error');
-                return;
-            }
-            
-            showToast('جاري معالجة الملف...', 'success');
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
-                    
-                    // Process the new data
-                    processNewData(jsonData, fileName);
-                    
-                    // Add to recent uploads
-                    addToRecentUploads(fileName);
-                    
-                    showToast('تم رفع الملف ومعالجته بنجاح', 'success');
-                } catch (error) {
-                    console.error('Error processing Excel file:', error);
-                    showToast('حدث خطأ أثناء معالجة الملف', 'error');
-                }
-            };
-            
-            reader.readAsArrayBuffer(file);
-        }
-
-        // Process new data from Excel file
-        function processNewData(newData, fileName) {
-            let newOrdersCount = 0;
-            let newOrders = [];
-            
-            // Process each row in the Excel file
-            newData.forEach(row => {
-                // Assuming the Excel has columns: Reference ID, Date, Merchant Area, Total Amount, Status, Reason, Notes
-                const orderId = row['Reference ID'] || row['reference_id'] || row['ID'];
-                
-                // Check if this order already exists
-                if (!existingOrderIds.includes(orderId)) {
-                    // Map Excel data to our format
-                    const newOrder = {
-                        id: orderId,
-                        date: formatDate(row['Date'] || row['date']),
-                        location: row['Merchant Area'] || row['merchant_area'] || row['Location'],
-                        service: detectService(row['Notes'] || row['notes'] || ''),
-                        amount: parseFloat(row['Total Amount'] || row['total_amount'] || 0),
-                        status: mapStatus(row['Status'] || row['status'] || 'cancelled'),
-                        reason: mapReason(row['Reason'] || row['reason'] || 'delivery'),
-                        reasonText: row['Reason'] || row['reason'] || 'Cancelled by others',
-                        action: generateAction(row['Reason'] || row['reason'] || 'delivery', detectService(row['Notes'] || row['notes'] || ''))
-                    };
-                    
-                    // Add to our data
-                    ordersData.push(newOrder);
-                    existingOrderIds.push(orderId);
-                    newOrders.push(newOrder);
-                    newOrdersCount++;
-                }
-            });
-            
-            // Update UI
-            if (newOrdersCount > 0) {
-                // Save to localStorage
-                saveDataToLocalStorage();
-                
-                updateStatistics();
-                updateDeliveryServicesStats();
-                renderTable();
-                updateCharts();
-                
-                // Add notification
-                addNotification(`تمت إضافة ${newOrdersCount} أوامر جديدة من ملف ${fileName}`, 'success');
-                
-                // Generate reports for new orders
-                if (newOrders.length > 0) {
-                    generateReportsForNewOrders(newOrders);
-                }
-            } else {
-                showToast('لم يتم العثور على أوامر جديدة في الملف', 'error');
-            }
-        }
-
-        // Format date from Excel
-        function formatDate(excelDate) {
-            if (typeof excelDate === 'number') {
-                // Excel date is a number
-                const date = new Date((excelDate - 25569) * 86400 * 1000);
-                return date.toISOString().split('T')[0];
-            } else if (typeof excelDate === 'string') {
-                // Try to parse string date
-                const date = new Date(excelDate);
-                if (!isNaN(date.getTime())) {
-                    return date.toISOString().split('T')[0];
-                }
-            }
-            
-            // Default to today
-            return new Date().toISOString().split('T')[0];
-        }
-
-        // Detect delivery service from notes
-        function detectService(notes) {
-            if (!notes) return 'talabat'; // default
-            
-            const notesLower = notes.toLowerCase();
-            if (notesLower.includes('talabat')) return 'talabat';
-            if (notesLower.includes('careem')) return 'careem';
-            if (notesLower.includes('deliveroo')) return 'deliveroo';
-            if (notesLower.includes('noon')) return 'noon';
-            if (notesLower.includes('smiles')) return 'smiles';
-            
-            return 'talabat'; // default
-        }
-
-        // Map status from Excel
-        function mapStatus(status) {
-            if (!status) return 'cancelled';
-            
-            const statusLower = status.toLowerCase();
-            if (statusLower.includes('refund')) return 'refunded';
-            if (statusLower.includes('unanswer')) return 'unanswered';
-            
-            return 'cancelled';
-        }
-
-        // Map reason from Excel
-        function mapReason(reason) {
-            if (!reason) return 'delivery';
-            
-            const reasonLower = reason.toLowerCase();
-            if (reasonLower.includes('merchant') || reasonLower.includes('restaurant')) return 'restaurant';
-            if (reasonLower.includes('customer')) return 'customer';
-            
-            return 'delivery';
-        }
-
-        // Add to recent uploads list
-        function addToRecentUploads(fileName) {
-            const uploadsList = document.getElementById('recentUploadsList');
-            const now = new Date();
-            const timeString = now.toLocaleString('ar-SA', { 
-                year: 'numeric', 
-                month: '2-digit', 
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            
-            const uploadItem = document.createElement('div');
-            uploadItem.className = 'recent-upload-item';
-            uploadItem.innerHTML = `
-                <div>
-                    <strong>${fileName}</strong>
-                    <div class="text-muted small">تم الرفع: ${timeString}</div>
-                </div>
-                <span class="upload-status status-success">تمت المعالجة</span>
-            `;
-            
-            // Add to the top of the list
-            uploadsList.insertBefore(uploadItem, uploadsList.firstChild);
-            
-            // Keep only the last 5 uploads
-            while (uploadsList.children.length > 5) {
-                uploadsList.removeChild(uploadsList.lastChild);
-            }
-        }
-
-        // Generate reports for new orders
-        function generateReportsForNewOrders(newOrders) {
-            newOrders.forEach(order => {
-                // In a real application, this would send an email or WhatsApp message
-                console.log('Generating report for new order:', order);
-                
-                // Add notification for each new order
-                addNotification(`تم إنشاء تقرير للطلب الجديد: ${order.id}`, 'info');
-            });
-        }
-
-        // Generate report for a single new order
-        function generateReportForNewOrder(order) {
-            // In a real application, this would send an email or WhatsApp message
-            console.log('Generating report for new order:', order);
-            
-            // Add notification
-            addNotification(`تم إنشاء تقرير للطلب الجديد: ${order.id}`, 'info');
-        }
-
         // Add notification
         function addNotification(message, type = 'info') {
             const notificationsTab = document.getElementById('notificationsTab');
@@ -1642,15 +1315,9 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>2025-08-29 09:30</td>
-                                    <td>رفع ملف Excel</td>
-                                    <td>daily_orders_20250829.xlsx</td>
-                                    <td><span class="badge bg-success">تمت المعالجة</span></td>
-                                </tr>
-                                <tr>
                                     <td>2025-08-29 09:35</td>
-                                    <td>إضافة أوامر جديدة</td>
-                                    <td>5 أوامر</td>
+                                    <td>إضافة أمر جديد</td>
+                                    <td>إدخال يدوي</td>
                                     <td><span class="badge bg-success">تمت الإضافة</span></td>
                                 </tr>
                                 <tr>
@@ -1660,10 +1327,16 @@
                                     <td><span class="badge bg-success">تم الإرسال</span></td>
                                 </tr>
                                 <tr>
+                                    <td>2025-08-29 11:15</td>
+                                    <td>تعديل أمر</td>
+                                    <td>تعديل بيانات الأمر</td>
+                                    <td><span class="badge bg-success">تم التعديل</span></td>
+                                </tr>
+                                <tr>
                                     <td>2025-08-28 09:15</td>
-                                    <td>رفع ملف Excel</td>
-                                    <td>daily_orders_20250828.xlsx</td>
-                                    <td><span class="badge bg-success">تمت المعالجة</span></td>
+                                    <td>تصدير بيانات</td>
+                                    <td>ملف Excel</td>
+                                    <td><span class="badge bg-success">تم التصدير</span></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1921,6 +1594,44 @@
             locationChart.update();
         }
 
+        // Export data to Excel
+        function exportData() {
+            showToast('جاري تصدير البيانات...', 'success');
+            
+            // Prepare data for export
+            const exportData = ordersData.map(order => ({
+                'رقم المرجع': order.id,
+                'التاريخ': order.date,
+                'الفرع': order.location,
+                'خدمة التوصيل': getServiceName(order.service),
+                'القيمة': order.amount,
+                'الحالة': order.status,
+                'السبب': order.reason,
+                'نص السبب': order.reasonText,
+                'الإجراء': order.action,
+                'ملاحظات': order.notes || ''
+            }));
+            
+            // Create workbook
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            
+            // Add worksheet to workbook
+            XLSX.utils.book_append_sheet(wb, ws, "الأوامر الملغاة");
+            
+            // Generate filename with current date
+            const today = new Date();
+            const filename = `orders_report_${today.getFullYear()}${(today.getMonth()+1).toString().padStart(2,'0')}${today.getDate().toString().padStart(2,'0')}.xlsx`;
+            
+            // Save file
+            XLSX.writeFile(wb, filename);
+            
+            showToast('تم تصدير البيانات بنجاح', 'success');
+            
+            // Add notification
+            addNotification('تم تصدير البيانات إلى ملف Excel', 'success');
+        }
+
         // View report for a specific order
         function viewReport(orderId) {
             const order = ordersData.find(o => o.id === orderId);
@@ -1976,6 +1687,29 @@
             
             const modal = new bootstrap.Modal(document.getElementById('reportModal'));
             modal.show();
+        }
+
+        // Send daily report to WhatsApp
+        function sendDailyReportToWhatsApp() {
+            const today = new Date().toISOString().split('T')[0];
+            const todayOrders = ordersData.filter(o => o.date === today);
+            
+            if (todayOrders.length === 0) {
+                showToast('لا توجد أوامر ملغية اليوم', 'error');
+                return;
+            }
+
+            const report = generateDailyReport(todayOrders);
+            const phoneNumber = '00971509021993';
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(report)}`;
+            
+            // Open WhatsApp
+            window.open(whatsappUrl, '_blank');
+            
+            showToast('تم فتح WhatsApp لإرسال التقرير', 'success');
+            
+            // Add notification
+            addNotification('تم إرسال التقرير اليومي إلى WhatsApp', 'success');
         }
 
         // Generate daily report
@@ -2044,6 +1778,34 @@
             modal.hide();
         }
 
+        // Send report from modal to WhatsApp
+        function sendReportToWhatsApp() {
+            if (!currentReport) return;
+            
+            const phoneNumber = '00971509021993';
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(currentReport)}`;
+            
+            // Open WhatsApp
+            window.open(whatsappUrl, '_blank');
+            
+            showToast('تم فتح WhatsApp لإرسال التقرير', 'success');
+            
+            // Add notification
+            addNotification('تم إرسال التقرير إلى WhatsApp', 'success');
+            
+            const modal = bootstrap.Modal.getInstance(document.getElementById('reportModal'));
+            modal.hide();
+        }
+
+        // Generate report for a single new order
+        function generateReportForNewOrder(order) {
+            // In a real application, this would send an email or WhatsApp message
+            console.log('Generating report for new order:', order);
+            
+            // Add notification
+            addNotification(`تم إنشاء تقرير للطلب الجديد: ${order.id}`, 'info');
+        }
+
         // Show toast notification
         function showToast(message, type = 'success') {
             const toastContainer = document.getElementById('toastContainer');
@@ -2078,17 +1840,6 @@
                 renderTable();
                 updateCharts();
                 showToast('تم تحديث البيانات بنجاح', 'success');
-            }, 1000);
-        }
-
-        // Export data to Excel (simulate)
-        function exportData() {
-            showToast('جاري تصدير البيانات...', 'success');
-            setTimeout(() => {
-                showToast('تم تصدير البيانات بنجاح', 'success');
-                
-                // Add notification
-                addNotification('تم تصدير البيانات إلى ملف Excel', 'success');
             }, 1000);
         }
     </script>
