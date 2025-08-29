@@ -32,3 +32,37 @@ Responsive chart sizing
 Detailed channel and branch reports
 Financial metrics (revenue/loss)
 Exportable reports with proper formatting
+1. Daily WhatsApp Report Generator
+Date picker: Select any date to generate the report
+Automatic formatting: Creates a ready-to-use WhatsApp message
+Location-based breakdown: Shows cancellations per location with:
+Total cancellations
+Accepted (✅)
+Not Accepted (❌)
+Detailed reasons with counts
+2. WhatsApp Integration
+Copy to Clipboard: One-click copy of the formatted report
+Direct WhatsApp Sharing: Opens WhatsApp with pre-filled message
+Mobile-friendly: Optimized for WhatsApp's message format
+3. Report Format
+The generated report includes:
+
+Header with date
+Location-by-location breakdown
+Clear indicators for accepted/not accepted
+Reason details with counts
+Responsibility explanation
+4. Responsibility Clarification
+The report clearly states:
+
+✅ Accepted = no penalty
+❌ Not Accepted = penalty charged to responsible party
+5. Usage Instructions
+Select the date for the report
+Click "Generate Report"
+Copy the message to clipboard
+Paste into WhatsApp group chat for branches
+Or use "Send via WhatsApp" for direct sharing
+6. Manual vs. Automated Options
+Manual: Copy/paste from the system
+Future Enhancement: Framework for automated sending via APIs
