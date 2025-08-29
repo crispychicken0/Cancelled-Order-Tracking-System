@@ -786,6 +786,7 @@
             <option value="Khalydiha">Khalydiha</option>
             <option value="Mouroor">Mouroor</option>
             <option value="Shabiha">Shabiha</option>
+            <option value="Satwa">Satwa</option>
           </select>
         </div>
         <div class="form-group">
@@ -1019,6 +1020,7 @@
         <option value="Khalydiha">Khalydiha</option>
         <option value="Mouroor">Mouroor</option>
         <option value="Shabiha">Shabiha</option>
+        <option value="Satwa">Satwa</option>
       </select>
       <input type="text" id="filterSearch" placeholder="Global search (channel/reason)">
       <select id="filterChannel">
@@ -1136,6 +1138,7 @@
             <option value="Khalydiha">Khalydiha</option>
             <option value="Mouroor">Mouroor</option>
             <option value="Shabiha">Shabiha</option>
+            <option value="Satwa">Satwa</option>
           </select>
         </div>
         <div class="form-group">
@@ -1269,7 +1272,7 @@ function generateWhatsAppReport() {
   });
   
   // Group by location
-  const locations = ['Barsha', 'Electra', 'Hamdan', 'Khalydiha', 'Mouroor', 'Shabiha'];
+  const locations = ['Barsha', 'Electra', 'Hamdan', 'Khalydiha', 'Mouroor', 'Shabiha', 'Satwa'];
   const reportData = {};
   
   locations.forEach(location => {
@@ -1516,7 +1519,7 @@ function updateDashboard() {
 
 // Generate pivot table
 function generatePivotTable() {
-  const locations = ['Barsha', 'Electra', 'Hamdan', 'Khalydiha', 'Mouroor', 'Shabiha'];
+  const locations = ['Barsha', 'Electra', 'Hamdan', 'Khalydiha', 'Mouroor', 'Shabiha', 'Satwa'];
   const channels = ['Careem', 'Zomato', 'Talabat', 'Deliveroo', 'Noon', 'SMILE'];
   const tbody = document.getElementById('pivotTableBody');
   tbody.innerHTML = '';
@@ -1632,7 +1635,7 @@ function updateCharts() {
   
   // Location Chart
   const locationData = {};
-  const locations = ['Barsha', 'Electra', 'Hamdan', 'Khalydiha', 'Mouroor', 'Shabiha'];
+  const locations = ['Barsha', 'Electra', 'Hamdan', 'Khalydiha', 'Mouroor', 'Shabiha', 'Satwa'];
   
   locations.forEach(location => {
     const locationOrders = orders.filter(o => o.branch === location);
