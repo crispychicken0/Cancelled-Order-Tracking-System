@@ -1,1658 +1,1048 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>نظام إدارة الطلبات الملغاة - CRISPY CHICKEN</title>
+  <title>Cancelled Order Management System - CRISPY CHICKEN</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { font-family: 'Tahoma', sans-serif; background:#f8f9fa; margin:0; padding:0; direction:rtl; }
-    .container { width:95%; max-width:1200px; margin:auto; padding:20px; }
-    h1 { text-align:center; color:#333; }
-    .form-section,.report-section { background:#fff; padding:20px; margin-bottom:20px; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
-    label { display:block; margin:10px 0 5px; }
-    input,select,button { padding:8px; margin-bottom:10px; width:100%; border:1px solid #ccc; border-radius:5px; }
-    button { background:#28a745; color:#fff; cursor:pointer; }
-    button:hover { background:#218838; }
-    table { width:100%; border-collapse:collapse; margin-top:20px; }
-    th,td { border:1px solid #ccc; padding:10px; text-align:center; }
-    th { background:#007bff; color:#fff; }
-    .dashboard { display:flex; flex-wrap:wrap; gap:15px; margin-top:20px; }
-    .card { flex:1; min-width:200px; background:#fff; padding:15px; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); text-align:center; }
-    .card h3 { margin:10px 0; color:#333; }
-    .filter-group { display:flex; gap:10px; margin:10px 0; }
-    .report-stats { display:flex; flex-wrap:wrap; gap:15px; }
-    .report-stat { flex:1; min-width:200px; background:#f1f1f1; padding:15px; border-radius:10px; text-align:center; }
-    .report-stat .value { font-size:18px; font-weight:bold; }
-    .report-stat .label { color:#555; }
-    .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
-    .notification { position:fixed; bottom:20px; right:20px; background:#28a745; color:#fff; padding:10px 20px; border-radius:5px; display:none; }
+    :root {
+      --primary: #ff6b35;
+      --secondary: #f7931e;
+      --success: #28a745;
+      --danger: #dc3545;
+      --info: #17a2b8;
+      --light: #f8f9fa;
+      --dark: #343a40;
+      --white: #fff;
+      --shadow: 0 4px 6px rgba(0,0,0,0.1);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      margin: 0;
+      padding: 0;
+      direction: ltr;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .container {
+      width: 95%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: var(--white);
+      padding: 20px 0;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,144C960,149,1056,139,1152,122.7C1248,107,1344,85,1392,74.7L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+      background-size: cover;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+      position: relative;
+      z-index: 1;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 1.2rem;
+      opacity: 0.9;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card {
+      background: var(--white);
+      border-radius: 15px;
+      box-shadow: var(--shadow);
+      padding: 25px;
+      margin-bottom: 25px;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--light);
+      padding-bottom: 15px;
+    }
+
+    .card-title {
+      font-size: 1.8rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title i {
+      font-size: 1.5rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: var(--transition);
+      background: var(--white);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2);
+    }
+
+    .btn {
+      padding: 12px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: var(--white);
+    }
+
+    .btn-primary:hover {
+      background: #e55a2b;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: var(--white);
+    }
+
+    .btn-success:hover {
+      background: #218838;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: var(--white);
+    }
+
+    .btn-danger:hover {
+      background: #c82333;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+    }
+
+    .btn-info {
+      background: var(--info);
+      color: var(--white);
+    }
+
+    .btn-info:hover {
+      background: #138496;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(23, 162, 184, 0.3);
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: var(--white);
+      padding: 25px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+    }
+
+    .stat-card h3 {
+      font-size: 2.5rem;
+      margin: 10px 0;
+      font-weight: 900;
+    }
+
+    .stat-card p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .filter-group input, .filter-group select {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: var(--white);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    th, td {
+      padding: 15px;
+      text-align: center;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    th {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: var(--white);
+      font-weight: 700;
+    }
+
+    tr:hover {
+      background: #f8f9fa;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .actions .btn {
+      padding: 8px 12px;
+      font-size: 0.9rem;
+    }
+
+    .report-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .report-stat {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+
+    .report-stat:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    .report-stat .value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--primary);
+      margin: 10px 0;
+    }
+
+    .report-stat .label {
+      color: #666;
+      font-size: 1rem;
+    }
+
+    .notification {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--success);
+      color: var(--white);
+      padding: 15px 25px;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      display: none;
+      align-items: center;
+      gap: 10px;
+      z-index: 1000;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translate(100%, 0);
+        opacity: 0;
+      }
+      to {
+        transform: translate(0, 0);
+        opacity: 1;
+      }
+    }
+
+    .notification.show {
+      display: flex;
+    }
+
+    .notification.error {
+      background: var(--danger);
+    }
+
+    .notification.info {
+      background: var(--info);
+    }
+
+    .chart-container {
+      height: 300px;
+      margin: 20px 0;
+      position: relative;
+    }
+
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      height: 100%;
+      gap: 15px;
+      padding: 10px;
+    }
+
+    .bar {
+      flex: 1;
+      background: linear-gradient(to top, var(--primary), var(--secondary));
+      border-radius: 8px 8px 0 0;
+      position: relative;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .bar:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
+    }
+
+    .bar-label {
+      position: absolute;
+      bottom: -30px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .bar-value {
+      position: absolute;
+      top: -25px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .badge-success {
+      background: var(--success);
+      color: var(--white);
+    }
+
+    .badge-danger {
+      background: var(--danger);
+      color: var(--white);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: var(--white);
+      padding: 30px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 600px;
+      position: relative;
+      box-shadow: var(--shadow);
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #999;
+    }
+
+    .close-modal:hover {
+      color: var(--danger);
+    }
+
+    .export-section {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .export-section .btn {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 10px;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+      }
+      
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+      
+      .filter-group {
+        flex-direction: column;
+      }
+      
+      table {
+        font-size: 0.9rem;
+      }
+      
+      th, td {
+        padding: 10px 5px;
+      }
+    }
   </style>
 </head>
 <body>
 <div class="container">
-  <h1>نظام إدارة الطلبات الملغاة - CRISPY CHICKEN</h1>
+  <header>
+    <h1>Cancelled Order Management System</h1>
+    <p class="subtitle">CRISPY CHICKEN - Comprehensive order tracking and analytics</p>
+  </header>
 
-  <!-- إدخال بيانات -->
-  <div class="form-section">
-    <h2>إضافة طلب جديد</h2>
-    <label>العلامة التجارية</label><input type="text" id="brand">
-    <label>القناة</label>
-    <select id="channel">
-      <option value="Careem">Careem</option>
-      <option value="Zomato">Zomato</option>
-      <option value="Talabat">Talabat</option>
-      <option value="Deliveroo">Deliveroo</option>
-    </select>
-    <label>الفرع</label><input type="text" id="branch">
-    <label>الحالة</label>
-    <select id="status">
-      <option value="cancelled">ملغى</option>
-      <option value="delivered">مُسَلَّم</option>
-    </select>
-    <label>السعر (درهم)</label><input type="number" id="price" step="0.01">
-    <label>عدد الطلبات</label><input type="number" id="count" value="1">
-    <button onclick="addOrder()">إضافة الطلب</button>
+  <!-- Add Order Form -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i class="fas fa-plus-circle"></i>
+        Add New Order
+      </h2>
+    </div>
+    <form id="orderForm">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="brand">Brand</label>
+          <input type="text" id="brand" required>
+        </div>
+        <div class="form-group">
+          <label for="channel">Channel</label>
+          <select id="channel" required>
+            <option value="">Select Channel</option>
+            <option value="Careem">Careem</option>
+            <option value="Zomato">Zomato</option>
+            <option value="Talabat">Talabat</option>
+            <option value="Deliveroo">Deliveroo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="branch">Branch</label>
+          <input type="text" id="branch" required>
+        </div>
+        <div class="form-group">
+          <label for="status">Status</label>
+          <select id="status" required>
+            <option value="">Select Status</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="delivered">Delivered</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="price">Price (AED)</label>
+          <input type="number" id="price" step="0.01" min="0" required>
+        </div>
+        <div class="form-group">
+          <label for="count">Quantity</label>
+          <input type="number" id="count" min="1" value="1" required>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i>
+        Add Order
+      </button>
+    </form>
   </div>
 
-  <!-- لوحة التحكم -->
-  <div class="report-section">
-    <h2>لوحة التحكم</h2>
+  <!-- Dashboard -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i class="fas fa-chart-line"></i>
+        Dashboard
+      </h2>
+    </div>
     <div class="dashboard">
-      <div class="card"><h3 id="totalOrders">0</h3><p>إجمالي الطلبات</p></div>
-      <div class="card"><h3 id="cancelledOrders">0</h3><p>الطلبات الملغاة</p></div>
-      <div class="card"><h3 id="deliveredOrders">0</h3><p>الطلبات المُسَلَّمَة</p></div>
-      <div class="card"><h3 id="cancellationRate">0%</h3><p>نسبة الإلغاء</p></div>
+      <div class="stat-card">
+        <i class="fas fa-shopping-cart fa-2x"></i>
+        <h3 id="totalOrders">0</h3>
+        <p>Total Orders</p>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-times-circle fa-2x"></i>
+        <h3 id="cancelledOrders">0</h3>
+        <p>Cancelled Orders</p>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-check-circle fa-2x"></i>
+        <h3 id="deliveredOrders">0</h3>
+        <p>Delivered Orders</p>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-percentage fa-2x"></i>
+        <h3 id="cancellationRate">0%</h3>
+        <p>Cancellation Rate</p>
+      </div>
+    </div>
+    
+    <!-- Cancellation Chart -->
+    <div class="chart-container">
+      <h3 style="text-align: center; margin-bottom: 15px;">Cancellation Rate by Channel</h3>
+      <div class="bar-chart" id="cancellationChart"></div>
     </div>
   </div>
 
-  <!-- الفلاتر -->
-  <div class="filter-group">
-    <input type="text" id="filterBranch" placeholder="بحث بالفرع" onkeyup="renderTable()">
-    <input type="text" id="filterSearch" placeholder="بحث عام (ماركة / قناة / فرع)" onkeyup="renderTable()">
-    <select id="filterChannel" onchange="renderTable()">
-      <option value="">جميع القنوات</option>
-      <option value="Careem">Careem</option>
-      <option value="Zomato">Zomato</option>
-      <option value="Talabat">Talabat</option>
-      <option value="Deliveroo">Deliveroo</option>
-    </select>
-    <select id="filterStatus" onchange="renderTable()">
-      <option value="">جميع الحالات</option>
-      <option value="cancelled">ملغى</option>
-      <option value="delivered">مُسَلَّم</option>
-    </select>
+  <!-- Filters -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i class="fas fa-filter"></i>
+        Search & Filter
+      </h2>
+    </div>
+    <div class="filter-group">
+      <input type="text" id="filterBranch" placeholder="Search by branch">
+      <input type="text" id="filterSearch" placeholder="Global search (brand/channel/branch)">
+      <select id="filterChannel">
+        <option value="">All Channels</option>
+        <option value="Careem">Careem</option>
+        <option value="Zomato">Zomato</option>
+        <option value="Talabat">Talabat</option>
+        <option value="Deliveroo">Deliveroo</option>
+      </select>
+      <select id="filterStatus">
+        <option value="">All Statuses</option>
+        <option value="cancelled">Cancelled</option>
+        <option value="delivered">Delivered</option>
+      </select>
+      <button class="btn btn-info" onclick="resetFilters()">
+        <i class="fas fa-redo"></i>
+        Reset Filters
+      </button>
+    </div>
   </div>
 
-  <!-- الجدول -->
-  <div class="report-section">
-    <h2>الطلبات</h2>
-    <table>
-      <thead><tr><th>العلامة</th><th>القناة</th><th>الفرع</th><th>الحالة</th><th>السعر</th><th>العدد</th><th>الإجمالي</th><th>إجراء</th></tr></thead>
-      <tbody id="ordersTable"></tbody>
-    </table>
+  <!-- Orders Table -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i class="fas fa-table"></i>
+        Orders
+      </h2>
+    </div>
+    <div style="overflow-x: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Brand</th>
+            <th>Channel</th>
+            <th>Branch</th>
+            <th>Status</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="ordersTable"></tbody>
+      </table>
+    </div>
   </div>
 
-  <!-- التقارير -->
-  <div class="report-section" id="reports">
-    <h2>التقارير التفصيلية</h2>
-    <div id="channelReport"></div>
-    <div id="branchReport"></div>
+  <!-- Reports -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i class="fas fa-chart-pie"></i>
+        Detailed Reports
+      </h2>
+    </div>
+    <div id="reports">
+      <div id="channelReport"></div>
+      <div id="branchReport"></div>
+    </div>
   </div>
 
-  <!-- أزرار -->
-  <div class="actions">
-    <button onclick="exportToCSV()">تصدير CSV</button>
-    <button onclick="exportToPDF()">تصدير PDF</button>
+  <!-- Export Options -->
+  <div class="export-section">
+    <button class="btn btn-success" onclick="exportToCSV()">
+      <i class="fas fa-file-csv"></i>
+      Export CSV
+    </button>
+    <button class="btn btn-info" onclick="exportToPDF()">
+      <i class="fas fa-file-pdf"></i>
+      Export PDF
+    </button>
+    <button class="btn btn-primary" onclick="exportToJSON()">
+      <i class="fas fa-file-code"></i>
+      Export JSON
+    </button>
   </div>
 </div>
 
-<div class="notification" id="notification"></div>
+<!-- Notifications -->
+<div id="notification" class="notification">
+  <i class="fas fa-check-circle"></i>
+  <span id="notificationText"></span>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal">
+  <div class="modal-content">
+    <button class="close-modal" onclick="closeEditModal()">
+      <i class="fas fa-times"></i>
+    </button>
+    <h2 class="card-title">
+      <i class="fas fa-edit"></i>
+      Edit Order
+    </h2>
+    <form id="editForm">
+      <input type="hidden" id="editIndex">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="editBrand">Brand</label>
+          <input type="text" id="editBrand" required>
+        </div>
+        <div class="form-group">
+          <label for="editChannel">Channel</label>
+          <select id="editChannel" required>
+            <option value="Careem">Careem</option>
+            <option value="Zomato">Zomato</option>
+            <option value="Talabat">Talabat</option>
+            <option value="Deliveroo">Deliveroo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="editBranch">Branch</label>
+          <input type="text" id="editBranch" required>
+        </div>
+        <div class="form-group">
+          <label for="editStatus">Status</label>
+          <select id="editStatus" required>
+            <option value="cancelled">Cancelled</option>
+            <option value="delivered">Delivered</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="editPrice">Price (AED)</label>
+          <input type="number" id="editPrice" step="0.01" min="0" required>
+        </div>
+        <div class="form-group">
+          <label for="editCount">Quantity</label>
+          <input type="number" id="editCount" min="1" required>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i>
+        Save Changes
+      </button>
+    </form>
+  </div>
+</div>
 
 <script>
 let orders = JSON.parse(localStorage.getItem('orders') || '[]');
 
-function addOrder() {
+// Add new order
+document.getElementById('orderForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
   const brand = document.getElementById('brand').value.trim();
   const channel = document.getElementById('channel').value;
   const branch = document.getElementById('branch').value.trim();
   const status = document.getElementById('status').value;
   const price = parseFloat(document.getElementById('price').value) || 0;
   const count = parseInt(document.getElementById('count').value) || 1;
-  if (!brand || !branch) { alert('أدخل البيانات كاملة'); return; }
-  orders.push({ brand, channel, branch, status, price, count, total: price * count });
+  
+  if (!brand || !branch) {
+    showNotification('Please fill in all required fields', 'error');
+    return;
+  }
+  
+  const newOrder = {
+    id: Date.now(),
+    brand,
+    channel,
+    branch,
+    status,
+    price,
+    count,
+    total: price * count,
+    date: new Date().toLocaleString()
+  };
+  
+  orders.push(newOrder);
   localStorage.setItem('orders', JSON.stringify(orders));
-  renderTable(); updateDashboard(); generateReports();
-  showNotification('تمت إضافة الطلب');
-}
+  
+  this.reset();
+  renderTable();
+  updateDashboard();
+  generateReports();
+  updateCancellationChart();
+  showNotification('Order added successfully!');
+});
 
+// Render table
 function renderTable() {
   const tbody = document.getElementById('ordersTable');
   tbody.innerHTML = '';
+  
   const filterBranch = document.getElementById('filterBranch').value.toLowerCase();
   const filterSearch = document.getElementById('filterSearch').value.toLowerCase();
   const filterChannel = document.getElementById('filterChannel').value;
   const filterStatus = document.getElementById('filterStatus').value;
-  const filteredOrders = orders.filter(o => {
-    const matchChannel = !filterChannel || o.channel === filterChannel;
-    const matchBranch = !filterBranch || o.branch.toLowerCase().includes(filterBranch);
-    const matchStatus = !filterStatus || o.status === filterStatus;
+  
+  const filteredOrders = orders.filter(order => {
+    const matchChannel = !filterChannel || order.channel === filterChannel;
+    const matchBranch = !filterBranch || order.branch.toLowerCase().includes(filterBranch);
+    const matchStatus = !filterStatus || order.status === filterStatus;
     const matchSearch = !filterSearch ||
-      o.brand.toLowerCase().includes(filterSearch) ||
-      o.channel.toLowerCase().includes(filterSearch) ||
-      o.branch.toLowerCase().includes(filterSearch);
+      order.brand.toLowerCase().includes(filterSearch) ||
+      order.channel.toLowerCase().includes(filterSearch) ||
+      order.branch.toLowerCase().includes(filterSearch);
+      
     return matchChannel && matchBranch && matchStatus && matchSearch;
   });
-  filteredOrders.forEach((o,i) => {
-    tbody.innerHTML += `<tr>
-      <td>${o.brand}</td><td>${o.channel}</td><td>${o.branch}</td><td>${o.status}</td>
-      <td>${o.price.toFixed(2)}</td><td>${o.count}</td><td>${o.total.toFixed(2)}</td>
-      <td><button style="background:#dc3545" onclick="deleteOrder(${i})">حذف</button></td>
-    </tr>`;
+  
+  filteredOrders.forEach((order, index) => {
+    const actualIndex = orders.findIndex(o => o.id === order.id);
+    tbody.innerHTML += `
+      <tr>
+        <td>${order.brand}</td>
+        <td>${order.channel}</td>
+        <td>${order.branch}</td>
+        <td>
+          <span class="badge ${order.status === 'cancelled' ? 'badge-danger' : 'badge-success'}">
+            ${order.status === 'cancelled' ? 'Cancelled' : 'Delivered'}
+          </span>
+        </td>
+        <td>${order.price.toFixed(2)}</td>
+        <td>${order.count}</td>
+        <td>${order.total.toFixed(2)}</td>
+        <td>${order.date}</td>
+        <td>
+          <div class="actions">
+            <button class="btn btn-info" onclick="editOrder(${actualIndex})">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-danger" onclick="deleteOrder(${actualIndex})">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
   });
 }
 
-function deleteOrder(i) {
-  orders.splice(i,1); localStorage.setItem('orders', JSON.stringify(orders));
-  renderTable(); updateDashboard(); generateReports();
-  showNotification('تم حذف الطلب');
-}
-
+// Update dashboard
 function updateDashboard() {
   const total = orders.length;
   const cancelled = orders.filter(o => o.status === 'cancelled').length;
   const delivered = orders.filter(o => o.status === 'delivered').length;
-  const rate = total ? ((cancelled/total)*100).toFixed(1)+'%' : '0%';
+  const rate = total ? ((cancelled/total)*100).toFixed(1) : 0;
+  
   document.getElementById('totalOrders').textContent = total;
   document.getElementById('cancelledOrders').textContent = cancelled;
   document.getElementById('deliveredOrders').textContent = delivered;
-  document.getElementById('cancellationRate').textContent = rate;
+  document.getElementById('cancellationRate').textContent = rate + '%';
 }
 
-function generateReports() {
-  document.getElementById('channelReport').innerHTML = '<h3>تقرير القنوات</h3>'+generateChannelReport();
-  document.getElementById('branchReport').innerHTML = '<h3>تقرير الفروع</h3>'+generateBranchReport();
-}
-
-function generateChannelReport() {
-  const channels = [...new Set(orders.map(o=>o.channel))];
-  let html='<div class="report-stats">';
-  channels.forEach(ch=>{
-    const chOrders = orders.filter(o=>o.channel===ch);
-    const cancelled = chOrders.filter(o=>o.status==='cancelled').length;
-    const delivered = chOrders.filter(o=>o.status==='delivered').length;
-    const loss = chOrders.filter(o=>o.status==='cancelled').reduce((s,o)=>s+o.total,0);
-    const revenue = chOrders.filter(o=>o.status==='delivered').reduce((s,o)=>s+o.total,0);
-    html+=`<div class="report-stat"><div class="value">${ch}</div>
-      <div class="label">${cancelled} ملغى / ${delivered} مُسَلَّم</div>
-      <div class="label">${loss.toFixed(2)} درهم خسارة</div>
-      <div class="label">${revenue.toFixed(2)} درهم إيراد</div></div>`;
+// Update cancellation chart
+function updateCancellationChart() {
+  const chartContainer = document.getElementById('cancellationChart');
+  chartContainer.innerHTML = '';
+  
+  const channels = [...new Set(orders.map(o => o.channel))];
+  
+  channels.forEach(channel => {
+    const channelOrders = orders.filter(o => o.channel === channel);
+    const cancelledCount = channelOrders.filter(o => o.status === 'cancelled').length;
+    const totalCount = channelOrders.length;
+    const percentage = totalCount ? (cancelledCount / totalCount) * 100 : 0;
+    
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.style.height = `${Math.min(percentage, 100)}%`;
+    bar.innerHTML = `
+      <div class="bar-value">${percentage.toFixed(1)}%</div>
+      <div class="bar-label">${channel}</div>
+    `;
+    
+    bar.addEventListener('click', () => {
+      document.getElementById('filterChannel').value = channel;
+      renderTable();
+      showNotification(`Filtered by ${channel}`, 'info');
+    });
+    
+    chartContainer.appendChild(bar);
   });
-  return html+'</div>';
 }
 
-function generateBranchReport() {
-  const branches=[...new Set(orders.map(o=>o.branch))];
-  let html='<div class="report-stats">';
-  branches.forEach(br=>{
-    const brOrders=orders.filter(o=>o.branch===br);
-    const cancelled=brOrders.filter(o=>o.status==='cancelled').length;
-    const delivered=brOrders.filter(o=>o.status==='delivered').length;
-    const loss=brOrders.filter(o=>o.status==='cancelled').reduce((s,o)=>s+o.total,0);
-    const revenue=brOrders.filter(o=>o.status==='delivered').reduce((s,o)=>s+o.total,0);
-    html+=`<div class="report-stat"><div class="value">${br}</div>
-      <div class="label">${cancelled} ملغى / ${delivered} مُسَلَّم</div>
-      <div class="label">${loss.toFixed(2)} درهم خسارة</div>
-      <div class="label">${revenue.toFixed(2)} درهم إيراد</div></div>`;
-  });
-  return html+'</div>';
+// Delete order
+function deleteOrder(index) {
+  if (confirm('Are you sure you want to delete this order?')) {
+    orders.splice(index, 1);
+    localStorage.setItem('orders', JSON.stringify(orders));
+    renderTable();
+    updateDashboard();
+    generateReports();
+    updateCancellationChart();
+    showNotification('Order deleted successfully!');
+  }
 }
 
+// Edit order
+function editOrder(index) {
+  const order = orders[index];
+  document.getElementById('editIndex').value = index;
+  document.getElementById('editBrand').value = order.brand;
+  document.getElementById('editChannel').value = order.channel;
+  document.getElementById('editBranch').value = order.branch;
+  document.getElementById('editStatus').value = order.status;
+  document.getElementById('editPrice').value = order.price;
+  document.getElementById('editCount').value = order.count;
+  
+  document.getElementById('editModal').style.display = 'flex';
+}
+
+// Save edit
+document.getElementById('editForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const index = parseInt(document.getElementById('editIndex').value);
+  const brand = document.getElementById('editBrand').value.trim();
+  const channel = document.getElementById('editChannel').value;
+  const branch = document.getElementById('editBranch').value.trim();
+  const status = document.getElementById('editStatus').value;
+  const price = parseFloat(document.getElementById('editPrice').value) || 0;
+  const count = parseInt(document.getElementById('editCount').value) || 1;
+  
+  if (!brand || !branch) {
+    showNotification('Please fill in all required fields', 'error');
+    return;
+  }
+  
+  orders[index] = {
+    ...orders[index],
+    brand,
+    channel,
+    branch,
+    status,
+    price,
+    count,
+    total: price * count
+  };
+  
+  localStorage.setItem('orders', JSON.stringify(orders));
+  renderTable();
+  updateDashboard();
+  generateReports();
+  updateCancellationChart();
+  closeEditModal();
+  showNotification('Order updated successfully!');
+});
+
+// Close edit modal
+function closeEditModal() {
+  document.getElementById('editModal').style.display = 'none';
+}
+
+// Reset filters
+function resetFilters() {
+  document.getElementById('filterBranch').value = '';
+  document.getElementById('filterSearch').value = '';
+  document.getElementById('filterChannel').value = '';
+  document.getElementById('filterStatus').value = '';
+  renderTable();
+  showNotification('Filters reset', 'info');
+}
+
+// Export to CSV
 function exportToCSV() {
-  let csv='Brand,Channel,Branch,Status,Price,Count,Total\n';
-  orders.forEach(o=>{csv+=`${o.brand},${o.channel},${o.branch},${o.status},${o.price},${o.count},${o.total}\n`});
-  const blob=new Blob([csv],{type:'text/csv'});
-  const link=document.createElement('a'); link.href=URL.createObjectURL(blob); link.download='orders.csv'; link.click();
-  showNotification('تم تصدير CSV');
+  let csv = 'Brand,Channel,Branch,Status,Price,Quantity,Total,Date\n';
+  orders.forEach(order => {
+    csv += `${order.brand},${order.channel},${order.branch},${order.status},${order.price},${order.count},${order.total},"${order.date}"\n`;
+  });
+  
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `orders_${new Date().toISOString().split('T')[0]}.csv`;
+  link.click();
+  
+  showNotification('CSV exported successfully!');
 }
 
+// Export to PDF
 function exportToPDF() {
-  const element=document.getElementById('reports');
-  const opt={margin:10,filename:`orders_report_${new Date().toISOString().split('T')[0]}.pdf`,
-    image:{type:'jpeg',quality:0.98},html2canvas:{scale:2},
-    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}};
-  html2pdf().set(opt).from(element).save();
-  showNotification('تم تصدير PDF');
+  showNotification('Generating report...', 'info');
+  
+  const element = document.getElementById('reports');
+  const opt = {
+    margin: 10,
+    filename: `orders_report_${new Date().toISOString().split('T')[0]}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  
+  html2pdf().set(opt).from(element).save().then(() => {
+    showNotification('PDF exported successfully!');
+  });
 }
 
-function showNotification(msg) {
-  const n=document.getElementById('notification'); n.textContent=msg; n.style.display='block';
-  setTimeout(()=>n.style.display='none',3000);
+// Export to JSON
+function exportToJSON() {
+  const dataStr = JSON.stringify(orders, null, 2);
+  const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+  
+  const exportFileDefaultName = `orders_${new Date().toISOString().split('T')[0]}.json`;
+  
+  const linkElement = document.createElement('a');
+  linkElement.setAttribute('href', dataUri);
+  linkElement.setAttribute('download', exportFileDefaultName);
+  linkElement.click();
+  
+  showNotification('JSON exported successfully!');
 }
 
-renderTable(); updateDashboard(); generateReports();
+// Show notification
+function showNotification(message, type = 'success') {
+  const notification = document.getElementById('notification');
+  const notificationText = document.getElementById('notificationText');
+  
+  notification.className = 'notification show';
+  if (type === 'error') notification.classList.add('error');
+  if (type === 'info') notification.classList.add('info');
+  
+  notificationText.textContent = message;
+  
+  setTimeout(() => {
+    notification.classList.remove('show');
+  }, 3000);
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+  renderTable();
+  updateDashboard();
+  generateReports();
+  updateCancellationChart();
+});
 </script>
-</body>
-</html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <title>نظام متابعة الطلبات الملغاة - Crispy Chicken</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    body { font-family: 'Tajawal', sans-serif; }
-    .form-input { border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.5rem; }
-    .btn-primary { background-color: #dc2626; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; }
-    .btn-secondary { background-color: #2563eb; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; }
-    .btn-success { background-color: #16a34a; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; }
-    .btn-warning { background-color: #f59e0b; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; }
-    .dashboard-card { border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-    .channel-card { border-left: 4px solid; }
-    .branch-card { border-left: 4px solid; }
-    .report-section { border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; }
-    .report-title { font-size: 1.25rem; font-weight: bold; margin-bottom: 0.75rem; }
-    .whatsapp-template { background-color: #f0fdf4; border: 1px dashed #4ade80; border-radius: 0.5rem; padding: 1rem; }
-    .print-only { display: none; }
-    @media print {
-      .no-print { display: none; }
-      .print-only { display: block; }
-    }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .tab-button.active { background-color: #dc2626; color: white; }
-    .stats-card {
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      border-radius: 0.5rem;
-      padding: 1.5rem;
-      text-align: center;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      transition: transform 0.3s ease;
-    }
-    .stats-card:hover {
-      transform: translateY(-5px);
-    }
-    .stats-number {
-      font-size: 2rem;
-      font-weight: bold;
-      margin: 0.5rem 0;
-    }
-    .stats-label {
-      font-size: 0.9rem;
-      color: #4b5563;
-    }
-    .dashboard-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-    .dashboard-table th, .dashboard-table td {
-      border: 1px solid #e5e7eb;
-      padding: 0.75rem;
-      text-align: center;
-    }
-    .dashboard-table th {
-      background-color: #f9fafb;
-      font-weight: 600;
-    }
-    .dashboard-table tr:nth-child(even) {
-      background-color: #f9fafb;
-    }
-    .progress-bar {
-      height: 8px;
-      background-color: #e5e7eb;
-      border-radius: 4px;
-      overflow: hidden;
-      margin-top: 0.5rem;
-    }
-    .progress-fill {
-      height: 100%;
-      background-color: #dc2626;
-    }
-    .section-title {
-      font-size: 1.25rem;
-      font-weight: bold;
-      margin-bottom: 1rem;
-      color: #1f2937;
-      border-bottom: 2px solid #dc2626;
-      padding-bottom: 0.5rem;
-    }
-    .form-group {
-      margin-bottom: 1rem;
-    }
-    .form-label {
-      display: block;
-      font-weight: 500;
-      margin-bottom: 0.25rem;
-      color: #374151;
-    }
-    .notification {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 15px 20px;
-      border-radius: 5px;
-      color: white;
-      font-weight: 500;
-      z-index: 1000;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      opacity: 0;
-      transform: translateY(-20px);
-      transition: opacity 0.3s, transform 0.3s;
-    }
-    .notification.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .notification.success {
-      background-color: #10b981;
-    }
-    .notification.error {
-      background-color: #ef4444;
-    }
-    .notification.info {
-      background-color: #3b82f6;
-    }
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0,0,0,0.4);
-    }
-    .modal-content {
-      background-color: #fefefe;
-      margin: 10% auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 80%;
-      max-width: 800px;
-      border-radius: 0.5rem;
-    }
-    .close {
-      color: #aaa;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .close:hover {
-      color: black;
-    }
-    .chart-container {
-      position: relative;
-      height: 300px;
-      margin-bottom: 2rem;
-    }
-    .pagination {
-      display: flex;
-      justify-content: center;
-      margin-top: 1rem;
-    }
-    .pagination button {
-      margin: 0 5px;
-      padding: 5px 10px;
-      border: 1px solid #ddd;
-      background-color: white;
-      cursor: pointer;
-      border-radius: 3px;
-    }
-    .pagination button.active {
-      background-color: #dc2626;
-      color: white;
-      border-color: #dc2626;
-    }
-    .pagination button:hover:not(.active) {
-      background-color: #f3f4f6;
-    }
-  </style>
-</head>
-<body class="bg-gray-50 text-gray-900">
-  <header class="bg-red-600 p-4 text-white text-center no-print">
-    <h1 class="text-2xl font-bold">نظام متابعة الطلبات الملغاة - Crispy Chicken</h1>
-    <p class="text-sm">نظام إدخال البيانات اليومية وإدارة التقارير</p>
-  </header>
-  
-  <main class="max-w-6xl mx-auto p-4">
-    <!-- معلومات التقرير -->
-    <div class="bg-white rounded-lg shadow p-4 mb-4 no-print">
-      <div class="flex flex-col md:flex-row justify-between items-center">
-        <div class="mb-4 md:mb-0">
-          <h2 class="text-lg font-semibold">لوحة التحكم</h2>
-          <p class="text-sm text-gray-600">التاريخ الميلادي: <span id="gregorianDate" class="font-medium"></span></p>
-          <p class="text-sm text-gray-600">التاريخ الهجري: <span id="hijriDate" class="font-medium"></span></p>
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <button onclick="openDataEntryModal()" class="btn-primary">
-            <i class="fas fa-plus ml-1"></i> إدخال بيانات جديدة
-          </button>
-          <button onclick="exportData()" class="btn-secondary">
-            <i class="fas fa-file-export ml-1"></i> تصدير البيانات
-          </button>
-          <button onclick="generateDashboardReport()" class="btn-success">
-            <i class="fas fa-chart-bar ml-1"></i> تقرير لوحة التحكم
-          </button>
-        </div>
-      </div>
-    </div>
-    
-    <!-- الإحصائيات العامة -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 no-print">
-      <div class="stats-card">
-        <i class="fas fa-clipboard-list text-2xl text-red-500"></i>
-        <div class="stats-number" id="totalOrdersStat">0</div>
-        <div class="stats-label">إجمالي الطلبات</div>
-      </div>
-      <div class="stats-card">
-        <i class="fas fa-ban text-2xl text-red-500"></i>
-        <div class="stats-number" id="cancelledOrdersStat">0</div>
-        <div class="stats-label">طلبات ملغاة</div>
-      </div>
-      <div class="stats-card">
-        <i class="fas fa-undo text-2xl text-blue-500"></i>
-        <div class="stats-number" id="refundedOrdersStat">0</div>
-        <div class="stats-label">طلبات مستردة</div>
-      </div>
-      <div class="stats-card">
-        <i class="fas fa-exclamation-triangle text-2xl text-yellow-500"></i>
-        <div class="stats-number" id="pendingOrdersStat">0</div>
-        <div class="stats-label">طلبات عالقة</div>
-      </div>
-    </div>
-    
-    <!-- لوحة التحكم الديناميكية -->
-    <div class="bg-white rounded-lg shadow p-4 mb-6 no-print">
-      <div class="flex flex-wrap gap-2 mb-4">
-        <button class="tab-button active px-4 py-2 rounded-lg" onclick="showTab('channels')">
-          <i class="fas fa-broadcast-tower ml-1"></i> القنوات
-        </button>
-        <button class="tab-button px-4 py-2 rounded-lg" onclick="showTab('branches')">
-          <i class="fas fa-store ml-1"></i> الفروع
-        </button>
-        <button class="tab-button px-4 py-2 rounded-lg" onclick="showTab('trends')">
-          <i class="fas fa-chart-line ml-1"></i> الاتجاهات
-        </button>
-      </div>
-      
-      <!-- محتوى تبويب القنوات -->
-      <div id="channels-tab" class="tab-content active">
-        <h3 class="section-title">لوحة تحكم القنوات</h3>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div>
-            <div class="chart-container">
-              <canvas id="channelChart"></canvas>
-            </div>
-          </div>
-          <div>
-            <div class="overflow-x-auto">
-              <table class="dashboard-table">
-                <thead>
-                  <tr>
-                    <th>القناة</th>
-                    <th>الطلبات الملغاة</th>
-                    <th>الطلبات المستردة</th>
-                    <th>الطلبات المتنازع عليها</th>
-                    <th>الطلبات بدون رد</th>
-                    <th>الإجمالي</th>
-                    <th>نسبة الإلغاء</th>
-                  </tr>
-                </thead>
-                <tbody id="channelTableBody">
-                  <!-- سيتم تحميل البيانات هنا -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- محتوى تبويب الفروع -->
-      <div id="branches-tab" class="tab-content">
-        <h3 class="section-title">لوحة تحكم الفروع</h3>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div>
-            <div class="chart-container">
-              <canvas id="branchChart"></canvas>
-            </div>
-          </div>
-          <div>
-            <div class="overflow-x-auto">
-              <table class="dashboard-table">
-                <thead>
-                  <tr>
-                    <th>الفرع</th>
-                    <th>الطلبات الملغاة</th>
-                    <th>الطلبات المستردة</th>
-                    <th>الطلبات العالقة</th>
-                    <th>الإجمالي</th>
-                    <th>نسبة الإلغاء</th>
-                    <th>جهة الاتصال</th>
-                  </tr>
-                </thead>
-                <tbody id="branchTableBody">
-                  <!-- سيتم تحميل البيانات هنا -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- محتوى تبويب الاتجاهات -->
-      <div id="trends-tab" class="tab-content">
-        <h3 class="section-title">اتجاهات الطلبات الملغاة</h3>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div>
-            <div class="chart-container">
-              <canvas id="trendChart"></canvas>
-            </div>
-          </div>
-          <div>
-            <div class="chart-container">
-              <canvas id="statusChart"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- الجدول -->
-    <div class="bg-white rounded-lg shadow p-4 mb-6 no-print">
-      <h3 class="section-title">آخر الطلبات المدخلة</h3>
-      <div class="overflow-x-auto">
-        <table id="reportTable" class="w-full border text-center text-sm">
-          <thead class="bg-red-100">
-            <tr>
-              <th class="border px-2 py-1">#</th>
-              <th class="border px-2 py-1">العلامة التجارية</th>
-              <th class="border px-2 py-1">القناة</th>
-              <th class="border px-2 py-1">الموقع</th>
-              <th class="border px-2 py-1">الحالة</th>
-              <th class="border px-2 py-1">السعر</th>
-              <th class="border px-2 py-1">عدد الطلبات</th>
-              <th class="border px-2 py-1">التاريخ</th>
-              <th class="border px-2 py-1">الإجراءات</th>
-            </tr>
-          </thead>
-          <tbody id="reportBody">
-            <!-- سيتم تحميل الصفوف من البيانات المدخلة -->
-          </tbody>
-        </table>
-      </div>
-      <div class="pagination" id="pagination">
-        <!-- سيتم تحميل أزرار التصفح هنا -->
-      </div>
-    </div>
-    
-    <!-- التقرير الرسمي والرسالة الجاهزة -->
-    <div id="detailedReport" class="hidden">
-      <!-- التقرير الرسمي -->
-      <div class="report-section">
-        <div class="text-center mb-4">
-          <h2 class="report-title text-xl">تقرير إلغاء طلب — Crispy Chicken</h2>
-          <div class="flex justify-center space-x-8 mt-2">
-            <p>فرع: <span id="reportBranch" class="font-semibold">-</span></p>
-            <p>قناة: <span id="reportChannel" class="font-semibold">-</span></p>
-            <p>الحالة: <span id="reportStatus" class="font-semibold">-</span></p>
-            <p>السعر: <span id="reportPrice" class="font-semibold">-</span></p>
-            <p>عدد الطلبات: <span id="reportOrderCount" class="font-semibold">-</span></p>
-          </div>
-        </div>
-        
-        <div class="mb-6">
-          <h3 class="section-title">الأسئلة المطلوب التأكد منها</h3>
-          <div class="space-y-3">
-            <div class="flex items-center p-2 bg-gray-50 rounded">
-              <span class="font-medium ml-2 w-48">1) هل تم تسليم الطلب؟</span>
-              <div class="flex-grow border-b border-gray-300"></div>
-            </div>
-            <div class="flex items-center p-2 bg-gray-50 rounded">
-              <span class="font-medium ml-2 w-48">2) هل الإلغاء بإرادتك؟</span>
-              <div class="flex-grow border-b border-gray-300"></div>
-            </div>
-            <div class="flex items-center p-2 bg-gray-50 rounded">
-              <span class="font-medium ml-2 w-48">3) هل لديك إثبات لذلك؟</span>
-              <div class="flex-grow border-b border-gray-300"></div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="mb-6">
-          <h3 class="section-title">التأثير:</h3>
-          <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-            <p class="text-gray-700">الإلغاء قد يؤدي إلى خصومات مالية من الطرفين (مثل دفع قيمة الطعام أو رسوم التحضير)، لذا التأكيد والتوثيق ضروري.</p>
-          </div>
-        </div>
-        
-        <div class="mb-6">
-          <h3 class="section-title">الخطوات التالية:</h3>
-          <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <ul class="list-disc pr-5 space-y-2 text-gray-700">
-              <li>إرسال إشعار للعميل</li>
-              <li>انتظار الرد</li>
-              <li>مراجعة الإجراءات المالية</li>
-              <li>أرشفة المستندات</li>
-            </ul>
-          </div>
-        </div>
-        
-        <div class="flex justify-between mt-8 pt-4 border-t">
-          <div>
-            <p>تم إعداد التقرير بواسطة: ______________</p>
-          </div>
-          <div>
-            <p>التاريخ: ___________</p>
-          </div>
-        </div>
-      </div>
-      
-      <!-- خيارات الإرسال والطباعة -->
-      <div class="flex flex-wrap gap-3 mb-4 no-print">
-        <button onclick="window.print()" class="btn-secondary">
-          <i class="fas fa-print ml-1"></i> طباعة التقرير
-        </button>
-        <button onclick="exportToPDF()" class="btn-secondary">
-          <i class="fas fa-file-pdf ml-1"></i> تصدير PDF
-        </button>
-        <button onclick="sendReportEmail()" class="btn-success">
-          <i class="fas fa-envelope ml-1"></i> إرسال بالبريد
-        </button>
-        <button onclick="sendReportWhatsApp()" class="btn-success">
-          <i class="fab fa-whatsapp ml-1"></i> إرسال بواسطة WhatsApp
-        </button>
-      </div>
-      
-      <!-- رسالة WhatsApp جاهزة -->
-      <div class="whatsapp-template no-print">
-        <h3 class="section-title">رسالة WhatsApp جاهزة للإرسال</h3>
-        <div class="mb-3">
-          <button onclick="copyWhatsAppMessage()" class="btn-success">
-            <i class="fab fa-whatsapp ml-1"></i> نسخ الرسالة
-          </button>
-        </div>
-        <textarea id="whatsappMessage" class="w-full h-40 p-2 border rounded" readonly></textarea>
-        <p class="text-sm text-gray-600 mt-2">يمكنك نسخ هذه الرسالة ولصقها في WhatsApp وإرسالها للعميل</p>
-      </div>
-    </div>
-  </main>
-  
-  <!-- نافذة إدخال البيانات -->
-  <div id="dataEntryModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeDataEntryModal()">&times;</span>
-      <h2 class="section-title">إدخال بيانات الطلبات الملغاة</h2>
-      <form id="orderForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="form-group">
-          <label for="brand" class="form-label">العلامة التجارية</label>
-          <select id="brand" class="form-input w-full" required>
-            <option value="Crispy Chicken">Crispy Chicken</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="channel" class="form-label">القناة</label>
-          <select id="channel" class="form-input w-full" required>
-            <option value="Talabat">Talabat</option>
-            <option value="Careem Now">Careem Now</option>
-            <option value="Deliveroo">Deliveroo</option>
-            <option value="Noon Food">Noon Food</option>
-            <option value="Smiles">Smiles</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="location" class="form-label">الموقع</label>
-          <select id="location" class="form-input w-full" required>
-            <option value="Electra">Electra</option>
-            <option value="Mouroor">Mouroor</option>
-            <option value="Khalydiha">Khalydiha</option>
-            <option value="Satwa">Satwa</option>
-            <option value="Hamdan">Hamdan</option>
-            <option value="Barsha">Barsha</option>
-            <option value="Shabiha">Shabiha</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="status" class="form-label">الحالة</label>
-          <select id="status" class="form-input w-full" required>
-            <option value="Order Cancelled">Order Cancelled</option>
-            <option value="Order Refunded">Order Refunded</option>
-            <option value="Order Disputed">Order Disputed</option>
-            <option value="Unanswered">Unanswered</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="price" class="form-label">السعر</label>
-          <input type="text" id="price" class="form-input w-full" placeholder="AED 0.00" required>
-        </div>
-        <div class="form-group">
-          <label for="orderCount" class="form-label">عدد الطلبات</label>
-          <input type="number" id="orderCount" class="form-input w-full" min="1" value="1" required>
-        </div>
-        <div class="form-group md:col-span-2">
-          <button type="submit" class="btn-primary w-full">
-            <i class="fas fa-plus ml-1"></i> إضافة الطلب
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-  
-  <script>
-    // ---- DATA STORAGE ----
-    let orders = [];
-    let currentPage = 1;
-    const ordersPerPage = 15;
-    
-    // ---- CONTACTS DATA ----
-    const contacts = {
-      branches: {
-        Electra: { phone: "+971 56 386 6859", email: "" },
-        Muroor: { phone: "+971 50 541 4641", email: "" },
-        Khaldiha: { phone: "+971 56 949 4764", email: "" },
-        Satwa: { phone: "+971 56 797 0685", email: "" },
-        Hamdan: { phone: "+971 55 688 6650", email: "" },
-        Barsha: { phone: "+971 56 965 9524", email: "" },
-        Shabiha: { phone: "+971 56 269 0688", email: "" }
-      },
-      management: {
-        "GM Tayser": { phone: "+971 54 445 4799", email: "" },
-        "Mr. Mahmoud Shaheen": { phone: "+971 50 364 3659", email: "mshahin76@yahoo.com" },
-        "Mohammed T": { phone: "", email: "mohammed.t@crispychicken.rest" }
-      }
-    };
-    
-    // ---- CHANNEL COLORS ----
-    const channelColors = {
-      "Talabat": "#F97316",
-      "Careem Now": "#10B981",
-      "Deliveroo": "#3B82F6",
-      "Noon Food": "#8B5CF6",
-      "Smiles": "#EC4899"
-    };
-    
-    // ---- BRANCH COLORS ----
-    const branchColors = {
-      "Electra": "#EF4444",
-      "Mouroor": "#F59E0B",
-      "Khaldiha": "#10B981",
-      "Satwa": "#3B82F6",
-      "Hamdan": "#8B5CF6",
-      "Barsha": "#EC4899",
-      "Shabiha": "#6366F1"
-    };
-    
-    // ---- CHARTS ----
-    let channelChart, branchChart, trendChart, statusChart;
-    
-    // ---- INITIALIZE ----
-    window.addEventListener('DOMContentLoaded', init);
-    
-    function init() {
-      // عرض التواريخ
-      updateDates();
-      
-      // تحميل البيانات من التخزين المحلي
-      loadData();
-      
-      // إعداد نموذج الإدخال
-      document.getElementById('orderForm').addEventListener('submit', handleFormSubmit);
-      
-      // تحديث لوحات التحكم
-      updateDashboards();
-      updateGeneralStats();
-      displayOrders();
-      initializeCharts();
-    }
-    
-    // ---- UPDATE DATES ----
-    function updateDates() {
-      const now = new Date();
-      
-      // التاريخ الميلادي
-      document.getElementById('gregorianDate').textContent = now.toLocaleDateString('ar-SA');
-      
-      // التاريخ الهجري (تقريبي)
-      const hijriDate = new Intl.DateTimeFormat('ar-SA', {
-        calendar: 'islamic',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      }).format(now);
-      document.getElementById('hijriDate').textContent = hijriDate;
-    }
-    
-    // ---- LOAD DATA ----
-    function loadData() {
-      const savedData = localStorage.getItem('cancelledOrders');
-      if (savedData) {
-        orders = JSON.parse(savedData);
-      }
-    }
-    
-    // ---- SAVE DATA ----
-    function saveData() {
-      localStorage.setItem('cancelledOrders', JSON.stringify(orders));
-    }
-    
-    // ---- HANDLE FORM SUBMIT ----
-    function handleFormSubmit(e) {
-      e.preventDefault();
-      
-      const order = {
-        id: Date.now(),
-        brand: document.getElementById('brand').value,
-        channel: document.getElementById('channel').value,
-        location: document.getElementById('location').value,
-        status: document.getElementById('status').value,
-        price: document.getElementById('price').value,
-        orderCount: parseInt(document.getElementById('orderCount').value),
-        date: new Date().toISOString()
-      };
-      
-      orders.push(order);
-      saveData();
-      displayOrders();
-      updateDashboards();
-      updateGeneralStats();
-      updateCharts();
-      
-      // إعادة تعيين النموذج وإغلاق النافذة
-      document.getElementById('orderForm').reset();
-      document.getElementById('orderCount').value = 1;
-      closeDataEntryModal();
-      
-      // إظهار رسالة نجاح
-      showNotification('تمت إضافة الطلب بنجاح', 'success');
-    }
-    
-    // ---- DISPLAY ORDERS ----
-    function displayOrders() {
-      const tbody = document.getElementById('reportBody');
-      tbody.innerHTML = '';
-      
-      // حساب الصفحات
-      const totalPages = Math.ceil(orders.length / ordersPerPage);
-      const startIndex = (currentPage - 1) * ordersPerPage;
-      const endIndex = startIndex + ordersPerPage;
-      const paginatedOrders = orders.slice(startIndex, endIndex);
-      
-      // عرض الطلبات في الصفحة الحالية
-      paginatedOrders.forEach((order, index) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="border px-2 py-1">${startIndex + index + 1}</td>
-          <td class="border px-2 py-1">${order.brand}</td>
-          <td class="border px-2 py-1">${order.channel}</td>
-          <td class="border px-2 py-1">${order.location}</td>
-          <td class="border px-2 py-1">${order.status}</td>
-          <td class="border px-2 py-1">${order.price}</td>
-          <td class="border px-2 py-1">${order.orderCount}</td>
-          <td class="border px-2 py-1">${new Date(order.date).toLocaleDateString('ar-SA')}</td>
-          <td class="border px-2 py-1">
-            <button onclick="generateDetailedReport(${order.id})" class="btn-secondary text-sm mr-1">
-              <i class="fas fa-file-alt"></i>
-            </button>
-            <button onclick="deleteOrder(${order.id})" class="bg-red-500 text-white px-2 py-1 rounded text-sm">
-              <i class="fas fa-trash"></i>
-            </button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-      
-      // تحديث أزرار التصفح
-      updatePagination(totalPages);
-    }
-    
-    // ---- UPDATE PAGINATION ----
-    function updatePagination(totalPages) {
-      const pagination = document.getElementById('pagination');
-      pagination.innerHTML = '';
-      
-      // زر السابق
-      const prevButton = document.createElement('button');
-      prevButton.textContent = 'السابق';
-      prevButton.disabled = currentPage === 1;
-      prevButton.onclick = () => {
-        if (currentPage > 1) {
-          currentPage--;
-          displayOrders();
-        }
-      };
-      pagination.appendChild(prevButton);
-      
-      // أرقام الصفحات
-      for (let i = 1; i <= totalPages; i++) {
-        const pageButton = document.createElement('button');
-        pageButton.textContent = i;
-        pageButton.className = i === currentPage ? 'active' : '';
-        pageButton.onclick = () => {
-          currentPage = i;
-          displayOrders();
-        };
-        pagination.appendChild(pageButton);
-      }
-      
-      // زر التالي
-      const nextButton = document.createElement('button');
-      nextButton.textContent = 'التالي';
-      nextButton.disabled = currentPage === totalPages;
-      nextButton.onclick = () => {
-        if (currentPage < totalPages) {
-          currentPage++;
-          displayOrders();
-        }
-      };
-      pagination.appendChild(nextButton);
-    }
-    
-    // ---- UPDATE GENERAL STATS ----
-    function updateGeneralStats() {
-      const totalOrders = orders.reduce((sum, order) => sum + order.orderCount, 0);
-      const cancelledOrders = orders.filter(order => order.status === 'Order Cancelled').reduce((sum, order) => sum + order.orderCount, 0);
-      const refundedOrders = orders.filter(order => order.status === 'Order Refunded').reduce((sum, order) => sum + order.orderCount, 0);
-      const pendingOrders = orders.filter(order => order.status === 'Order Disputed' || order.status === 'Unanswered').reduce((sum, order) => sum + order.orderCount, 0);
-      
-      document.getElementById('totalOrdersStat').textContent = totalOrders;
-      document.getElementById('cancelledOrdersStat').textContent = cancelledOrders;
-      document.getElementById('refundedOrdersStat').textContent = refundedOrders;
-      document.getElementById('pendingOrdersStat').textContent = pendingOrders;
-    }
-    
-    // ---- UPDATE DASHBOARDS ----
-    function updateDashboards() {
-      updateChannelDashboard();
-      updateBranchDashboard();
-    }
-    
-    // ---- UPDATE CHANNEL DASHBOARD ----
-    function updateChannelDashboard() {
-      const tbody = document.getElementById('channelTableBody');
-      tbody.innerHTML = '';
-      
-      // حساب الإحصائيات لكل قناة
-      const channels = ["Talabat", "Careem Now", "Deliveroo", "Noon Food", "Smiles"];
-      
-      channels.forEach(channel => {
-        const channelOrders = orders.filter(order => order.channel === channel);
-        const cancelled = channelOrders.filter(order => order.status === 'Order Cancelled').reduce((sum, order) => sum + order.orderCount, 0);
-        const refunded = channelOrders.filter(order => order.status === 'Order Refunded').reduce((sum, order) => sum + order.orderCount, 0);
-        const disputed = channelOrders.filter(order => order.status === 'Order Disputed').reduce((sum, order) => sum + order.orderCount, 0);
-        const unanswered = channelOrders.filter(order => order.status === 'Unanswered').reduce((sum, order) => sum + order.orderCount, 0);
-        const total = channelOrders.reduce((sum, order) => sum + order.orderCount, 0);
-        
-        // حساب نسبة الإلغاء
-        const cancellationRate = total > 0 ? ((cancelled / total) * 100).toFixed(1) : 0;
-        
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="border px-2 py-1 font-medium">${channel}</td>
-          <td class="border px-2 py-1">${cancelled}</td>
-          <td class="border px-2 py-1">${refunded}</td>
-          <td class="border px-2 py-1">${disputed}</td>
-          <td class="border px-2 py-1">${unanswered}</td>
-          <td class="border px-2 py-1 font-bold">${total}</td>
-          <td class="border px-2 py-1">
-            <div class="flex items-center">
-              <span class="ml-1">${cancellationRate}%</span>
-              <div class="progress-bar flex-grow">
-                <div class="progress-fill" style="width: ${cancellationRate}%"></div>
-              </div>
-            </div>
-          </td>
-        `;
-        
-        tbody.appendChild(tr);
-      });
-    }
-    
-    // ---- UPDATE BRANCH DASHBOARD ----
-    function updateBranchDashboard() {
-      const tbody = document.getElementById('branchTableBody');
-      tbody.innerHTML = '';
-      
-      // حساب الإحصائيات لكل فرع
-      const branches = ["Electra", "Mouroor", "Khalydiha", "Satwa", "Hamdan", "Barsha", "Shabiha"];
-      
-      branches.forEach(branch => {
-        const branchOrders = orders.filter(order => order.location === branch);
-        const cancelled = branchOrders.filter(order => order.status === 'Order Cancelled').reduce((sum, order) => sum + order.orderCount, 0);
-        const refunded = branchOrders.filter(order => order.status === 'Order Refunded').reduce((sum, order) => sum + order.orderCount, 0);
-        const pending = branchOrders.filter(order => order.status === 'Order Disputed' || order.status === 'Unanswered').reduce((sum, order) => sum + order.orderCount, 0);
-        const total = branchOrders.reduce((sum, order) => sum + order.orderCount, 0);
-        
-        // حساب نسبة الإلغاء
-        const cancellationRate = total > 0 ? ((cancelled / total) * 100).toFixed(1) : 0;
-        
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="border px-2 py-1 font-medium">${branch}</td>
-          <td class="border px-2 py-1">${cancelled}</td>
-          <td class="border px-2 py-1">${refunded}</td>
-          <td class="border px-2 py-1">${pending}</td>
-          <td class="border px-2 py-1 font-bold">${total}</td>
-          <td class="border px-2 py-1">
-            <div class="flex items-center">
-              <span class="ml-1">${cancellationRate}%</span>
-              <div class="progress-bar flex-grow">
-                <div class="progress-fill" style="width: ${cancellationRate}%"></div>
-              </div>
-            </div>
-          </td>
-          <td class="border px-2 py-1">
-            <a href="https://wa.me/${contacts.branches[branch].phone.replace(/[^0-9]/g, '')}" target="_blank" class="text-green-600">
-              <i class="fab fa-whatsapp"></i>
-            </a>
-          </td>
-        `;
-        
-        tbody.appendChild(tr);
-      });
-    }
-    
-    // ---- INITIALIZE CHARTS ----
-    function initializeCharts() {
-      // إعداد الرسوم البيانية
-      const channelCtx = document.getElementById('channelChart').getContext('2d');
-      const branchCtx = document.getElementById('branchChart').getContext('2d');
-      const trendCtx = document.getElementById('trendChart').getContext('2d');
-      const statusCtx = document.getElementById('statusChart').getContext('2d');
-      
-      // رسم بياني للقنوات
-      channelChart = new Chart(channelCtx, {
-        type: 'bar',
-        data: {
-          labels: ['Talabat', 'Careem Now', 'Deliveroo', 'Noon Food', 'Smiles'],
-          datasets: [{
-            label: 'الطلبات الملغاة',
-            data: [0, 0, 0, 0, 0],
-            backgroundColor: channelColors["Talabat"]
-          }, {
-            label: 'الطلبات المستردة',
-            data: [0, 0, 0, 0, 0],
-            backgroundColor: channelColors["Careem Now"]
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            title: {
-              display: true,
-              text: 'إحصائيات القنوات'
-            }
-          }
-        }
-      });
-      
-      // رسم بياني للفروع
-      branchChart = new Chart(branchCtx, {
-        type: 'bar',
-        data: {
-          labels: ['Electra', 'Mouroor', 'Khalydiha', 'Satwa', 'Hamdan', 'Barsha', 'Shabiha'],
-          datasets: [{
-            label: 'الطلبات الملغاة',
-            data: [0, 0, 0, 0, 0, 0, 0],
-            backgroundColor: branchColors["Electra"]
-          }, {
-            label: 'الطلبات المستردة',
-            data: [0, 0, 0, 0, 0, 0, 0],
-            backgroundColor: branchColors["Mouroor"]
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            title: {
-              display: true,
-              text: 'إحصائيات الفروع'
-            }
-          }
-        }
-      });
-      
-      // رسم بياني للاتجاهات
-      trendChart = new Chart(trendCtx, {
-        type: 'line',
-        data: {
-          labels: [],
-          datasets: [{
-            label: 'الطلبات الملغاة',
-            data: [],
-            borderColor: '#dc2626',
-            backgroundColor: 'rgba(220, 38, 38, 0.1)',
-            tension: 0.1
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            title: {
-              display: true,
-              text: 'اتجاه الطلبات الملغاة'
-            }
-          }
-        }
-      });
-      
-      // رسم بياني للحالات
-      statusChart = new Chart(statusCtx, {
-        type: 'doughnut',
-        data: {
-          labels: ['ملغاة', 'مستردة', 'متنازع عليها', 'بدون رد'],
-          datasets: [{
-            data: [0, 0, 0, 0],
-            backgroundColor: ['#dc2626', '#2563eb', '#f59e0b', '#6b7280']
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            title: {
-              display: true,
-              text: 'توزيع الحالات'
-            }
-          }
-        }
-      });
-      
-      // تحديث الرسوم البيانية
-      updateCharts();
-    }
-    
-    // ---- UPDATE CHARTS ----
-    function updateCharts() {
-      if (!channelChart || !branchChart || !trendChart || !statusChart) return;
-      
-      // تحديث بيانات القنوات
-      const channels = ["Talabat", "Careem Now", "Deliveroo", "Noon Food", "Smiles"];
-      const channelCancelled = channels.map(channel => 
-        orders.filter(order => order.channel === channel && order.status === 'Order Cancelled')
-          .reduce((sum, order) => sum + order.orderCount, 0)
-      );
-      const channelRefunded = channels.map(channel => 
-        orders.filter(order => order.channel === channel && order.status === 'Order Refunded')
-          .reduce((sum, order) => sum + order.orderCount, 0)
-      );
-      
-      channelChart.data.datasets[0].data = channelCancelled;
-      channelChart.data.datasets[1].data = channelRefunded;
-      channelChart.update();
-      
-      // تحديث بيانات الفروع
-      const branches = ["Electra", "Mouroor", "Khalydiha", "Satwa", "Hamdan", "Barsha", "Shabiha"];
-      const branchCancelled = branches.map(branch => 
-        orders.filter(order => order.location === branch && order.status === 'Order Cancelled')
-          .reduce((sum, order) => sum + order.orderCount, 0)
-      );
-      const branchRefunded = branches.map(branch => 
-        orders.filter(order => order.location === branch && order.status === 'Order Refunded')
-          .reduce((sum, order) => sum + order.orderCount, 0)
-      );
-      
-      branchChart.data.datasets[0].data = branchCancelled;
-      branchChart.data.datasets[1].data = branchRefunded;
-      branchChart.update();
-      
-      // تحديث بيانات الاتجاهات (آخر 7 أيام)
-      const last7Days = [];
-      const trendData = [];
-      for (let i = 6; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const dateStr = date.toLocaleDateString('ar-SA');
-        last7Days.push(dateStr);
-        
-        const dayOrders = orders.filter(order => {
-          const orderDate = new Date(order.date);
-          return orderDate.toDateString() === date.toDateString();
-        });
-        
-        trendData.push(dayOrders.reduce((sum, order) => sum + order.orderCount, 0));
-      }
-      
-      trendChart.data.labels = last7Days;
-      trendChart.data.datasets[0].data = trendData;
-      trendChart.update();
-      
-      // تحديث بيانات الحالات
-      const statusCancelled = orders.filter(order => order.status === 'Order Cancelled')
-        .reduce((sum, order) => sum + order.orderCount, 0);
-      const statusRefunded = orders.filter(order => order.status === 'Order Refunded')
-        .reduce((sum, order) => sum + order.orderCount, 0);
-      const statusDisputed = orders.filter(order => order.status === 'Order Disputed')
-        .reduce((sum, order) => sum + order.orderCount, 0);
-      const statusUnanswered = orders.filter(order => order.status === 'Unanswered')
-        .reduce((sum, order) => sum + order.orderCount, 0);
-      
-      statusChart.data.datasets[0].data = [statusCancelled, statusRefunded, statusDisputed, statusUnanswered];
-      statusChart.update();
-    }
-    
-    // ---- DELETE ORDER ----
-    function deleteOrder(id) {
-      if (confirm('هل تريد حذف هذا الطلب؟')) {
-        orders = orders.filter(order => order.id !== id);
-        saveData();
-        displayOrders();
-        updateDashboards();
-        updateGeneralStats();
-        updateCharts();
-        showNotification('تم حذف الطلب بنجاح', 'success');
-      }
-    }
-    
-    // ---- EXPORT DATA ----
-    function exportData() {
-      let csvContent = "data:text/csv;charset=utf-8,";
-      csvContent += "BRAND,CHANNEL,LOCATION,STATUS,ORDER PRICE,NUMBER OF ORDERS,DATE\n";
-      
-      orders.forEach(order => {
-        csvContent += `${order.brand},${order.channel},${order.location},${order.status},${order.price},${order.orderCount},${new Date(order.date).toLocaleDateString('ar-SA')}\n`;
-      });
-      
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `cancelled_orders_${new Date().toISOString().slice(0, 10)}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      showNotification('تم تصدير البيانات بنجاح', 'success');
-    }
-    
-    // ---- GENERATE DASHBOARD REPORT ----
-    function generateDashboardReport() {
-      // إنشاء تقرير لوحة التحكم
-      const reportContent = `
-        <div class="bg-white p-6 rounded-lg shadow-lg">
-          <h2 class="text-2xl font-bold text-center mb-6">تقرير أداء القنوات والفروع</h2>
-          <p class="text-center mb-4">التاريخ: ${new Date().toLocaleDateString('ar-SA')}</p>
-          
-          <div class="mb-8">
-            <h3 class="text-xl font-bold mb-4 border-b pb-2">تقرير أداء القنوات</h3>
-            <div class="overflow-x-auto">
-              <table class="dashboard-table w-full">
-                <thead>
-                  <tr>
-                    <th>القناة</th>
-                    <th>الطلبات الملغاة</th>
-                    <th>الطلبات المستردة</th>
-                    <th>الطلبات المتنازع عليها</th>
-                    <th>الطلبات بدون رد</th>
-                    <th>الإجمالي</th>
-                    <th>نسبة الإلغاء</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${generateChannelReportRows()}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          
-          <div>
-            <h3 class="text-xl font-bold mb-4 border-b pb-2">تقرير أداء الفروع</h3>
-            <div class="overflow-x-auto">
-              <table class="dashboard-table w-full">
-                <thead>
-                  <tr>
-                    <th>الفرع</th>
-                    <th>الطلبات الملغاة</th>
-                    <th>الطلبات المستردة</th>
-                    <th>الطلبات العالقة</th>
-                    <th>الإجمالي</th>
-                    <th>نسبة الإلغاء</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${generateBranchReportRows()}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          
-          <div class="mt-8 text-center">
-            <p>تم إعداد التقرير بواسطة: ______________</p>
-            <p>التاريخ: ___________</p>
-          </div>
-        </div>
-      `;
-      
-      // عرض التقرير في نافذة جديدة
-      const reportWindow = window.open('', '_blank');
-      reportWindow.document.write(`
-        <html>
-        <head>
-          <title>تقرير أداء القنوات والفروع</title>
-          <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-          <script src="https://cdn.tailwindcss.com"></script>
-          <style>
-            body { font-family: 'Tajawal', sans-serif; }
-            .dashboard-table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-top: 1rem;
-            }
-            .dashboard-table th, .dashboard-table td {
-              border: 1px solid #e5e7eb;
-              padding: 0.75rem;
-              text-align: center;
-            }
-            .dashboard-table th {
-              background-color: #f9fafb;
-              font-weight: 600;
-            }
-            .dashboard-table tr:nth-child(even) {
-              background-color: #f9fafb;
-            }
-            .progress-bar {
-              height: 8px;
-              background-color: #e5e7eb;
-              border-radius: 4px;
-              overflow: hidden;
-              margin-top: 0.5rem;
-            }
-            .progress-fill {
-              height: 100%;
-              background-color: #dc2626;
-            }
-          </style>
-        </head>
-        <body class="bg-gray-50 p-4">
-          ${reportContent}
-        </body>
-        </html>
-      `);
-      reportWindow.document.close();
-    }
-    
-    // ---- GENERATE CHANNEL REPORT ROWS ----
-    function generateChannelReportRows() {
-      const channels = ["Talabat", "Careem Now", "Deliveroo", "Noon Food", "Smiles"];
-      let rowsHTML = '';
-      
-      channels.forEach(channel => {
-        const channelOrders = orders.filter(order => order.channel === channel);
-        const cancelled = channelOrders.filter(order => order.status === 'Order Cancelled').reduce((sum, order) => sum + order.orderCount, 0);
-        const refunded = channelOrders.filter(order => order.status === 'Order Refunded').reduce((sum, order) => sum + order.orderCount, 0);
-        const disputed = channelOrders.filter(order => order.status === 'Order Disputed').reduce((sum, order) => sum + order.orderCount, 0);
-        const unanswered = channelOrders.filter(order => order.status === 'Unanswered').reduce((sum, order) => sum + order.orderCount, 0);
-        const total = channelOrders.reduce((sum, order) => sum + order.orderCount, 0);
-        
-        // حساب نسبة الإلغاء
-        const cancellationRate = total > 0 ? ((cancelled / total) * 100).toFixed(1) : 0;
-        
-        rowsHTML += `
-          <tr>
-            <td class="border px-2 py-1 font-medium">${channel}</td>
-            <td class="border px-2 py-1">${cancelled}</td>
-            <td class="border px-2 py-1">${refunded}</td>
-            <td class="border px-2 py-1">${disputed}</td>
-            <td class="border px-2 py-1">${unanswered}</td>
-            <td class="border px-2 py-1 font-bold">${total}</td>
-            <td class="border px-2 py-1">
-              <div class="flex items-center">
-                <span class="ml-1">${cancellationRate}%</span>
-                <div class="progress-bar flex-grow">
-                  <div class="progress-fill" style="width: ${cancellationRate}%"></div>
-                </div>
-              </div>
-            </td>
-          </tr>
-        `;
-      });
-      
-      return rowsHTML;
-    }
-    
-    // ---- GENERATE BRANCH REPORT ROWS ----
-    function generateBranchReportRows() {
-      const branches = ["Electra", "Mouroor", "Khalydiha", "Satwa", "Hamdan", "Barsha", "Shabiha"];
-      let rowsHTML = '';
-      
-      branches.forEach(branch => {
-        const branchOrders = orders.filter(order => order.location === branch);
-        const cancelled = branchOrders.filter(order => order.status === 'Order Cancelled').reduce((sum, order) => sum + order.orderCount, 0);
-        const refunded = branchOrders.filter(order => order.status === 'Order Refunded').reduce((sum, order) => sum + order.orderCount, 0);
-        const pending = branchOrders.filter(order => order.status === 'Order Disputed' || order.status === 'Unanswered').reduce((sum, order) => sum + order.orderCount, 0);
-        const total = branchOrders.reduce((sum, order) => sum + order.orderCount, 0);
-        
-        // حساب نسبة الإلغاء
-        const cancellationRate = total > 0 ? ((cancelled / total) * 100).toFixed(1) : 0;
-        
-        rowsHTML += `
-          <tr>
-            <td class="border px-2 py-1 font-medium">${branch}</td>
-            <td class="border px-2 py-1">${cancelled}</td>
-            <td class="border px-2 py-1">${refunded}</td>
-            <td class="border px-2 py-1">${pending}</td>
-            <td class="border px-2 py-1 font-bold">${total}</td>
-            <td class="border px-2 py-1">
-              <div class="flex items-center">
-                <span class="ml-1">${cancellationRate}%</span>
-                <div class="progress-bar flex-grow">
-                  <div class="progress-fill" style="width: ${cancellationRate}%"></div>
-                </div>
-              </div>
-            </td>
-          </tr>
-        `;
-      });
-      
-      return rowsHTML;
-    }
-    
-    // ---- SHOW TAB ----
-    function showTab(tabName) {
-      // إخفاء كل المحتويات
-      document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
-      });
-      
-      // إزالة الفئة النشطة من كل الأزرار
-      document.querySelectorAll('.tab-button').forEach(button => {
-        button.classList.remove('active');
-      });
-      
-      // إظهار التبويب المحدد
-      document.getElementById(`${tabName}-tab`).classList.add('active');
-      
-      // إضافة الفئة النشطة للزر المضغوط
-      event.target.classList.add('active');
-    }
-    
-    // ---- DATA ENTRY MODAL ----
-    function openDataEntryModal() {
-      document.getElementById('dataEntryModal').style.display = 'block';
-    }
-    
-    function closeDataEntryModal() {
-      document.getElementById('dataEntryModal').style.display = 'none';
-    }
-    
-    // ---- DETAILED REPORT ----
-    function generateDetailedReport(orderId) {
-      const order = orders.find(o => o.id == orderId);
-      if (!order) return;
-      
-      // تحديث التقرير الرسمي
-      document.getElementById('reportBranch').textContent = order.location;
-      document.getElementById('reportChannel').textContent = order.channel;
-      document.getElementById('reportStatus').textContent = order.status;
-      document.getElementById('reportPrice').textContent = order.price;
-      document.getElementById('reportOrderCount').textContent = order.orderCount;
-      
-      // تحديث رسالة WhatsApp
-      const whatsappMessage = `مرحباً،
-طلبك من ${order.brand} عبر ${order.channel} (${order.location}) تم إلغاؤه بتاريخ ${new Date(order.date).toLocaleDateString('ar-SA')}.
-قيمة الطلب: ${order.price}
-الحالة: ${order.status}
-
-يرجى الرد على هذه الأسئلة في أقرب وقت لتسوية الأمر وتجنب أي خصومات لاحقة:
-1) هل تم تسليم الطلب؟
-2) هل الإلغاء بإرادتك؟
-3) هل لديك إثبات لذلك؟
-
-شكراً لتعاونك.`;
-      
-      document.getElementById('whatsappMessage').value = whatsappMessage;
-      
-      // حفظ معرف الطلب الحالي
-      const detailedReport = document.getElementById('detailedReport');
-      detailedReport.dataset.orderId = orderId;
-      detailedReport.classList.remove('hidden');
-      
-      // التمرير إلى التقرير المفصل
-      detailedReport.scrollIntoView({ behavior: 'smooth' });
-    }
-    
-    // ---- COPY WHATSAPP MESSAGE ----
-    function copyWhatsAppMessage() {
-      const whatsappMessage = document.getElementById('whatsappMessage');
-      whatsappMessage.select();
-      document.execCommand('copy');
-      
-      // تغيير نص الزر مؤقتاً
-      const button = event.target;
-      const originalText = button.innerHTML;
-      button.innerHTML = '<i class="fas fa-check ml-1"></i> تم النسخ!';
-      
-      setTimeout(() => {
-        button.innerHTML = originalText;
-      }, 2000);
-    }
-    
-    // ---- EXPORT TO PDF ----
-    function exportToPDF() {
-      // تحويل التقرير إلى PDF باستخدام html2canvas و jsPDF
-      const { jsPDF } = window.jspdf;
-      
-      const element = document.getElementById('detailedReport');
-      html2canvas(element, {
-        scale: 2,
-        logging: true,
-        useCORS: true
-      }).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgProps = pdf.getImageProperties(imgData);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-        
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save(`تقرير_طلب_ملغي_${new Date().toISOString().slice(0, 10)}.pdf`);
-        
-        showNotification('تم تصدير التقرير كملف PDF بنجاح', 'success');
-      });
-    }
-    
-    // ---- SEND REPORT EMAIL ----
-    function sendReportEmail() {
-      const orderId = document.getElementById('detailedReport').dataset.orderId;
-      const order = orders.find(o => o.id == orderId);
-      if (!order) return;
-      
-      // الحصول على معلومات الاتصال للفرع
-      const branchContact = contacts.branches[order.location];
-      const managementContacts = [
-        contacts.management["Mr. Mahmoud Shaheen"],
-        contacts.management["Mohammed T"]
-      ];
-      
-      // إنشاء محتوى البريد الإلكتروني
-      const subject = `تقرير طلب ملغي - ${order.location} - ${order.channel}`;
-      const body = `تم إعداد تقرير لطلب ملغي من فرع ${order.location} عبر قناة ${order.channel}.
-
-تفاصيل الطلب:
-- الفرع: ${order.location}
-- القناة: ${order.channel}
-- الحالة: ${order.status}
-- السعر: ${order.price}
-- عدد الطلبات: ${order.orderCount}
-
-يرجى مراجعة التقرير المرفق واتخاذ الإجراءات اللازمة.
-
-مع تحيات،
-فريق متابعة الطلبات الملغاة`;
-      
-      // إنشاء رابط mailto
-      const emailLink = `mailto:${managementContacts.map(c => c.email).join(',')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      
-      // فتح رابط البريد الإلكتروني
-      window.location.href = emailLink;
-      
-      showNotification('جاري فتح البريد الإلكتروني...', 'info');
-    }
-    
-    // ---- SEND REPORT WHATSAPP ----
-    function sendReportWhatsApp() {
-      const orderId = document.getElementById('detailedReport').dataset.orderId;
-      const order = orders.find(o => o.id == orderId);
-      if (!order) return;
-      
-      // الحصول على معلومات الاتصال للفرع
-      const branchContact = contacts.branches[order.location];
-      
-      // إنشاء رسالة WhatsApp
-      const whatsappMessage = document.getElementById('whatsappMessage').value;
-      
-      // إنشاء رابط WhatsApp
-      const whatsappLink = `https://wa.me/${branchContact.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(whatsappMessage)}`;
-      
-      // فتح رابط WhatsApp
-      window.open(whatsappLink, '_blank');
-      
-      showNotification('جاري فتح WhatsApp...', 'info');
-    }
-    
-    // ---- SHOW NOTIFICATION ----
-    function showNotification(message, type) {
-      // إزالة أي إشعارات موجودة
-      const existingNotifications = document.querySelectorAll('.notification');
-      existingNotifications.forEach(notification => notification.remove());
-      
-      // إنشاء إشعار جديد
-      const notification = document.createElement('div');
-      notification.className = `notification ${type}`;
-      notification.textContent = message;
-      document.body.appendChild(notification);
-      
-      // إظهار الإشعار
-      setTimeout(() => {
-        notification.classList.add('show');
-      }, 10);
-      
-      // إخفاء الإشعار بعد 3 ثواني
-      setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => {
-          notification.remove();
-        }, 300);
-      }, 3000);
-    }
-    
-    // ---- CLOSE MODAL WHEN CLICKING OUTSIDE ----
-    window.onclick = function(event) {
-      const modal = document.getElementById('dataEntryModal');
-      if (event.target == modal) {
-        closeDataEntryModal();
-      }
-    }
-  </script>
-  
-  <!-- إضافة مكتبات PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </body>
 </html>
