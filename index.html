@@ -384,6 +384,11 @@
       color: var(--white);
     }
 
+    .badge-warning {
+      background: #ffc107;
+      color: #212529;
+    }
+
     .modal {
       display: none;
       position: fixed;
@@ -542,6 +547,13 @@
       padding-left: 40px;
     }
 
+    .status-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ff6b35' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 11l3 3L22 4'%3E%3C/path%3E%3Cpath d='M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 10px center;
+      padding-left: 40px;
+    }
+
     .custom-reason {
       display: none;
       margin-top: 15px;
@@ -588,6 +600,53 @@
     .reason-badge.other {
       background-color: #fafafa;
       color: #616161;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 600;
+    }
+
+    .status-badge.accepted {
+      color: var(--success);
+    }
+
+    .status-badge.not-accepted {
+      color: var(--danger);
+    }
+
+    .penalty-section {
+      background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+      border-radius: 15px;
+      padding: 20px;
+      margin-top: 20px;
+      border-left: 5px solid var(--danger);
+    }
+
+    .penalty-section h3 {
+      color: var(--danger);
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .penalty-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .penalty-item:last-child {
+      border-bottom: none;
+    }
+
+    .penalty-amount {
+      font-weight: bold;
+      color: var(--danger);
     }
 
     @media (max-width: 768px) {
@@ -668,7 +727,7 @@
         </div>
         <div class="form-group">
           <label for="status">Status</label>
-          <select id="status" required>
+          <select id="status" required onchange="toggleReasonStatus()">
             <option value="">Select Status</option>
             <option value="cancelled">Cancelled</option>
             <option value="delivered">Delivered</option>
@@ -700,12 +759,12 @@
           <label for="customReason">Please specify the reason</label>
           <input type="text" id="customReason" placeholder="e.g., Customer changed their mind">
         </div>
-        <div class="form-group">
+        <div class="form-group" id="reasonStatusGroup" style="display: none;">
           <label for="reasonStatus">Reason Status</label>
-          <select id="reasonStatus">
+          <select id="reasonStatus" class="status-select" required>
             <option value="">Select Status</option>
-            <option value="مقبول ✅">مقبول ✅</option>
-            <option value="غير مقبول ❌">غير مقبول ❌</option>
+            <option value="مقبول ✅">مقبول ✅ (Accepted - Valid/Justified)</option>
+            <option value="غير مقبول ❌">غير مقبول ❌ (Not Accepted - Unjustified)</option>
           </select>
         </div>
       </div>
@@ -744,6 +803,16 @@
         <i class="fas fa-percentage fa-2x"></i>
         <h3 id="cancellationRate">0%</h3>
         <p>Cancellation Rate</p>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-exclamation-triangle fa-2x"></i>
+        <h3 id="unjustifiedCancellations">0</h3>
+        <p>Unjustified Cancellations</p>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-money-bill-wave fa-2x"></i>
+        <h3 id="penaltyAmount">AED 0.00</h3>
+        <p>Total Penalty Amount</p>
       </div>
     </div>
     
@@ -817,6 +886,25 @@
     </table>
   </div>
 
+  <!-- Penalty Summary -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i class="fas fa-gavel"></i>
+        Penalty Summary
+      </h2>
+    </div>
+    <div class="penalty-section">
+      <h3><i class="fas fa-exclamation-circle"></i> Unjustified Cancellations Requiring Penalty</h3>
+      <div id="penaltySummary">
+        <div class="penalty-item">
+          <span>No unjustified cancellations found</span>
+          <span class="penalty-amount">AED 0.00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Filters -->
   <div class="card">
     <div class="card-header">
@@ -852,8 +940,8 @@
       </select>
       <select id="filterReasonStatus">
         <option value="">All Reason Statuses</option>
-        <option value="مقبول ✅">مقبول ✅</option>
-        <option value="غير مقبول ❌">غير مقبول ❌</option>
+        <option value="مقبول ✅">مقبول ✅ (Accepted)</option>
+        <option value="غير مقبول ❌">غير مقبول ❌ (Not Accepted)</option>
       </select>
       <button class="btn btn-info" onclick="resetFilters()">
         <i class="fas fa-redo"></i>
@@ -955,7 +1043,7 @@
         </div>
         <div class="form-group">
           <label for="editStatus">Status</label>
-          <select id="editStatus" required>
+          <select id="editStatus" required onchange="toggleReasonStatusEdit()">
             <option value="cancelled">Cancelled</option>
             <option value="delivered">Delivered</option>
           </select>
@@ -985,11 +1073,11 @@
           <label for="editCustomReason">Please specify the reason</label>
           <input type="text" id="editCustomReason" placeholder="e.g., Customer changed their mind">
         </div>
-        <div class="form-group">
+        <div class="form-group" id="editReasonStatusGroup" style="display: none;">
           <label for="editReasonStatus">Reason Status</label>
-          <select id="editReasonStatus">
-            <option value="مقبول ✅">مقبول ✅</option>
-            <option value="غير مقبول ❌">غير مقبول ❌</option>
+          <select id="editReasonStatus" class="status-select" required>
+            <option value="مقبول ✅">مقبول ✅ (Accepted - Valid/Justified)</option>
+            <option value="غير مقبول ❌">غير مقبول ❌ (Not Accepted - Unjustified)</option>
           </select>
         </div>
       </div>
@@ -1004,6 +1092,36 @@
 <script>
 let orders = JSON.parse(localStorage.getItem('orders') || '[]');
 let channelChart, locationChart;
+
+// Toggle reason status visibility based on order status
+function toggleReasonStatus() {
+  const status = document.getElementById('status').value;
+  const reasonStatusGroup = document.getElementById('reasonStatusGroup');
+  
+  if (status === 'cancelled') {
+    reasonStatusGroup.style.display = 'block';
+    document.getElementById('reasonStatus').required = true;
+  } else {
+    reasonStatusGroup.style.display = 'none';
+    document.getElementById('reasonStatus').required = false;
+    document.getElementById('reasonStatus').value = '';
+  }
+}
+
+// Toggle reason status visibility in edit modal
+function toggleReasonStatusEdit() {
+  const status = document.getElementById('editStatus').value;
+  const reasonStatusGroup = document.getElementById('editReasonStatusGroup');
+  
+  if (status === 'cancelled') {
+    reasonStatusGroup.style.display = 'block';
+    document.getElementById('editReasonStatus').required = true;
+  } else {
+    reasonStatusGroup.style.display = 'none';
+    document.getElementById('editReasonStatus').required = false;
+    document.getElementById('editReasonStatus').value = '';
+  }
+}
 
 // Toggle custom reason input
 function toggleCustomReason() {
@@ -1054,6 +1172,12 @@ document.getElementById('orderForm').addEventListener('submit', function(e) {
     return;
   }
   
+  // Validate reason status for cancelled orders
+  if (status === 'cancelled' && !reasonStatus) {
+    showNotification('Please select a reason status for cancelled orders', 'error');
+    return;
+  }
+  
   const finalReason = reason === 'Other reason (with details)' ? customReason : reason;
   
   const newOrder = {
@@ -1076,11 +1200,13 @@ document.getElementById('orderForm').addEventListener('submit', function(e) {
   
   this.reset();
   document.getElementById('customReasonGroup').classList.remove('show');
+  document.getElementById('reasonStatusGroup').style.display = 'none';
   renderTable();
   updateDashboard();
   generatePivotTable();
   updateCharts();
   generateReasonsTable('all');
+  updatePenaltySummary();
   showNotification('Order added successfully!');
 });
 
@@ -1127,6 +1253,14 @@ function renderTable() {
       reasonBadge = `<span class="reason-badge ${badgeClass}">${category}</span>`;
     }
     
+    // Get status badge with styling
+    let statusBadge = '';
+    if (order.reasonStatus) {
+      const statusClass = order.reasonStatus === 'مقبول ✅' ? 'accepted' : 'not-accepted';
+      const statusText = order.reasonStatus === 'مقبول ✅' ? 'Accepted' : 'Not Accepted';
+      statusBadge = `<span class="status-badge ${statusClass}">${order.reasonStatus} ${statusText}</span>`;
+    }
+    
     tbody.innerHTML += `
       <tr>
         <td>${order.brand}</td>
@@ -1143,7 +1277,7 @@ function renderTable() {
           ${reasonBadge}
           ${order.reason ? `<br>${order.reason}` : ''}
         </td>
-        <td>${order.reasonStatus || '-'}</td>
+        <td>${statusBadge}</td>
         <td>${order.date}</td>
         <td>
           <div class="actions">
@@ -1166,11 +1300,17 @@ function updateDashboard() {
   const cancelled = orders.filter(o => o.status === 'cancelled').length;
   const delivered = orders.filter(o => o.status === 'delivered').length;
   const rate = total ? ((cancelled/total)*100).toFixed(1) : 0;
+  const unjustified = orders.filter(o => o.reasonStatus === 'غير مقبول ❌').length;
+  const penaltyAmount = orders
+    .filter(o => o.reasonStatus === 'غير مقبول ❌')
+    .reduce((sum, o) => sum + o.total, 0);
   
   document.getElementById('totalOrders').textContent = total;
   document.getElementById('cancelledOrders').textContent = cancelled;
   document.getElementById('deliveredOrders').textContent = delivered;
   document.getElementById('cancellationRate').textContent = rate + '%';
+  document.getElementById('unjustifiedCancellations').textContent = unjustified;
+  document.getElementById('penaltyAmount').textContent = `AED ${penaltyAmount.toFixed(2)}`;
 }
 
 // Generate pivot table
@@ -1200,6 +1340,46 @@ function generatePivotTable() {
     
     tbody.appendChild(row);
   });
+}
+
+// Update penalty summary
+function updatePenaltySummary() {
+  const penaltySummary = document.getElementById('penaltySummary');
+  const unjustifiedOrders = orders.filter(o => o.reasonStatus === 'غير مقبول ❌');
+  
+  if (unjustifiedOrders.length === 0) {
+    penaltySummary.innerHTML = `
+      <div class="penalty-item">
+        <span>No unjustified cancellations found</span>
+        <span class="penalty-amount">AED 0.00</span>
+      </div>
+    `;
+    return;
+  }
+  
+  let html = '';
+  let totalAmount = 0;
+  
+  unjustifiedOrders.forEach(order => {
+    const amount = order.total;
+    totalAmount += amount;
+    
+    html += `
+      <div class="penalty-item">
+        <span>${order.channel} - ${order.branch}: ${order.reason}</span>
+        <span class="penalty-amount">AED ${amount.toFixed(2)}</span>
+      </div>
+    `;
+  });
+  
+  html += `
+    <div class="penalty-item" style="border-top: 2px solid var(--danger); margin-top: 10px; padding-top: 10px; font-weight: bold;">
+      <span>Total Penalty Amount</span>
+      <span class="penalty-amount">AED ${totalAmount.toFixed(2)}</span>
+    </div>
+  `;
+  
+  penaltySummary.innerHTML = html;
 }
 
 // Update charts
@@ -1404,6 +1584,7 @@ function deleteOrder(index) {
     generatePivotTable();
     updateCharts();
     generateReasonsTable('all');
+    updatePenaltySummary();
     showNotification('Order deleted successfully!');
   }
 }
@@ -1427,7 +1608,9 @@ function editOrder(index) {
     document.getElementById('editCustomReason').value = order.reason || '';
   }
   
+  // Set reason status
   document.getElementById('editReasonStatus').value = order.reasonStatus || '';
+  toggleReasonStatusEdit();
   
   document.getElementById('editModal').style.display = 'flex';
 }
@@ -1449,6 +1632,12 @@ document.getElementById('editForm').addEventListener('submit', function(e) {
   
   if (!channel || !branch || !status) {
     showNotification('Please fill in all required fields', 'error');
+    return;
+  }
+  
+  // Validate reason status for cancelled orders
+  if (status === 'cancelled' && !reasonStatus) {
+    showNotification('Please select a reason status for cancelled orders', 'error');
     return;
   }
   
@@ -1475,6 +1664,7 @@ document.getElementById('editForm').addEventListener('submit', function(e) {
   generatePivotTable();
   updateCharts();
   generateReasonsTable('all');
+  updatePenaltySummary();
   closeEditModal();
   showNotification('Order updated successfully!');
 });
@@ -1567,6 +1757,7 @@ document.addEventListener('DOMContentLoaded', function() {
   generatePivotTable();
   updateCharts();
   generateReasonsTable('all');
+  updatePenaltySummary();
 });
 </script>
 </body>
