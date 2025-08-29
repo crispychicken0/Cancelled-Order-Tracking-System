@@ -410,6 +410,8 @@
       max-width: 600px;
       position: relative;
       box-shadow: var(--shadow);
+      max-height: 80vh;
+      overflow-y: auto;
     }
 
     .close-modal {
@@ -649,6 +651,67 @@
       color: var(--danger);
     }
 
+    .whatsapp-report {
+      background: #f0f2f5;
+      border-radius: 15px;
+      padding: 20px;
+      margin-top: 20px;
+      border-left: 5px solid #25d366;
+    }
+
+    .whatsapp-report h3 {
+      color: #25d366;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .whatsapp-report-content {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      white-space: pre-line;
+      overflow-x: auto;
+    }
+
+    .whatsapp-actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .whatsapp-actions .btn {
+      flex: 1;
+    }
+
+    .date-picker {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .date-picker input {
+      flex: 1;
+    }
+
+    .date-picker button {
+      padding: 12px 20px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+
+    .date-picker button:hover {
+      background: #e55a2b;
+    }
+
     @media (max-width: 768px) {
       .container {
         padding: 10px;
@@ -825,6 +888,40 @@
       <div class="chart-container">
         <h3>Cancellations by Location</h3>
         <canvas id="locationChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Daily Report for WhatsApp -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i class="fab fa-whatsapp"></i>
+        Daily WhatsApp Report
+      </h2>
+    </div>
+    <div class="date-picker">
+      <label for="reportDate">Select Date:</label>
+      <input type="date" id="reportDate" value="">
+      <button onclick="generateWhatsAppReport()">
+        <i class="fas fa-file-alt"></i>
+        Generate Report
+      </button>
+    </div>
+    <div id="whatsappReportContainer" style="display: none;">
+      <div class="whatsapp-report">
+        <h3><i class="fab fa-whatsapp"></i> WhatsApp Report Template</h3>
+        <div class="whatsapp-report-content" id="whatsappReportContent"></div>
+        <div class="whatsapp-actions">
+          <button class="btn btn-success" onclick="copyToClipboard()">
+            <i class="fas fa-copy"></i>
+            Copy to Clipboard
+          </button>
+          <button class="btn btn-info" onclick="openWhatsApp()">
+            <i class="fab fa-whatsapp"></i>
+            Send via WhatsApp
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1093,6 +1190,9 @@
 let orders = JSON.parse(localStorage.getItem('orders') || '[]');
 let channelChart, locationChart;
 
+// Set today's date as default
+document.getElementById('reportDate').value = new Date().toISOString().split('T')[0];
+
 // Toggle reason status visibility based on order status
 function toggleReasonStatus() {
   const status = document.getElementById('status').value;
@@ -1151,6 +1251,107 @@ function toggleCustomReasonEdit() {
     document.getElementById('editCustomReason').required = false;
     document.getElementById('editCustomReason').value = '';
   }
+}
+
+// Generate WhatsApp report
+function generateWhatsAppReport() {
+  const reportDate = document.getElementById('reportDate').value;
+  if (!reportDate) {
+    showNotification('Please select a date', 'error');
+    return;
+  }
+  
+  // Filter orders for the selected date
+  const selectedDate = new Date(reportDate);
+  const filteredOrders = orders.filter(order => {
+    const orderDate = new Date(order.date.split(',')[0]);
+    return orderDate.toDateString() === selectedDate.toDateString() && order.status === 'cancelled';
+  });
+  
+  // Group by location
+  const locations = ['Barsha', 'Electra', 'Hamdan', 'Khalydiha', 'Mouroor', 'Shabiha'];
+  const reportData = {};
+  
+  locations.forEach(location => {
+    const locationOrders = filteredOrders.filter(order => order.branch === location);
+    const total = locationOrders.length;
+    const accepted = locationOrders.filter(order => order.reasonStatus === 'مقبول ✅').length;
+    const notAccepted = locationOrders.filter(order => order.reasonStatus === 'غير مقبول ❌').length;
+    
+    // Get reasons with status indicators
+    const reasons = {};
+    locationOrders.forEach(order => {
+      const statusIndicator = order.reasonStatus === 'غير مقبول ❌' ? ' ❌' : '';
+      if (!reasons[order.reason]) {
+        reasons[order.reason] = 0;
+      }
+      reasons[order.reason]++;
+    });
+    
+    reportData[location] = {
+      total,
+      accepted,
+      notAccepted,
+      reasons
+    };
+  });
+  
+  // Format the report
+  const formattedDate = new Date(reportDate).toLocaleDateString('en-US', { 
+    day: '2-digit', 
+    month: 'short', 
+    year: 'numeric' 
+  });
+  
+  let reportText = `📊 Daily Cancellation Report – ${formattedDate}\n\n`;
+  
+  for (const [location, data] of Object.entries(reportData)) {
+    if (data.total > 0) {
+      reportText += `${location}:\n`;
+      reportText += `- Total Cancellations: ${data.total}\n`;
+      reportText += `- Accepted: ${data.accepted}\n`;
+      reportText += `- Not Accepted: ${data.notAccepted}\n`;
+      reportText += `- Reasons:\n`;
+      
+      for (const [reason, count] of Object.entries(data.reasons)) {
+        reportText += `   • ${reason} (${count})${data.reasons[reason] > 1 ? 's' : ''}\n`;
+      }
+      
+      reportText += '\n';
+    }
+  }
+  
+  reportText += '⚠️ Note:\n';
+  reportText += 'Not Accepted = must charge the responsible party (Delivery / Restaurant).\n\n';
+  reportText += '✅ Accepted = no one is penalized.\n';
+  reportText += '❌ Not Accepted = penalty charged to the responsible party.';
+  
+  // Display the report
+  document.getElementById('whatsappReportContent').textContent = reportText;
+  document.getElementById('whatsappReportContainer').style.display = 'block';
+  
+  // Scroll to the report
+  document.getElementById('whatsappReportContainer').scrollIntoView({ behavior: 'smooth' });
+  
+  showNotification('WhatsApp report generated successfully!', 'success');
+}
+
+// Copy to clipboard
+function copyToClipboard() {
+  const reportText = document.getElementById('whatsappReportContent').textContent;
+  navigator.clipboard.writeText(reportText).then(() => {
+    showNotification('Report copied to clipboard!', 'success');
+  }).catch(err => {
+    showNotification('Failed to copy to clipboard', 'error');
+  });
+}
+
+// Open WhatsApp with pre-filled message
+function openWhatsApp() {
+  const reportText = document.getElementById('whatsappReportContent').textContent;
+  const encodedText = encodeURIComponent(reportText);
+  const whatsappUrl = `https://wa.me/?text=${encodedText}`;
+  window.open(whatsappUrl, '_blank');
 }
 
 // Add new order
