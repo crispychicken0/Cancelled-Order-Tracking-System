@@ -535,6 +535,61 @@
       padding-left: 40px;
     }
 
+    .reason-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ff6b35' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 10px center;
+      padding-left: 40px;
+    }
+
+    .custom-reason {
+      display: none;
+      margin-top: 15px;
+    }
+
+    .custom-reason.show {
+      display: block;
+    }
+
+    .reason-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-right: 5px;
+    }
+
+    .reason-badge.customer {
+      background-color: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .reason-badge.driver {
+      background-color: #fff3e0;
+      color: #f57c00;
+    }
+
+    .reason-badge.delivery {
+      background-color: #f3e5f5;
+      color: #7b1fa2;
+    }
+
+    .reason-badge.restaurant {
+      background-color: #e8f5e9;
+      color: #388e3c;
+    }
+
+    .reason-badge.payment {
+      background-color: #ffebee;
+      color: #c62828;
+    }
+
+    .reason-badge.other {
+      background-color: #fafafa;
+      color: #616161;
+    }
+
     @media (max-width: 768px) {
       .container {
         padding: 10px;
@@ -629,7 +684,21 @@
         </div>
         <div class="form-group">
           <label for="reason">Reason for Cancellation</label>
-          <input type="text" id="reason" placeholder="e.g., Customer changed mind">
+          <select id="reason" class="reason-select" onchange="toggleCustomReason()">
+            <option value="">Select Reason</option>
+            <option value="Customer not available">Customer not available</option>
+            <option value="Customer cancelled the order">Customer cancelled the order</option>
+            <option value="Driver delayed">Driver delayed</option>
+            <option value="Delivery issue">Delivery issue</option>
+            <option value="Wrong order prepared">Wrong order prepared</option>
+            <option value="Restaurant closed early">Restaurant closed early</option>
+            <option value="Payment method not available">Payment method not available</option>
+            <option value="Other reason (with details)">Other reason (with details)</option>
+          </select>
+        </div>
+        <div class="form-group custom-reason" id="customReasonGroup">
+          <label for="customReason">Please specify the reason</label>
+          <input type="text" id="customReason" placeholder="e.g., Customer changed their mind">
         </div>
         <div class="form-group">
           <label for="reasonStatus">Reason Status</label>
@@ -736,6 +805,7 @@
       <thead>
         <tr>
           <th>Rank</th>
+          <th>Reason Category</th>
           <th>Reason</th>
           <th>Count</th>
           <th>Percentage</th>
@@ -900,7 +970,20 @@
         </div>
         <div class="form-group">
           <label for="editReason">Reason for Cancellation</label>
-          <input type="text" id="editReason" placeholder="e.g., Customer changed mind">
+          <select id="editReason" class="reason-select" onchange="toggleCustomReasonEdit()">
+            <option value="Customer not available">Customer not available</option>
+            <option value="Customer cancelled the order">Customer cancelled the order</option>
+            <option value="Driver delayed">Driver delayed</option>
+            <option value="Delivery issue">Delivery issue</option>
+            <option value="Wrong order prepared">Wrong order prepared</option>
+            <option value="Restaurant closed early">Restaurant closed early</option>
+            <option value="Payment method not available">Payment method not available</option>
+            <option value="Other reason (with details)">Other reason (with details)</option>
+          </select>
+        </div>
+        <div class="form-group custom-reason" id="customReasonEditGroup">
+          <label for="editCustomReason">Please specify the reason</label>
+          <input type="text" id="editCustomReason" placeholder="e.g., Customer changed their mind">
         </div>
         <div class="form-group">
           <label for="editReasonStatus">Reason Status</label>
@@ -922,6 +1005,36 @@
 let orders = JSON.parse(localStorage.getItem('orders') || '[]');
 let channelChart, locationChart;
 
+// Toggle custom reason input
+function toggleCustomReason() {
+  const reason = document.getElementById('reason').value;
+  const customReasonGroup = document.getElementById('customReasonGroup');
+  
+  if (reason === 'Other reason (with details)') {
+    customReasonGroup.classList.add('show');
+    document.getElementById('customReason').required = true;
+  } else {
+    customReasonGroup.classList.remove('show');
+    document.getElementById('customReason').required = false;
+    document.getElementById('customReason').value = '';
+  }
+}
+
+// Toggle custom reason input in edit modal
+function toggleCustomReasonEdit() {
+  const reason = document.getElementById('editReason').value;
+  const customReasonGroup = document.getElementById('customReasonEditGroup');
+  
+  if (reason === 'Other reason (with details)') {
+    customReasonGroup.classList.add('show');
+    document.getElementById('editCustomReason').required = true;
+  } else {
+    customReasonGroup.classList.remove('show');
+    document.getElementById('editCustomReason').required = false;
+    document.getElementById('editCustomReason').value = '';
+  }
+}
+
 // Add new order
 document.getElementById('orderForm').addEventListener('submit', function(e) {
   e.preventDefault();
@@ -932,13 +1045,16 @@ document.getElementById('orderForm').addEventListener('submit', function(e) {
   const status = document.getElementById('status').value;
   const price = parseFloat(document.getElementById('price').value) || 0;
   const count = parseInt(document.getElementById('count').value) || 1;
-  const reason = document.getElementById('reason').value.trim();
+  const reason = document.getElementById('reason').value;
+  const customReason = document.getElementById('customReason').value.trim();
   const reasonStatus = document.getElementById('reasonStatus').value;
   
   if (!channel || !branch || !status) {
     showNotification('Please fill in all required fields', 'error');
     return;
   }
+  
+  const finalReason = reason === 'Other reason (with details)' ? customReason : reason;
   
   const newOrder = {
     id: Date.now(),
@@ -949,7 +1065,8 @@ document.getElementById('orderForm').addEventListener('submit', function(e) {
     price,
     count,
     total: price * count,
-    reason,
+    reason: finalReason,
+    reasonCategory: reason === 'Other reason (with details)' ? 'Other' : reason,
     reasonStatus,
     date: new Date().toLocaleString()
   };
@@ -958,6 +1075,7 @@ document.getElementById('orderForm').addEventListener('submit', function(e) {
   localStorage.setItem('orders', JSON.stringify(orders));
   
   this.reset();
+  document.getElementById('customReasonGroup').classList.remove('show');
   renderTable();
   updateDashboard();
   generatePivotTable();
@@ -985,13 +1103,30 @@ function renderTable() {
     const matchSearch = !filterSearch ||
       order.channel.toLowerCase().includes(filterSearch) ||
       order.branch.toLowerCase().includes(filterSearch) ||
-      order.reason.toLowerCase().includes(filterSearch);
+      (order.reason && order.reason.toLowerCase().includes(filterSearch)) ||
+      (order.reasonCategory && order.reasonCategory.toLowerCase().includes(filterSearch));
       
     return matchChannel && matchBranch && matchStatus && matchReasonStatus && matchSearch;
   });
   
   filteredOrders.forEach((order, index) => {
     const actualIndex = orders.findIndex(o => o.id === order.id);
+    
+    // Get reason category badge
+    let reasonBadge = '';
+    if (order.reasonCategory) {
+      const category = order.reasonCategory;
+      let badgeClass = 'other';
+      
+      if (category.includes('Customer')) badgeClass = 'customer';
+      else if (category.includes('Driver')) badgeClass = 'driver';
+      else if (category.includes('Delivery')) badgeClass = 'delivery';
+      else if (category.includes('Restaurant')) badgeClass = 'restaurant';
+      else if (category.includes('Payment')) badgeClass = 'payment';
+      
+      reasonBadge = `<span class="reason-badge ${badgeClass}">${category}</span>`;
+    }
+    
     tbody.innerHTML += `
       <tr>
         <td>${order.brand}</td>
@@ -1004,7 +1139,10 @@ function renderTable() {
         </td>
         <td>AED ${order.price.toFixed(2)}</td>
         <td>${order.count}</td>
-        <td>${order.reason || '-'}</td>
+        <td>
+          ${reasonBadge}
+          ${order.reason ? `<br>${order.reason}` : ''}
+        </td>
         <td>${order.reasonStatus || '-'}</td>
         <td>${order.date}</td>
         <td>
@@ -1170,34 +1308,79 @@ function generateReasonsTable(timeFilter) {
   
   const unacceptableOrders = filteredOrders.filter(o => o.reasonStatus === 'غير مقبول ❌');
   const reasonCounts = {};
+  const categoryCounts = {};
   
   unacceptableOrders.forEach(order => {
-    if (order.reason) {
-      reasonCounts[order.reason] = (reasonCounts[order.reason] || 0) + 1;
+    if (order.reasonCategory) {
+      categoryCounts[order.reasonCategory] = (categoryCounts[order.reasonCategory] || 0) + 1;
+      
+      if (order.reason) {
+        const key = order.reasonCategory;
+        if (!reasonCounts[key]) {
+          reasonCounts[key] = {};
+        }
+        reasonCounts[key][order.reason] = (reasonCounts[key][order.reason] || 0) + 1;
+      }
     }
   });
   
-  const sortedReasons = Object.entries(reasonCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
+  // Sort categories by count
+  const sortedCategories = Object.entries(categoryCounts)
+    .sort((a, b) => b[1] - a[1]);
   
-  const totalUnacceptable = unacceptableOrders.length;
-  
-  sortedReasons.forEach((reason, index) => {
-    const percentage = totalUnacceptable > 0 ? ((reason[1] / totalUnacceptable) * 100).toFixed(1) : 0;
+  let rank = 1;
+  sortedCategories.forEach(([category, count]) => {
+    const percentage = unacceptableOrders.length > 0 ? ((count / unacceptableOrders.length) * 100).toFixed(1) : 0;
+    
+    // Add category row
     tbody.innerHTML += `
       <tr>
-        <td>${index + 1}</td>
-        <td>${reason[0]}</td>
-        <td>${reason[1]}</td>
+        <td>${rank}</td>
+        <td colspan="2">
+          <span class="reason-badge ${getCategoryClass(category)}">${category}</span>
+          <strong>Total: ${count}</strong>
+        </td>
+        <td>${count}</td>
         <td>${percentage}%</td>
       </tr>
     `;
+    
+    // Add top reasons for this category
+    if (reasonCounts[category]) {
+      const sortedReasons = Object.entries(reasonCounts[category])
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3);
+      
+      sortedReasons.forEach(([reason, count]) => {
+        const percentage = unacceptableOrders.length > 0 ? ((count / unacceptableOrders.length) * 100).toFixed(1) : 0;
+        tbody.innerHTML += `
+          <tr>
+            <td></td>
+            <td>${category}</td>
+            <td>${reason}</td>
+            <td>${count}</td>
+            <td>${percentage}%</td>
+          </tr>
+        `;
+      });
+    }
+    
+    rank++;
   });
   
-  if (sortedReasons.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No unacceptable reasons found</td></tr>';
+  if (sortedCategories.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No unacceptable reasons found</td></tr>';
   }
+}
+
+// Get category class for badge styling
+function getCategoryClass(category) {
+  if (category.includes('Customer')) return 'customer';
+  if (category.includes('Driver')) return 'driver';
+  if (category.includes('Delivery')) return 'delivery';
+  if (category.includes('Restaurant')) return 'restaurant';
+  if (category.includes('Payment')) return 'payment';
+  return 'other';
 }
 
 // Filter reasons by time
@@ -1235,7 +1418,15 @@ function editOrder(index) {
   document.getElementById('editStatus').value = order.status;
   document.getElementById('editPrice').value = order.price;
   document.getElementById('editCount').value = order.count;
-  document.getElementById('editReason').value = order.reason || '';
+  
+  // Set reason and custom reason
+  document.getElementById('editReason').value = order.reasonCategory || 'Other reason (with details)';
+  toggleCustomReasonEdit();
+  
+  if (order.reasonCategory === 'Other') {
+    document.getElementById('editCustomReason').value = order.reason || '';
+  }
+  
   document.getElementById('editReasonStatus').value = order.reasonStatus || '';
   
   document.getElementById('editModal').style.display = 'flex';
@@ -1252,13 +1443,17 @@ document.getElementById('editForm').addEventListener('submit', function(e) {
   const status = document.getElementById('editStatus').value;
   const price = parseFloat(document.getElementById('editPrice').value) || 0;
   const count = parseInt(document.getElementById('editCount').value) || 1;
-  const reason = document.getElementById('editReason').value.trim();
+  const reason = document.getElementById('editReason').value;
+  const customReason = document.getElementById('editCustomReason').value.trim();
   const reasonStatus = document.getElementById('editReasonStatus').value;
   
   if (!channel || !branch || !status) {
     showNotification('Please fill in all required fields', 'error');
     return;
   }
+  
+  const finalReason = reason === 'Other reason (with details)' ? customReason : reason;
+  const reasonCategory = reason === 'Other reason (with details)' ? 'Other' : reason;
   
   orders[index] = {
     ...orders[index],
@@ -1269,7 +1464,8 @@ document.getElementById('editForm').addEventListener('submit', function(e) {
     price,
     count,
     total: price * count,
-    reason,
+    reason: finalReason,
+    reasonCategory,
     reasonStatus
   };
   
@@ -1301,9 +1497,9 @@ function resetFilters() {
 
 // Export to CSV
 function exportToCSV() {
-  let csv = 'Brand,Channel,Location,Status,Order Price,Number of Orders,Reason for Cancellation,Reason Status,Total,Date\n';
+  let csv = 'Brand,Channel,Location,Status,Order Price,Number of Orders,Reason Category,Reason,Reason Status,Total,Date\n';
   orders.forEach(order => {
-    csv += `${order.brand},${order.channel},${order.branch},${order.status},${order.price},${order.count},"${order.reason || ''}","${order.reasonStatus || ''}",${order.total},"${order.date}"\n`;
+    csv += `${order.brand},${order.channel},${order.branch},${order.status},${order.price},${order.count},"${order.reasonCategory || ''}","${order.reason || ''}","${order.reasonStatus || ''}",${order.total},"${order.date}"\n`;
   });
   
   const blob = new Blob([csv], { type: 'text/csv' });
