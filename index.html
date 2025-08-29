@@ -520,6 +520,21 @@
       color: var(--white);
     }
 
+    .fixed-brand {
+      background-color: rgba(255, 107, 53, 0.1);
+      border: 2px solid var(--primary);
+      color: var(--primary);
+      font-weight: bold;
+      cursor: not-allowed;
+    }
+
+    .location-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ff6b35' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z'%3E%3C/path%3E%3Ccircle cx='12' cy='10' r='3'%3E%3C/circle%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 10px center;
+      padding-left: 40px;
+    }
+
     @media (max-width: 768px) {
       .container {
         padding: 10px;
@@ -570,7 +585,7 @@
       <div class="form-grid">
         <div class="form-group">
           <label for="brand">Brand</label>
-          <input type="text" id="brand" required>
+          <input type="text" id="brand" value="CRISPY CHICKEN" class="fixed-brand" disabled>
         </div>
         <div class="form-group">
           <label for="channel">Channel</label>
@@ -586,7 +601,15 @@
         </div>
         <div class="form-group">
           <label for="branch">Location</label>
-          <input type="text" id="branch" required>
+          <select id="branch" class="location-select" required>
+            <option value="">Select Location</option>
+            <option value="Barsha">Barsha</option>
+            <option value="Electra">Electra</option>
+            <option value="Hamdan">Hamdan</option>
+            <option value="Khalydiha">Khalydiha</option>
+            <option value="Mouroor">Mouroor</option>
+            <option value="Shabiha">Shabiha</option>
+          </select>
         </div>
         <div class="form-group">
           <label for="status">Status</label>
@@ -733,8 +756,16 @@
       </h2>
     </div>
     <div class="filter-group">
-      <input type="text" id="filterBranch" placeholder="Search by location">
-      <input type="text" id="filterSearch" placeholder="Global search (brand/channel/location)">
+      <select id="filterBranch">
+        <option value="">All Locations</option>
+        <option value="Barsha">Barsha</option>
+        <option value="Electra">Electra</option>
+        <option value="Hamdan">Hamdan</option>
+        <option value="Khalydiha">Khalydiha</option>
+        <option value="Mouroor">Mouroor</option>
+        <option value="Shabiha">Shabiha</option>
+      </select>
+      <input type="text" id="filterSearch" placeholder="Global search (channel/reason)">
       <select id="filterChannel">
         <option value="">All Channels</option>
         <option value="Careem">Careem</option>
@@ -828,7 +859,7 @@
       <div class="form-grid">
         <div class="form-group">
           <label for="editBrand">Brand</label>
-          <input type="text" id="editBrand" required>
+          <input type="text" id="editBrand" value="CRISPY CHICKEN" class="fixed-brand" disabled>
         </div>
         <div class="form-group">
           <label for="editChannel">Channel</label>
@@ -843,7 +874,14 @@
         </div>
         <div class="form-group">
           <label for="editBranch">Location</label>
-          <input type="text" id="editBranch" required>
+          <select id="editBranch" class="location-select" required>
+            <option value="Barsha">Barsha</option>
+            <option value="Electra">Electra</option>
+            <option value="Hamdan">Hamdan</option>
+            <option value="Khalydiha">Khalydiha</option>
+            <option value="Mouroor">Mouroor</option>
+            <option value="Shabiha">Shabiha</option>
+          </select>
         </div>
         <div class="form-group">
           <label for="editStatus">Status</label>
@@ -890,14 +928,14 @@ document.getElementById('orderForm').addEventListener('submit', function(e) {
   
   const brand = document.getElementById('brand').value.trim();
   const channel = document.getElementById('channel').value;
-  const branch = document.getElementById('branch').value.trim();
+  const branch = document.getElementById('branch').value;
   const status = document.getElementById('status').value;
   const price = parseFloat(document.getElementById('price').value) || 0;
   const count = parseInt(document.getElementById('count').value) || 1;
   const reason = document.getElementById('reason').value.trim();
   const reasonStatus = document.getElementById('reasonStatus').value;
   
-  if (!brand || !branch) {
+  if (!channel || !branch || !status) {
     showNotification('Please fill in all required fields', 'error');
     return;
   }
@@ -933,7 +971,7 @@ function renderTable() {
   const tbody = document.getElementById('ordersTable');
   tbody.innerHTML = '';
   
-  const filterBranch = document.getElementById('filterBranch').value.toLowerCase();
+  const filterBranch = document.getElementById('filterBranch').value;
   const filterSearch = document.getElementById('filterSearch').value.toLowerCase();
   const filterChannel = document.getElementById('filterChannel').value;
   const filterStatus = document.getElementById('filterStatus').value;
@@ -941,11 +979,10 @@ function renderTable() {
   
   const filteredOrders = orders.filter(order => {
     const matchChannel = !filterChannel || order.channel === filterChannel;
-    const matchBranch = !filterBranch || order.branch.toLowerCase().includes(filterBranch);
+    const matchBranch = !filterBranch || order.branch === filterBranch;
     const matchStatus = !filterStatus || order.status === filterStatus;
     const matchReasonStatus = !filterReasonStatus || order.reasonStatus === filterReasonStatus;
     const matchSearch = !filterSearch ||
-      order.brand.toLowerCase().includes(filterSearch) ||
       order.channel.toLowerCase().includes(filterSearch) ||
       order.branch.toLowerCase().includes(filterSearch) ||
       order.reason.toLowerCase().includes(filterSearch);
@@ -1000,7 +1037,7 @@ function updateDashboard() {
 
 // Generate pivot table
 function generatePivotTable() {
-  const locations = [...new Set(orders.map(o => o.branch))];
+  const locations = ['Barsha', 'Electra', 'Hamdan', 'Khalydiha', 'Mouroor', 'Shabiha'];
   const channels = ['Careem', 'Zomato', 'Talabat', 'Deliveroo', 'Noon', 'SMILE'];
   const tbody = document.getElementById('pivotTableBody');
   tbody.innerHTML = '';
@@ -1076,7 +1113,7 @@ function updateCharts() {
   
   // Location Chart
   const locationData = {};
-  const locations = [...new Set(orders.map(o => o.branch))];
+  const locations = ['Barsha', 'Electra', 'Hamdan', 'Khalydiha', 'Mouroor', 'Shabiha'];
   
   locations.forEach(location => {
     const locationOrders = orders.filter(o => o.branch === location);
@@ -1211,14 +1248,14 @@ document.getElementById('editForm').addEventListener('submit', function(e) {
   const index = parseInt(document.getElementById('editIndex').value);
   const brand = document.getElementById('editBrand').value.trim();
   const channel = document.getElementById('editChannel').value;
-  const branch = document.getElementById('editBranch').value.trim();
+  const branch = document.getElementById('editBranch').value;
   const status = document.getElementById('editStatus').value;
   const price = parseFloat(document.getElementById('editPrice').value) || 0;
   const count = parseInt(document.getElementById('editCount').value) || 1;
   const reason = document.getElementById('editReason').value.trim();
   const reasonStatus = document.getElementById('editReasonStatus').value;
   
-  if (!brand || !branch) {
+  if (!channel || !branch || !status) {
     showNotification('Please fill in all required fields', 'error');
     return;
   }
