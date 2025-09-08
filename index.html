@@ -3,379 +3,659 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام متابعة الأوامر الملغاة</title>
+    <title>نظام متابعة الأوامر الملغية 2029</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
+        /* Futuristic 2029 Theme */
         :root {
-            --primary-color: #3498db;
-            --danger-color: #e74c3c;
-            --success-color: #2ecc71;
-            --warning-color: #f39c12;
-            --dark-color: #2c3e50;
-            --info-color: #17a2b8;
-            --secondary-color: #6c757d;
+            --primary-color: #00ffff;
+            --secondary-color: #ff00ff;
+            --accent-color: #ffff00;
+            --danger-color: #ff0040;
+            --success-color: #00ff88;
+            --warning-color: #ffaa00;
+            --dark-bg: #0a0a0a;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --neon-glow: 0 0 15px currentColor;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
         }
-
+        
         body {
-            background-color: #f8f9fa;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #1a1a2e 50%, #0f0f1e 100%);
+            color: var(--text-primary);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
         }
-
+        
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 255, 0, 0.05) 0%, transparent 50%);
+            z-index: -1;
+            animation: bgMove 20s ease-in-out infinite;
+        }
+        
+        @keyframes bgMove {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(-10px, -10px) rotate(1deg); }
+            50% { transform: translate(10px, -5px) rotate(-1deg); }
+            75% { transform: translate(-5px, 10px) rotate(1deg); }
+        }
+        
+        /* Header with neon effect */
         .dashboard-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(255, 0, 255, 0.2));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-bottom: 2px solid var(--primary-color);
             color: white;
             padding: 2rem 0;
             margin-bottom: 2rem;
-            border-radius: 0 0 15px 15px;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
         }
-
-        .stat-card {
-            border-radius: 10px;
-            border: none;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-            height: 100%;
+        
+        .dashboard-header::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.2) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
         }
-
-        .stat-card:hover {
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Glassmorphism cards */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .glass-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 255, 255, 0.3);
+            border-color: rgba(0, 255, 255, 0.5);
         }
-
-        .stat-card .card-body {
-            padding: 1.5rem;
+        
+        /* Neon text effects */
+        .neon-text {
+            color: var(--primary-color);
+            text-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);
+            font-weight: bold;
         }
-
+        
+        .neon-border {
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 0 15px var(--primary-color), inset 0 0 15px rgba(0, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        
+        /* Stat cards with neon effects */
+        .stat-card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(255, 0, 255, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(0, 255, 255, 0.4);
+        }
+        
         .stat-icon {
             font-size: 2.5rem;
             margin-bottom: 0.5rem;
+            filter: drop-shadow(0 0 8px currentColor);
         }
-
+        
         .stat-number {
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-weight: bold;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
         }
-
+        
         .stat-label {
-            color: #6c757d;
+            color: var(--text-secondary);
             font-size: 0.9rem;
         }
-
+        
+        /* Table with futuristic styling */
         .table-container {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
             padding: 1.5rem;
             margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
-
+        
+        .table {
+            color: var(--text-primary);
+        }
+        
         .table th {
-            background-color: var(--primary-color);
+            background: linear-gradient(90deg, rgba(0, 255, 255, 0.3), rgba(255, 0, 255, 0.3));
+            border: 1px solid rgba(0, 255, 255, 0.5);
             color: white;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+        }
+        
+        .table td {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .table tbody tr:hover {
+            background: rgba(0, 255, 255, 0.1);
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+        
+        /* Buttons with neon effects */
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
             border: none;
-        }
-
-        .badge {
-            font-size: 0.85rem;
-        }
-
-        .action-btn {
-            margin: 0 2px;
-        }
-
-        .report-preview {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-top: 1rem;
-            border-right: 4px solid var(--primary-color);
-            font-family: monospace;
-            white-space: pre-wrap;
-        }
-
-        .filter-section {
-            background: white;
-            border-radius: 10px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .chart-container {
-            background: white;
-            border-radius: 10px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-            height: 300px;
-        }
-
-        .send-report-btn {
-            background: linear-gradient(135deg, var(--success-color), #27ae60);
-            border: none;
-            border-radius: 50px;
-            padding: 0.5rem 1.5rem;
+            border-radius: 30px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
             color: white;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
         }
-
-        .send-report-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(46, 204, 113, 0.3);
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
         }
-
-        .whatsapp-btn {
-            background-color: #25D366;
-            border: none;
-            border-radius: 50px;
-            padding: 0.5rem 1.5rem;
-            color: white;
-            transition: all 0.3s ease;
+        
+        .btn-primary:hover::before {
+            left: 100%;
         }
-
-        .whatsapp-btn:hover {
-            background-color: #128C7E;
-            transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(37, 211, 102, 0.3);
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 255, 255, 0.5);
         }
-
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1050;
-        }
-
-        .custom-toast {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            padding: 1rem;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            min-width: 300px;
-        }
-
-        .toast-icon {
-            font-size: 1.5rem;
-            margin-left: 1rem;
-        }
-
-        .toast-success .toast-icon {
-            color: var(--success-color);
-        }
-
-        .toast-error .toast-icon {
-            color: var(--danger-color);
-        }
-
-        .branch-logo {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            margin-left: 8px;
-        }
-
-        .service-logo {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            margin-left: 10px;
-        }
-
+        
+        /* Service cards with neon effects */
         .delivery-service-card {
-            border-radius: 10px;
-            border: none;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             transition: all 0.3s ease;
             height: 100%;
             overflow: hidden;
+            position: relative;
         }
-
+        
+        .delivery-service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .delivery-service-card:hover::before {
+            opacity: 1;
+        }
+        
         .delivery-service-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.4);
         }
-
+        
         .service-header {
             padding: 1rem;
             color: white;
             font-weight: bold;
             display: flex;
             align-items: center;
+            position: relative;
+            overflow: hidden;
         }
-
-        .service-body {
-            padding: 1rem;
+        
+        .service-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.5);
         }
-
-        .service-stat {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #eee;
+        
+        .service-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            margin-left: 10px;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
         }
-
-        .service-stat:last-child {
-            border-bottom: none;
+        
+        /* Chart containers */
+        .chart-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            margin-bottom: 2rem;
+            height: 350px;
+            position: relative;
+            overflow: hidden;
         }
-
-        .service-stat-label {
-            color: #6c757d;
+        
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.1) 0%, transparent 70%);
+            animation: rotate 30s linear infinite;
+            z-index: -1;
         }
-
-        .service-stat-value {
-            font-weight: bold;
+        
+        /* Form styling */
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 10px;
+            padding: 0.75rem;
+            transition: all 0.3s ease;
         }
-
-        .talabat-bg { background-color: #e4002b; }
-        .careem-bg { background-color: #10dc60; }
-        .deliveroo-bg { background-color: #00ccbc; }
-        .noon-bg { background-color: #fecb2f; }
-        .smiles-bg { background-color: #ff6900; }
-
+        
+        .form-control:focus, .form-select:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(0, 255, 255, 0.25);
+            color: white;
+        }
+        
+        .form-label {
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        
+        /* Section titles */
         .section-title {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: bold;
             margin-bottom: 1.5rem;
-            color: var(--dark-color);
+            color: var(--text-primary);
             position: relative;
             padding-bottom: 0.5rem;
         }
-
+        
         .section-title::after {
             content: '';
             position: absolute;
             bottom: 0;
             right: 0;
-            width: 60px;
+            width: 80px;
             height: 3px;
-            background-color: var(--primary-color);
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            box-shadow: 0 0 10px var(--primary-color);
         }
-
-        .manual-entry-section {
-            background: white;
+        
+        /* Badge styling */
+        .badge {
+            font-size: 0.85rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1050;
+        }
+        
+        .custom-toast {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            min-width: 300px;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .toast-icon {
+            font-size: 1.5rem;
+            margin-left: 1rem;
+            filter: drop-shadow(0 0 8px currentColor);
+        }
+        
+        .toast-success .toast-icon {
+            color: var(--success-color);
+        }
+        
+        .toast-error .toast-icon {
+            color: var(--danger-color);
+        }
+        
+        /* Manual entry section */
+        .manual-entry-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
             padding: 2rem;
             margin-bottom: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
-
-        .form-label {
-            font-weight: 600;
-            color: var(--dark-color);
+        
+        /* Filter section */
+        .filter-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
-
-        .form-control, .form-select {
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            padding: 0.75rem;
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
-        }
-
-        .btn-primary {
-            background-color: var(--primary-color);
-            border: none;
-            border-radius: 8px;
-            padding: 0.75rem 1.5rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            background-color: #2980b9;
-            transform: translateY(-2px);
-        }
-
-        .btn-danger {
-            border-radius: 8px;
-            padding: 0.5rem 1rem;
-        }
-
-        .btn-warning {
-            border-radius: 8px;
-            padding: 0.5rem 1rem;
-        }
-
-        .modal-header {
-            background-color: var(--primary-color);
-            color: white;
-            border-radius: 10px 10px 0 0;
-        }
-
-        .modal-header .btn-close {
-            filter: brightness(0) invert(1);
-        }
-
+        
+        /* Archive section */
         .archive-section {
-            background: white;
-            border-radius: 10px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
             padding: 1.5rem;
             margin-bottom: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
-
-        .archive-tabs {
-            margin-bottom: 1rem;
-        }
-
+        
         .archive-tab {
-            padding: 0.5rem 1rem;
+            padding: 0.75rem 1.5rem;
             margin-left: 0.5rem;
-            border-radius: 5px 5px 0 0;
-            background-color: #f8f9fa;
+            border-radius: 10px 10px 0 0;
+            background: rgba(255, 255, 255, 0.1);
             cursor: pointer;
             transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
+        
         .archive-tab.active {
-            background-color: var(--primary-color);
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
             color: white;
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.5);
         }
-
-        .archive-content {
-            padding: 1rem;
-            border-top: 2px solid var(--primary-color);
-        }
-
+        
+        /* Notification items */
         .notification-item {
             display: flex;
             align-items: center;
-            padding: 0.75rem;
-            border-bottom: 1px solid #eee;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .notification-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: var(--primary-color);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .notification-item:hover::before {
+            opacity: 1;
+        }
+        
+        .notification-item:hover {
+            background: rgba(0, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        /* Modal styling */
+        .modal-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-header {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 15px 15px 0 0;
+            border: none;
+        }
+        
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+        }
+        
+        /* Action buttons */
+        .action-btn {
+            margin: 0 3px;
+            border-radius: 8px;
+            padding: 0.4rem 0.8rem;
             transition: all 0.3s ease;
         }
-
-        .notification-item:hover {
-            background-color: #f8f9fa;
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
-
-        .notification-item:last-child {
-            border-bottom: none;
+        
+        /* Report preview */
+        .report-preview {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            border-right: 4px solid var(--primary-color);
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            color: #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+            position: relative;
+            overflow: hidden;
         }
-
-        .notification-icon {
-            font-size: 1.5rem;
-            margin-left: 1rem;
+        
+        .report-preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent);
+            animation: scanline 3s linear infinite;
         }
-
-        .notification-content {
-            flex-grow: 1;
+        
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
         }
-
-        .notification-time {
-            font-size: 0.8rem;
-            color: #6c757d;
+        
+        /* WhatsApp button */
+        .whatsapp-btn {
+            background: linear-gradient(45deg, #25D366, #128C7E);
+            border: none;
+            border-radius: 30px;
+            padding: 0.75rem 2rem;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
         }
-
-        .notification-new {
-            background-color: rgba(52, 152, 219, 0.1);
+        
+        .whatsapp-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(37, 211, 102, 0.5);
+        }
+        
+        /* AI Insights section */
+        .ai-insights {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        
+        .insight-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--accent-color);
+            transition: all 0.3s ease;
+        }
+        
+        .insight-item:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .insight-icon {
+            font-size: 2rem;
+            margin-right: 1rem;
+            filter: drop-shadow(0 0 8px currentColor);
+        }
+        
+        /* Risk meter */
+        .risk-meter {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .risk-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success-color), var(--warning-color), var(--danger-color));
+            border-radius: 4px;
+            box-shadow: 0 0 10px currentColor;
+            transition: width 1s ease;
+        }
+        
+        /* Loading animation */
+        .loading-spinner {
+            width: 3rem;
+            height: 3rem;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .dashboard-header {
+                padding: 1rem 0;
+            }
+            
+            .stat-card {
+                margin-bottom: 1rem;
+            }
+            
+            .chart-container {
+                height: 250px;
+            }
         }
     </style>
 </head>
@@ -385,12 +665,12 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <h1 class="mb-0"><i class="bi bi-graph-up-arrow me-3"></i>نظام متابعة الأوامر الملغاة</h1>
-                    <p class="mb-0 mt-2">لوحة تحكم ديناميكية للمتابعة اليومية وإرسال التقارير</p>
+                    <h1 class="mb-0"><i class="bi bi-graph-up-arrow me-3 neon-text"></i>نظام متابعة الأوامر الملغية 2029</h1>
+                    <p class="mb-0 mt-2">لوحة تحكم متقدمة بالذكاء الاصطناعي</p>
                 </div>
                 <div class="col-md-4 text-md-start mt-3 mt-md-0">
                     <div class="d-flex justify-content-md-end">
-                        <button class="btn btn-light me-2" onclick="refreshData()">
+                        <button class="btn btn-light me-2 neon-border" onclick="refreshData()">
                             <i class="bi bi-arrow-clockwise me-1"></i> تحديث البيانات
                         </button>
                         <button class="btn btn-warning" onclick="exportData()">
@@ -401,8 +681,51 @@
             </div>
         </div>
     </div>
-
+    
     <div class="container">
+        <!-- AI Insights Section -->
+        <div class="ai-insights">
+            <h3 class="section-title">رؤى الذكاء الاصطناعي</h3>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="insight-item">
+                        <div class="d-flex align-items-center">
+                            <div class="insight-icon">🤖</div>
+                            <div>
+                                <div class="insight-title">نمط جديد تم اكتشافه</div>
+                                <div class="insight-desc">زيادة 23% في الإلغاءات من خدمة Talabat</div>
+                                <button class="btn btn-sm btn-primary mt-2">تحليل تفصيلي</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="insight-item">
+                        <div class="d-flex align-items-center">
+                            <div class="insight-icon">⚠️</div>
+                            <div>
+                                <div class="insight-title">تحذير عالي المخاطرة</div>
+                                <div class="insight-desc">5 طلبات متوقعة للإلغاء خلال الساعة القادمة</div>
+                                <button class="btn btn-sm btn-warning mt-2">اتخاذ إجراء</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="insight-item">
+                        <div class="d-flex align-items-center">
+                            <div class="insight-icon">💡</div>
+                            <div>
+                                <div class="insight-title">توصية تحسينية</div>
+                                <div class="insight-desc">تحسين إعداد الطلبات في فرع Hamdan St</div>
+                                <button class="btn btn-sm btn-success mt-2">تطبيق التوصية</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Manual Entry Section -->
         <div class="manual-entry-section">
             <h3 class="section-title">إدخال يدوي للأوامر</h3>
@@ -474,7 +797,7 @@
                 </div>
             </form>
         </div>
-
+        
         <!-- General Statistics Cards -->
         <div class="row mb-4">
             <div class="col-md-3 mb-3">
@@ -485,6 +808,9 @@
                         </div>
                         <div class="stat-number" id="totalCancelled">0</div>
                         <div class="stat-label">إجمالي الملغيات اليوم</div>
+                        <div class="risk-meter">
+                            <div class="risk-bar" style="width: 65%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -496,6 +822,9 @@
                         </div>
                         <div class="stat-number" id="restaurantCancelled">0</div>
                         <div class="stat-label">إلغاء من المطعم</div>
+                        <div class="risk-meter">
+                            <div class="risk-bar" style="width: 45%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -507,6 +836,9 @@
                         </div>
                         <div class="stat-number" id="deliveryCancelled">0</div>
                         <div class="stat-label">إلغاء من التوصيل</div>
+                        <div class="risk-meter">
+                            <div class="risk-bar" style="width: 75%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -518,11 +850,14 @@
                         </div>
                         <div class="stat-number" id="customerCancelled">0</div>
                         <div class="stat-label">إلغاء من العميل</div>
+                        <div class="risk-meter">
+                            <div class="risk-bar" style="width: 30%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
+        
         <!-- Delivery Services Section -->
         <div class="mb-4">
             <h3 class="section-title">لوحة بيانات خدمات التوصيل</h3>
@@ -546,6 +881,12 @@
                                 <span class="service-stat-label">الطلبات دون رد</span>
                                 <span class="service-stat-value" id="talabat-unanswered">0</span>
                             </div>
+                            <div class="service-stat">
+                                <span class="service-stat-label">مستوى المخاطرة</span>
+                                <div class="risk-meter">
+                                    <div class="risk-bar" style="width: 80%"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -567,6 +908,12 @@
                             <div class="service-stat">
                                 <span class="service-stat-label">الطلبات دون رد</span>
                                 <span class="service-stat-value" id="careem-unanswered">0</span>
+                            </div>
+                            <div class="service-stat">
+                                <span class="service-stat-label">مستوى المخاطرة</span>
+                                <div class="risk-meter">
+                                    <div class="risk-bar" style="width: 45%"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -590,6 +937,12 @@
                                 <span class="service-stat-label">الطلبات دون رد</span>
                                 <span class="service-stat-value" id="deliveroo-unanswered">0</span>
                             </div>
+                            <div class="service-stat">
+                                <span class="service-stat-label">مستوى المخاطرة</span>
+                                <div class="risk-meter">
+                                    <div class="risk-bar" style="width: 60%"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -611,6 +964,12 @@
                             <div class="service-stat">
                                 <span class="service-stat-label">الطلبات دون رد</span>
                                 <span class="service-stat-value" id="noon-unanswered">0</span>
+                            </div>
+                            <div class="service-stat">
+                                <span class="service-stat-label">مستوى المخاطرة</span>
+                                <div class="risk-meter">
+                                    <div class="risk-bar" style="width: 35%"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -634,12 +993,18 @@
                                 <span class="service-stat-label">الطلبات دون رد</span>
                                 <span class="service-stat-value" id="smiles-unanswered">0</span>
                             </div>
+                            <div class="service-stat">
+                                <span class="service-stat-label">مستوى المخاطرة</span>
+                                <div class="risk-meter">
+                                    <div class="risk-bar" style="width: 25%"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
+        
         <!-- Filters -->
         <div class="filter-section">
             <div class="row align-items-center">
@@ -695,7 +1060,7 @@
                 </div>
             </div>
         </div>
-
+        
         <!-- Charts -->
         <div class="row mb-4">
             <div class="col-md-6">
@@ -711,7 +1076,7 @@
                 </div>
             </div>
         </div>
-
+        
         <!-- Orders Table -->
         <div class="table-container">
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -740,6 +1105,7 @@
                             <th>القيمة</th>
                             <th>الحالة</th>
                             <th>السبب</th>
+                            <th>مستوى المخاطرة</th>
                             <th>الإجراءات</th>
                         </tr>
                     </thead>
@@ -749,7 +1115,7 @@
                 </table>
             </div>
         </div>
-
+        
         <!-- Archive Section -->
         <div class="archive-section">
             <h3 class="section-title">الأرشيف والإشعارات</h3>
@@ -794,7 +1160,7 @@
             </div>
         </div>
     </div>
-
+    
     <!-- Edit Order Modal -->
     <div class="modal fade" id="editOrderModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -877,7 +1243,7 @@
             </div>
         </div>
     </div>
-
+    
     <!-- Report Preview Modal -->
     <div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -891,7 +1257,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
-                    <button type="button" class="btn send-report-btn" onclick="sendReport()">
+                    <button type="button" class="btn btn-primary" onclick="sendReport()">
                         <i class="bi bi-send me-1"></i> إرسال التقرير
                     </button>
                     <button type="button" class="btn whatsapp-btn" onclick="sendReportToWhatsApp()">
@@ -901,17 +1267,400 @@
             </div>
         </div>
     </div>
-
+    
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
-
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // AI-Powered Cancellation Risk Predictor
+        class AIPredictor {
+            constructor() {
+                this.model = this.loadModel();
+            }
+            
+            loadModel() {
+                // Simulated AI model
+                return {
+                    predict: (order) => {
+                        const riskFactors = {
+                            timeOfDay: this.analyzeTime(order.date),
+                            serviceHistory: this.getServiceHistory(order.service),
+                            locationPattern: this.getLocationPattern(order.location),
+                            weather: this.getWeatherData(order.date)
+                        };
+                        
+                        return this.calculateRisk(riskFactors);
+                    },
+                    
+                    analyzeTime: (date) => {
+                        const hour = new Date(date).getHours();
+                        return hour > 18 || hour < 8 ? 0.7 : 0.3;
+                    },
+                    
+                    getServiceHistory: (service) => {
+                        const history = {
+                            'talabat': 0.8,
+                            'careem': 0.4,
+                            'deliveroo': 0.5,
+                            'noon': 0.3,
+                            'smiles': 0.2
+                        };
+                        return history[service] || 0.5;
+                    },
+                    
+                    getLocationPattern: (location) => {
+                        const patterns = {
+                            'Hamdan St': 0.7,
+                            'Khaldia': 0.5,
+                            'Shabiya 11': 0.6,
+                            'Muroor': 0.4,
+                            'Al Electra': 0.3,
+                            'Al Barsha': 0.5,
+                            'Al Satwa': 0.6
+                        };
+                        return patterns[location] || 0.5;
+                    },
+                    
+                    getWeatherData: (date) => {
+                        // Simulated weather data
+                        return Math.random() > 0.7 ? 0.6 : 0.3;
+                    },
+                    
+                    calculateRisk: (factors) => {
+                        const weights = {
+                            timeOfDay: 0.3,
+                            serviceHistory: 0.25,
+                            locationPattern: 0.25,
+                            weather: 0.2
+                        };
+                        
+                        let risk = 0;
+                        for (let factor in factors) {
+                            risk += factors[factor] * weights[factor];
+                        }
+                        
+                        return Math.min(1, risk);
+                    },
+                    
+                    suggestPreventiveActions: (riskLevel) => {
+                        const actions = {
+                            low: ["مراقبة عادية"],
+                            medium: ["تنبيه للمدير", "مراجعة الإجراءات"],
+                            high: ["تفعيل وضع الطوارئ", "إشعار فوري للفرع"]
+                        };
+                        
+                        if (riskLevel < 0.3) return actions.low;
+                        if (riskLevel < 0.7) return actions.medium;
+                        return actions.high;
+                    }
+                };
+            }
+            
+            predictCancellationRisk(order) {
+                return this.model.predict(order);
+            }
+            
+            getPreventiveActions(order) {
+                const risk = this.predictCancellationRisk(order);
+                return this.model.suggestPreventiveActions(risk);
+            }
+        }
+        
+        // Advanced Notification System
+        class AdvancedNotificationSystem {
+            constructor() {
+                this.notificationTypes = {
+                    urgent: { color: '#ff00ff', sound: 'alert', vibration: true },
+                    warning: { color: '#ffff00', sound: 'warning', vibration: false },
+                    info: { color: '#00ffff', sound: 'info', vibration: false }
+                };
+            }
+            
+            sendSmartNotification(message, type, target) {
+                const notification = {
+                    id: Date.now(),
+                    message,
+                    type: type || 'info',
+                    timestamp: new Date(),
+                    target,
+                    read: false
+                };
+                
+                // Display notification
+                this.displayNotification(notification);
+                
+                // Play sound if needed
+                if (this.notificationTypes[type].sound) {
+                    this.playSound(this.notificationTypes[type].sound);
+                }
+                
+                // Vibrate if needed
+                if (this.notificationTypes[type].vibration && 'vibrate' in navigator) {
+                    navigator.vibrate(200);
+                }
+                
+                // Send to other channels
+                this.sendToSlack(notification);
+                this.sendToTeams(notification);
+            }
+            
+            displayNotification(notification) {
+                const toastContainer = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = `custom-toast toast-${notification.type}`;
+                toast.id = `toast-${notification.id}`;
+                
+                const icon = notification.type === 'success' ? 'bi-check-circle-fill' : 
+                            notification.type === 'error' ? 'bi-x-circle-fill' : 
+                            notification.type === 'warning' ? 'bi-exclamation-triangle-fill' : 
+                            'bi-info-circle-fill';
+                
+                toast.innerHTML = `
+                    <div class="toast-icon">
+                        <i class="bi ${icon}"></i>
+                    </div>
+                    <div>${notification.message}</div>
+                `;
+                
+                toastContainer.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    setTimeout(() => {
+                        toastContainer.removeChild(toast);
+                    }, 300);
+                }, 5000);
+            }
+            
+            playSound(type) {
+                // Implementation for playing notification sounds
+                console.log(`Playing sound: ${type}`);
+            }
+            
+            sendToSlack(notification) {
+                // Implementation for sending to Slack
+                console.log('Sending to Slack:', notification);
+            }
+            
+            sendToTeams(notification) {
+                // Implementation for sending to Teams
+                console.log('Sending to Teams:', notification);
+            }
+        }
+        
+        // Advanced Report System
+        class AdvancedReportSystem {
+            constructor() {
+                this.reportTypes = {
+                    predictive: { name: "تقرير تنبؤي", icon: "bi-graph-up" },
+                    comparative: { name: "تقرير مقارن", icon: "bi-bar-chart" },
+                    anomaly: { name: "كشف الشذوذ", icon: "bi-exclamation-triangle" },
+                    optimization: { name: "تحسين العمليات", icon: "bi-gear" }
+                };
+            }
+            
+            generateAdvancedReport(type, data) {
+                const report = {
+                    id: `RPT-${Date.now()}`,
+                    type,
+                    generatedAt: new Date(),
+                    data: this.analyzeData(type, data),
+                    recommendations: this.generateRecommendations(type, data),
+                    visualization: this.createVisualization(type, data)
+                };
+                
+                return this.exportReport(report);
+            }
+            
+            analyzeData(type, data) {
+                switch(type) {
+                    case 'predictive':
+                        return this.analyzePredictiveData(data);
+                    case 'anomaly':
+                        return this.analyzeAnomalyData(data);
+                    default:
+                        return this.analyzeStandardData(data);
+                }
+            }
+            
+            analyzePredictiveData(data) {
+                const predictions = data.map(order => ({
+                    id: order.id,
+                    risk: this.calculateRiskScore(order),
+                    factors: this.identifyRiskFactors(order)
+                }));
+                
+                return {
+                    totalOrders: data.length,
+                    highRiskOrders: predictions.filter(p => p.risk > 0.7).length,
+                    mediumRiskOrders: predictions.filter(p => p.risk > 0.4 && p.risk <= 0.7).length,
+                    lowRiskOrders: predictions.filter(p => p.risk <= 0.4).length,
+                    predictions
+                };
+            }
+            
+            analyzeAnomalyData(data) {
+                const anomalies = this.detectAnomalies(data);
+                return {
+                    totalAnomalies: anomalies.length,
+                    anomalyTypes: this.categorizeAnomalies(anomalies),
+                    impact: this.calculateAnomalyImpact(anomalies)
+                };
+            }
+            
+            analyzeStandardData(data) {
+                return {
+                    totalOrders: data.length,
+                    cancellations: data.filter(o => o.status === 'cancelled').length,
+                    refunds: data.filter(o => o.status === 'refunded').length,
+                    unresolved: data.filter(o => o.status === 'unanswered').length
+                };
+            }
+            
+            calculateRiskScore(order) {
+                const aiPredictor = new AIPredictor();
+                return aiPredictor.predictCancellationRisk(order);
+            }
+            
+            identifyRiskFactors(order) {
+                const factors = [];
+                
+                // Time-based factors
+                const hour = new Date(order.date).getHours();
+                if (hour > 18 || hour < 8) factors.push('وقت غير مناسب');
+                
+                // Service-based factors
+                const highRiskServices = ['talabat'];
+                if (highRiskServices.includes(order.service)) factors.push('خدمة عالية المخاطرة');
+                
+                // Location-based factors
+                const highRiskLocations = ['Hamdan St'];
+                if (highRiskLocations.includes(order.location)) factors.push('فرع عالي المخاطرة');
+                
+                return factors;
+            }
+            
+            detectAnomalies(data) {
+                // Simple anomaly detection based on statistical deviation
+                const amounts = data.map(o => o.amount);
+                const mean = amounts.reduce((a, b) => a + b, 0) / amounts.length;
+                const stdDev = Math.sqrt(amounts.map(a => Math.pow(a - mean, 2)).reduce((a, b) => a + b) / amounts.length);
+                
+                return data.filter(order => Math.abs(order.amount - mean) > 2 * stdDev);
+            }
+            
+            categorizeAnomalies(anomalies) {
+                return {
+                    highValue: anomalies.filter(a => a.amount > mean + 2 * stdDev).length,
+                    lowValue: anomalies.filter(a => a.amount < mean - 2 * stdDev).length,
+                    unusualService: anomalies.filter(a => !['talabat', 'careem', 'deliveroo'].includes(a.service)).length
+                };
+            }
+            
+            calculateAnomalyImpact(anomalies) {
+                return anomalies.reduce((sum, a) => sum + a.amount, 0);
+            }
+            
+            generateRecommendations(type, data) {
+                switch(type) {
+                    case 'predictive':
+                        return [
+                            "زيادة عدد الموظفين خلال ساعات الذروة",
+                            "تحسين التواصل مع خدمات التوصيل",
+                            "تدريب الموظفين على التعامل مع الطلبات عالية المخاطرة"
+                        ];
+                    case 'anomaly':
+                        return [
+                            "مراجعة إجراءات المطابخ في الفروع المتضررة",
+                            "تحسين نظام التنبؤ بالطلب",
+                            "زيادة التدريب على التعامل مع الطلبات غير المعتادة"
+                        ];
+                    default:
+                        return [
+                            "تحسين عمليات الفرع",
+                            "زيادة التواصل مع العملاء",
+                            "مراجعة سياسات الإلغاء"
+                        ];
+                }
+            }
+            
+            createVisualization(type, data) {
+                // This would create appropriate charts based on report type
+                return {
+                    type: 'chart',
+                    config: this.getChartConfig(type, data)
+                };
+            }
+            
+            getChartConfig(type, data) {
+                switch(type) {
+                    case 'predictive':
+                        return {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['عالي المخاطرة', 'متوسط المخاطرة', 'منخفض المخاطرة'],
+                                datasets: [{
+                                    data: [
+                                        data.highRiskOrders,
+                                        data.mediumRiskOrders,
+                                        data.lowRiskOrders
+                                    ],
+                                    backgroundColor: ['#ff0040', '#ffaa00', '#00ff88']
+                                }]
+                            }
+                        };
+                    case 'anomaly':
+                        return {
+                            type: 'bar',
+                            data: {
+                                labels: ['قيمة عالية', 'قيمة منخفضة', 'خدمة غير معتادة'],
+                                datasets: [{
+                                    label: 'عدد الشذوذ',
+                                    data: [
+                                        data.anomalyTypes.highValue,
+                                        data.anomalyTypes.lowValue,
+                                        data.anomalyTypes.unusualService
+                                    ],
+                                    backgroundColor: ['#ff0040', '#00ff88', '#ffaa00']
+                                }]
+                            }
+                        };
+                    default:
+                        return {
+                            type: 'pie',
+                            data: {
+                                labels: ['ملغي', 'مسترد', 'دون رد'],
+                                datasets: [{
+                                    data: [
+                                        data.cancellations,
+                                        data.refunds,
+                                        data.unresolved
+                                    ],
+                                    backgroundColor: ['#ff0040', '#00ff88', '#ffaa00']
+                                }]
+                            }
+                        };
+                }
+            }
+            
+            exportReport(report) {
+                // Implementation for exporting report
+                console.log('Exporting report:', report);
+                return report;
+            }
+        }
+        
+        // Initialize advanced systems
+        const aiPredictor = new AIPredictor();
+        const notificationSystem = new AdvancedNotificationSystem();
+        const reportSystem = new AdvancedReportSystem();
+        
         // Initialize data from localStorage or use default data
         let ordersData = [];
         let existingOrderIds = [];
-
+        
         // Load data from localStorage on page load
         function loadDataFromLocalStorage() {
             const savedData = localStorage.getItem('ordersData');
@@ -981,16 +1730,16 @@
                 saveDataToLocalStorage();
             }
         }
-
+        
         // Save data to localStorage
         function saveDataToLocalStorage() {
             localStorage.setItem('ordersData', JSON.stringify(ordersData));
         }
-
+        
         let currentReport = null;
         let reasonChart = null;
         let locationChart = null;
-
+        
         // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
             loadDataFromLocalStorage();
@@ -1005,8 +1754,14 @@
             
             // Set today's date as default for manual entry
             document.getElementById('manualDate').value = new Date().toISOString().split('T')[0];
+            
+            // Start periodic updates
+            setInterval(() => {
+                updatePredictions();
+                checkAnomalies();
+            }, 60000); // Every minute
         });
-
+        
         // Handle manual entry form submission
         function handleManualSubmit(event) {
             event.preventDefault();
@@ -1031,6 +1786,10 @@
             // Generate reason text and action based on reason
             formData.reasonText = generateReasonText(formData.reason, formData.notes);
             formData.action = generateAction(formData.reason, formData.service);
+            
+            // Calculate risk level
+            formData.riskLevel = aiPredictor.predictCancellationRisk(formData);
+            formData.preventiveActions = aiPredictor.getPreventiveActions(formData);
             
             // Add to data
             ordersData.push(formData);
@@ -1057,8 +1816,17 @@
             
             // Generate report for new order
             generateReportForNewOrder(formData);
+            
+            // Check for high risk
+            if (formData.riskLevel > 0.7) {
+                notificationSystem.sendSmartNotification(
+                    `تحذير عالي المخاطرة: طلب ${formData.id} من ${formData.location}`,
+                    'urgent',
+                    'manager'
+                );
+            }
         }
-
+        
         // Generate reason text based on reason and notes
         function generateReasonText(reason, notes) {
             if (notes) {
@@ -1073,7 +1841,7 @@
             
             return reasonTexts[reason] || 'Unknown reason';
         }
-
+        
         // Generate action based on reason and service
         function generateAction(reason, service) {
             if (reason === 'restaurant') {
@@ -1094,7 +1862,7 @@
             const serviceName = serviceNames[service] || 'the delivery company';
             return `Follow-up with ${serviceName} support to confirm reason & avoid repetition.`;
         }
-
+        
         // Edit order
         function editOrder(orderId) {
             const order = ordersData.find(o => o.id === orderId);
@@ -1115,7 +1883,7 @@
             const modal = new bootstrap.Modal(document.getElementById('editOrderModal'));
             modal.show();
         }
-
+        
         // Handle edit form submission
         function handleEditSubmit(event) {
             event.preventDefault();
@@ -1147,6 +1915,10 @@
             formData.reasonText = generateReasonText(formData.reason, formData.notes);
             formData.action = generateAction(formData.reason, formData.service);
             
+            // Calculate risk level
+            formData.riskLevel = aiPredictor.predictCancellationRisk(formData);
+            formData.preventiveActions = aiPredictor.getPreventiveActions(formData);
+            
             // Update order in array
             ordersData[orderIndex] = formData;
             
@@ -1174,7 +1946,7 @@
             // Add notification
             addNotification(`تم تعديل الأمر: ${formData.id}`, 'warning');
         }
-
+        
         // Delete order
         function deleteOrder(orderId) {
             if (!confirm('هل أنت متأكد من حذف هذا الأمر؟')) return;
@@ -1198,7 +1970,7 @@
             // Add notification
             addNotification(`تم حذف الأمر: ${orderId}`, 'error');
         }
-
+        
         // Add notification
         function addNotification(message, type = 'info') {
             const notificationsTab = document.getElementById('notificationsTab');
@@ -1243,7 +2015,7 @@
                 notificationsTab.removeChild(notificationsTab.lastChild);
             }
         }
-
+        
         // Switch archive tab
         function switchArchiveTab(tabName) {
             // Update active tab
@@ -1272,7 +2044,7 @@
                             <tbody>
                                 <tr>
                                     <td>2025-08-29</td>
-                                    <td>تقرير يومي</td>
+                                    <td>تقرير تنبؤي</td>
                                     <td>12</td>
                                     <td><span class="badge bg-success">تم الإرسال</span></td>
                                     <td>
@@ -1281,7 +2053,7 @@
                                 </tr>
                                 <tr>
                                     <td>2025-08-28</td>
-                                    <td>تقرير يومي</td>
+                                    <td>تقرير مقارن</td>
                                     <td>8</td>
                                     <td><span class="badge bg-success">تم الإرسال</span></td>
                                     <td>
@@ -1290,9 +2062,9 @@
                                 </tr>
                                 <tr>
                                     <td>2025-08-27</td>
-                                    <td>تقرير يومي</td>
+                                    <td>كشف شذوذ</td>
                                     <td>15</td>
-                                    <td><span class="badge bg-success">تم الإرسال</span></td>
+                                    <td><span class="badge bg-warning">تحت المراجعة</span></td>
                                     <td>
                                         <button class="btn btn-sm btn-outline-primary">عرض</button>
                                     </td>
@@ -1317,25 +2089,25 @@
                                 <tr>
                                     <td>2025-08-29 09:35</td>
                                     <td>إضافة أمر جديد</td>
-                                    <td>إدخال يدوي</td>
+                                    <td>إدخال يدوي مع تحليل المخاطرة</td>
                                     <td><span class="badge bg-success">تمت الإضافة</span></td>
                                 </tr>
                                 <tr>
                                     <td>2025-08-29 10:00</td>
-                                    <td>إرسال تقرير يومي</td>
-                                    <td>تقرير شامل لليوم</td>
+                                    <td>إرسال تقرير تنبؤي</td>
+                                    <td>تقرير شامل مع توصيات</td>
                                     <td><span class="badge bg-success">تم الإرسال</span></td>
                                 </tr>
                                 <tr>
                                     <td>2025-08-29 11:15</td>
                                     <td>تعديل أمر</td>
-                                    <td>تعديل بيانات الأمر</td>
+                                    <td>تحديث بيانات الطلب</td>
                                     <td><span class="badge bg-success">تم التعديل</span></td>
                                 </tr>
                                 <tr>
                                     <td>2025-08-28 09:15</td>
-                                    <td>تصدير بيانات</td>
-                                    <td>ملف Excel</td>
+                                    <td>تصدير بيانات متقدمة</td>
+                                    <td>ملف Excel مع تحليل المخاطرة</td>
                                     <td><span class="badge bg-success">تم التصدير</span></td>
                                 </tr>
                             </tbody>
@@ -1344,20 +2116,19 @@
                 `;
             }
         }
-
+        
         // Update statistics cards
         function updateStatistics() {
             const totalCancelled = ordersData.length;
             const restaurantCancelled = ordersData.filter(o => o.reason === 'restaurant').length;
             const deliveryCancelled = ordersData.filter(o => o.reason === 'delivery').length;
             const customerCancelled = ordersData.filter(o => o.reason === 'customer').length;
-
             document.getElementById('totalCancelled').textContent = totalCancelled;
             document.getElementById('restaurantCancelled').textContent = restaurantCancelled;
             document.getElementById('deliveryCancelled').textContent = deliveryCancelled;
             document.getElementById('customerCancelled').textContent = customerCancelled;
         }
-
+        
         // Update delivery services statistics
         function updateDeliveryServicesStats() {
             const services = ['talabat', 'careem', 'deliveroo', 'noon', 'smiles'];
@@ -1373,16 +2144,26 @@
                 document.getElementById(`${service}-unanswered`).textContent = unanswered;
             });
         }
-
+        
         // Render the orders table
         function renderTable() {
             const tableBody = document.getElementById('ordersTableBody');
             tableBody.innerHTML = '';
-
             const filteredData = getFilteredData();
-
+            
             filteredData.forEach(order => {
                 const row = document.createElement('tr');
+                
+                // Calculate risk level
+                const riskLevel = aiPredictor.predictCancellationRisk(order);
+                let riskBadge = '';
+                if (riskLevel > 0.7) {
+                    riskBadge = '<span class="badge bg-danger">عالي المخاطرة</span>';
+                } else if (riskLevel > 0.4) {
+                    riskBadge = '<span class="badge bg-warning">متوسط المخاطرة</span>';
+                } else {
+                    riskBadge = '<span class="badge bg-success">منخفض المخاطرة</span>';
+                }
                 
                 let reasonBadge = '';
                 if (order.reason === 'restaurant') {
@@ -1392,7 +2173,7 @@
                 } else {
                     reasonBadge = '<span class="badge bg-info">من العميل</span>';
                 }
-
+                
                 let statusBadge = '';
                 if (order.status === 'cancelled') {
                     statusBadge = '<span class="badge bg-danger">ملغي</span>';
@@ -1401,17 +2182,17 @@
                 } else {
                     statusBadge = '<span class="badge bg-secondary">دون رد</span>';
                 }
-
+                
                 let serviceBadge = '';
                 const serviceColors = {
-                    'talabat': 'e4002b',
-                    'careem': '10dc60',
-                    'deliveroo': '00ccbc',
-                    'noon': 'fecb2f',
-                    'smiles': 'ff6900'
+                    'talabat': '#e4002b',
+                    'careem': '#10dc60',
+                    'deliveroo': '#00ccbc',
+                    'noon': '#fecb2f',
+                    'smiles': '#ff6900'
                 };
                 serviceBadge = `<span class="badge" style="background-color: #${serviceColors[order.service]}">${getServiceName(order.service)}</span>`;
-
+                
                 row.innerHTML = `
                     <td>${order.id}</td>
                     <td>${order.date}</td>
@@ -1425,6 +2206,7 @@
                     <td>${order.amount} AED</td>
                     <td>${statusBadge}</td>
                     <td>${reasonBadge}</td>
+                    <td>${riskBadge}</td>
                     <td>
                         <button class="btn btn-sm btn-primary action-btn" onclick="viewReport('${order.id}')">
                             <i class="bi bi-eye"></i> عرض
@@ -1441,7 +2223,7 @@
                 tableBody.appendChild(row);
             });
         }
-
+        
         // Get service name in Arabic
         function getServiceName(service) {
             const names = {
@@ -1453,7 +2235,7 @@
             };
             return names[service] || service;
         }
-
+        
         // Get filtered data based on filters
         function getFilteredData() {
             let filtered = [...ordersData];
@@ -1464,40 +2246,35 @@
             const statusFilter = document.getElementById('statusFilter').value;
             const dateFrom = document.getElementById('dateFrom').value;
             const dateTo = document.getElementById('dateTo').value;
-
+            
             if (reasonFilter) {
                 filtered = filtered.filter(order => order.reason === reasonFilter);
             }
-
             if (locationFilter) {
                 filtered = filtered.filter(order => order.location === locationFilter);
             }
-
             if (serviceFilter) {
                 filtered = filtered.filter(order => order.service === serviceFilter);
             }
-
             if (statusFilter) {
                 filtered = filtered.filter(order => order.status === statusFilter);
             }
-
             if (dateFrom) {
                 filtered = filtered.filter(order => order.date >= dateFrom);
             }
-
             if (dateTo) {
                 filtered = filtered.filter(order => order.date <= dateTo);
             }
-
+            
             return filtered;
         }
-
+        
         // Filter table when filters change
         function filterTable() {
             renderTable();
             updateCharts();
         }
-
+        
         // Initialize charts
         function initCharts() {
             // Reason distribution chart
@@ -1513,9 +2290,9 @@
                             ordersData.filter(o => o.reason === 'customer').length
                         ],
                         backgroundColor: [
-                            '#e74c3c',
-                            '#f39c12',
-                            '#3498db'
+                            '#ff0040',
+                            '#ffaa00',
+                            '#00ff88'
                         ],
                         borderWidth: 0
                     }]
@@ -1525,19 +2302,25 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'bottom'
+                            position: 'bottom',
+                            labels: {
+                                color: '#ffffff',
+                                font: {
+                                    size: 14
+                                }
+                            }
                         }
                     }
                 }
             });
-
+            
             // Location chart
             const locationCtx = document.getElementById('locationChart').getContext('2d');
             const locationCounts = {};
             ordersData.forEach(order => {
                 locationCounts[order.location] = (locationCounts[order.location] || 0) + 1;
             });
-
+            
             locationChart = new Chart(locationCtx, {
                 type: 'bar',
                 data: {
@@ -1545,8 +2328,8 @@
                     datasets: [{
                         label: 'عدد الإلغاءات',
                         data: Object.values(locationCounts),
-                        backgroundColor: '#3498db',
-                        borderColor: '#2980b9',
+                        backgroundColor: '#00ffff',
+                        borderColor: '#00ffff',
                         borderWidth: 1
                     }]
                 },
@@ -1557,20 +2340,35 @@
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                stepSize: 1
+                                stepSize: 1,
+                                color: '#ffffff'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
                             }
                         },
                         x: {
                             ticks: {
                                 maxRotation: 45,
-                                minRotation: 45
+                                minRotation: 45,
+                                color: '#ffffff'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#ffffff'
                             }
                         }
                     }
                 }
             });
         }
-
+        
         // Update charts with filtered data
         function updateCharts() {
             const filteredData = getFilteredData();
@@ -1582,18 +2380,18 @@
                 filteredData.filter(o => o.reason === 'customer').length
             ];
             reasonChart.update();
-
+            
             // Update location chart
             const locationCounts = {};
             filteredData.forEach(order => {
                 locationCounts[order.location] = (locationCounts[order.location] || 0) + 1;
             });
-
+            
             locationChart.data.labels = Object.keys(locationCounts);
             locationChart.data.datasets[0].data = Object.values(locationCounts);
             locationChart.update();
         }
-
+        
         // Export data to Excel
         function exportData() {
             showToast('جاري تصدير البيانات...', 'success');
@@ -1609,6 +2407,8 @@
                 'السبب': order.reason,
                 'نص السبب': order.reasonText,
                 'الإجراء': order.action,
+                'مستوى المخاطرة': order.riskLevel ? `${Math.round(order.riskLevel * 100)}%` : 'N/A',
+                'إجراءات وقائية': order.preventiveActions ? order.preventiveActions.join(', ') : 'N/A',
                 'ملاحظات': order.notes || ''
             }));
             
@@ -1617,7 +2417,7 @@
             const ws = XLSX.utils.json_to_sheet(exportData);
             
             // Add worksheet to workbook
-            XLSX.utils.book_append_sheet(wb, ws, "الأوامر الملغاة");
+            XLSX.utils.book_append_sheet(wb, ws, "الأوامر الملغية");
             
             // Generate filename with current date
             const today = new Date();
@@ -1631,19 +2431,34 @@
             // Add notification
             addNotification('تم تصدير البيانات إلى ملف Excel', 'success');
         }
-
+        
         // View report for a specific order
         function viewReport(orderId) {
             const order = ordersData.find(o => o.id === orderId);
             if (!order) return;
-
-            currentReport = generateOrderReport(order);
-            document.getElementById('reportPreview').textContent = currentReport;
+            
+            // Generate advanced report
+            const report = reportSystem.generateAdvancedReport('predictive', [order]);
+            currentReport = report;
+            
+            // Format report for display
+            const reportText = `📌 Reference ID: ${order.id}
+📅 Date: ${order.date}
+📍 Location: ${order.location}
+🚚 Delivery Service: ${getServiceName(order.service)}
+💰 Order Amount: ${order.amount} AED
+⚠️ Status: ${order.status}
+🔎 Reason: ${order.reasonText}
+📝 Action: ${order.action}
+🤖 Risk Level: ${Math.round(order.riskLevel * 100)}%
+🛡️ Preventive Actions: ${order.preventiveActions.join(', ')}`;
+            
+            document.getElementById('reportPreview').textContent = reportText;
             
             const modal = new bootstrap.Modal(document.getElementById('reportModal'));
             modal.show();
         }
-
+        
         // Generate report for a specific order
         function generateOrderReport(order) {
             return `📌 Reference ID: ${order.id}
@@ -1655,12 +2470,11 @@
 🔎 Reason: ${order.reasonText}
 📝 Action: ${order.action}`;
         }
-
+        
         // Send report for a specific order
         function sendOrderReport(orderId) {
             const order = ordersData.find(o => o.id === orderId);
             if (!order) return;
-
             const report = generateOrderReport(order);
             
             // Simulate sending report
@@ -1670,7 +2484,7 @@
             // Add notification
             addNotification(`تم إرسال تقرير للطلب: ${order.id}`, 'success');
         }
-
+        
         // Send daily report
         function sendDailyReport() {
             const today = new Date().toISOString().split('T')[0];
@@ -1680,15 +2494,40 @@
                 showToast('لا توجد أوامر ملغية اليوم', 'error');
                 return;
             }
-
-            const report = generateDailyReport(todayOrders);
+            
+            // Generate advanced report
+            const report = reportSystem.generateAdvancedReport('predictive', todayOrders);
             currentReport = report;
-            document.getElementById('reportPreview').textContent = report;
+            
+            // Format report for display
+            const totalOrders = todayOrders.length;
+            const highRisk = todayOrders.filter(o => o.riskLevel > 0.7).length;
+            const mediumRisk = todayOrders.filter(o => o.riskLevel > 0.4 && o.riskLevel <= 0.7).length;
+            const lowRisk = todayOrders.filter(o => o.riskLevel <= 0.4).length;
+            
+            const reportText = `📊 Daily Cancellation Report - ${today}
+📈 Total Orders: ${totalOrders}
+🔴 High Risk Orders: ${highRisk}
+🟡 Medium Risk Orders: ${mediumRisk}
+🟢 Low Risk Orders: ${lowRisk}
+❌ Cancelled Orders: ${todayOrders.filter(o => o.status === 'cancelled').length}
+🔄 Refunded Orders: ${todayOrders.filter(o => o.status === 'refunded').length}
+⏳ Unresolved Orders: ${todayOrders.filter(o => o.status === 'unanswered').length}
+🔍 Top Cancellation Reasons:
+   - Restaurant Issues: ${todayOrders.filter(o => o.reason === 'restaurant').length}
+   - Delivery Company: ${todayOrders.filter(o => o.reason === 'delivery').length}
+   - Customer: ${todayOrders.filter(o => o.reason === 'customer').length}
+📍 Top Risk Locations: ${getTopLocations(todayOrders)}
+🚚 Top Risk Services: ${getTopServices(todayOrders)}
+💡 AI Recommendations:
+${getRecommendations(todayOrders)}`;
+            
+            document.getElementById('reportPreview').textContent = reportText;
             
             const modal = new bootstrap.Modal(document.getElementById('reportModal'));
             modal.show();
         }
-
+        
         // Send daily report to WhatsApp
         function sendDailyReportToWhatsApp() {
             const today = new Date().toISOString().split('T')[0];
@@ -1698,10 +2537,40 @@
                 showToast('لا توجد أوامر ملغية اليوم', 'error');
                 return;
             }
+            
+            // Generate advanced report
+            const report = reportSystem.generateAdvancedReport('predictive', todayOrders);
+            
+            // Format report for WhatsApp
+            const totalOrders = todayOrders.length;
+            const highRisk = todayOrders.filter(o => o.riskLevel > 0.7).length;
+            const mediumRisk = todayOrders.filter(o => o.riskLevel > 0.4 && o.riskLevel <= 0.7).length;
+            const lowRisk = todayOrders.filter(o => o.riskLevel <= 0.4).length;
+            
+            const reportText = `📊 Daily Cancellation Report - ${today}
 
-            const report = generateDailyReport(todayOrders);
+📈 Total Orders: ${totalOrders}
+🔴 High Risk Orders: ${highRisk}
+🟡 Medium Risk Orders: ${mediumRisk}
+🟢 Low Risk Orders: ${lowRisk}
+
+❌ Cancelled: ${todayOrders.filter(o => o.status === 'cancelled').length}
+🔄 Refunded: ${todayOrders.filter(o => o.status === 'refunded').length}
+⏳ Unresolved: ${todayOrders.filter(o => o.status === 'unanswered').length}
+
+🔍 Top Reasons:
+   - Restaurant: ${todayOrders.filter(o => o.reason === 'restaurant').length}
+   - Delivery: ${todayOrders.filter(o => o.reason === 'delivery').length}
+   - Customer: ${todayOrders.filter(o => o.reason === 'customer').length}
+
+📍 Top Locations: ${getTopLocations(todayOrders)}
+🚚 Top Services: ${getTopServices(todayOrders)}
+
+💡 AI Recommendations:
+${getRecommendations(todayOrders)}`;
+            
             const phoneNumber = '00971509021993';
-            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(report)}`;
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(reportText)}`;
             
             // Open WhatsApp
             window.open(whatsappUrl, '_blank');
@@ -1711,47 +2580,52 @@
             // Add notification
             addNotification('تم إرسال التقرير اليومي إلى WhatsApp', 'success');
         }
-
-        // Generate daily report
-        function generateDailyReport(orders) {
-            const totalOrders = orders.length;
-            const restaurantCount = orders.filter(o => o.reason === 'restaurant').length;
-            const deliveryCount = orders.filter(o => o.reason === 'delivery').length;
-            const customerCount = orders.filter(o => o.reason === 'customer').length;
-            
+        
+        // Helper functions for reports
+        function getTopLocations(orders) {
             const locationCounts = {};
             orders.forEach(order => {
                 locationCounts[order.location] = (locationCounts[order.location] || 0) + 1;
             });
             
-            const topLocations = Object.entries(locationCounts)
+            return Object.entries(locationCounts)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 3)
                 .map(([location, count]) => `${location} (${count})`)
                 .join(', ');
-
+        }
+        
+        function getTopServices(orders) {
             const serviceCounts = {};
             orders.forEach(order => {
                 serviceCounts[order.service] = (serviceCounts[order.service] || 0) + 1;
             });
             
-            const topServices = Object.entries(serviceCounts)
+            return Object.entries(serviceCounts)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 3)
                 .map(([service, count]) => `${getServiceName(service)} (${count})`)
                 .join(', ');
-
-            return `📊 Daily Cancellation Report - ${new Date().toISOString().split('T')[0]}
-📈 Total Orders: ${totalOrders}
-❌ Cancelled Orders: ${totalOrders} (100%)
-🔍 Top Cancellation Reasons:
-   - Restaurant Issues: ${restaurantCount} (${Math.round(restaurantCount/totalOrders*100)}%)
-   - Delivery Company: ${deliveryCount} (${Math.round(deliveryCount/totalOrders*100)}%)
-   - Customer: ${customerCount} (${Math.round(customerCount/totalOrders*100)}%)
-📍 Top Cancellation Branches: ${topLocations}
-🚚 Top Cancellation Services: ${topServices}`;
         }
-
+        
+        function getRecommendations(orders) {
+            const recommendations = [];
+            
+            if (orders.some(o => o.riskLevel > 0.7)) {
+                recommendations.push("🔴 تفعيل وضع الطوارئ للطلبات عالية المخاطرة");
+            }
+            
+            if (orders.filter(o => o.reason === 'restaurant').length > 0) {
+                recommendations.push("🍳 مراجعة إجراءات المطابخ في الفروع المتضررة");
+            }
+            
+            if (orders.filter(o => o.service === 'talabat').length > 0) {
+                recommendations.push("🚴 تحسين التواصل مع Talabat");
+            }
+            
+            return recommendations.join('\n');
+        }
+        
         // Send all reports
         function sendAllReports() {
             ordersData.forEach(order => {
@@ -1762,7 +2636,7 @@
             
             showToast('جاري إرسال جميع التقارير...', 'success');
         }
-
+        
         // Send report from modal
         function sendReport() {
             if (!currentReport) return;
@@ -1777,13 +2651,13 @@
             const modal = bootstrap.Modal.getInstance(document.getElementById('reportModal'));
             modal.hide();
         }
-
+        
         // Send report from modal to WhatsApp
         function sendReportToWhatsApp() {
             if (!currentReport) return;
             
             const phoneNumber = '00971509021993';
-            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(currentReport)}`;
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(currentReport.data)}`;
             
             // Open WhatsApp
             window.open(whatsappUrl, '_blank');
@@ -1796,7 +2670,7 @@
             const modal = bootstrap.Modal.getInstance(document.getElementById('reportModal'));
             modal.hide();
         }
-
+        
         // Generate report for a single new order
         function generateReportForNewOrder(order) {
             // In a real application, this would send an email or WhatsApp message
@@ -1805,14 +2679,17 @@
             // Add notification
             addNotification(`تم إنشاء تقرير للطلب الجديد: ${order.id}`, 'info');
         }
-
+        
         // Show toast notification
         function showToast(message, type = 'success') {
             const toastContainer = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `custom-toast toast-${type}`;
             
-            const icon = type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
+            const icon = type === 'success' ? 'bi-check-circle-fill' : 
+                        type === 'error' ? 'bi-x-circle-fill' : 
+                        type === 'warning' ? 'bi-exclamation-triangle-fill' : 
+                        'bi-info-circle-fill';
             
             toast.innerHTML = `
                 <div class="toast-icon">
@@ -1830,7 +2707,7 @@
                 }, 300);
             }, 3000);
         }
-
+        
         // Refresh data (simulate)
         function refreshData() {
             showToast('جاري تحديث البيانات...', 'success');
@@ -1841,6 +2718,38 @@
                 updateCharts();
                 showToast('تم تحديث البيانات بنجاح', 'success');
             }, 1000);
+        }
+        
+        // Update predictions periodically
+        function updatePredictions() {
+            // Simulate AI prediction updates
+            ordersData.forEach(order => {
+                // Update risk level with some randomness
+                order.riskLevel = Math.min(1, order.riskLevel + (Math.random() - 0.5) * 0.1);
+                order.preventiveActions = aiPredictor.getPreventiveActions(order);
+            });
+            
+            // Save updated data
+            saveDataToLocalStorage();
+            
+            // Update UI if needed
+            renderTable();
+        }
+        
+        // Check for anomalies
+        function checkAnomalies() {
+            // Simple anomaly detection
+            const anomalies = ordersData.filter(order => {
+                return order.amount > 100 || order.status === 'unanswered';
+            });
+            
+            if (anomalies.length > 0) {
+                notificationSystem.sendSmartNotification(
+                    `اكتشاف ${anomalies.length} شذوذ في البيانات`,
+                    'warning',
+                    'analyst'
+                );
+            }
         }
     </script>
 </body>
