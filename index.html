@@ -12,6 +12,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+        :root {
+            --primary-color: #f97316;
+            --secondary-color: #ea580c;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+            --dark-color: #1f2937;
+            --light-color: #f3f4f6;
+        }
+
         * {
             box-sizing: border-box;
         }
@@ -21,83 +32,66 @@
             background-color: #f9fafb;
         }
         
-        /* Sidebar */
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        /* Sidebar transitions */
         #sidebar {
-            transition: transform 0.3s ease;
+            transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        
+        #mainContent {
+            transition: margin-right 0.3s ease-in-out;
         }
         
         .sidebar-collapsed .menu-text {
             display: none;
         }
         
-        /* Toast */
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: white;
-            padding: 16px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 1000;
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
-            min-width: 300px;
+        .sidebar-collapsed #sidebarLogoText {
+            display: none;
         }
         
-        .toast.show {
-            transform: translateX(0);
+        .sidebar-collapsed #toggleIconOpen {
+            display: none;
         }
         
-        .toast-success {
-            border-right: 4px solid #10b981;
+        .sidebar-collapsed #toggleIconClosed {
+            display: block;
         }
         
-        .toast-error {
-            border-right: 4px solid #ef4444;
+        /* Status badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
         }
         
-        .toast-info {
-            border-right: 4px solid #3b82f6;
-        }
-        
-        /* Charts */
-        .chart-container {
-            position: relative;
-            height: 300px;
-        }
-        
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.3s ease;
-        }
-        
-        /* Utility */
-        .hidden {
-            display: none !important;
-        }
-        
-        /* Responsive */
-        @media (max-width: 1024px) {
-            #sidebar {
-                transform: translateX(100%);
-            }
-            
-            #sidebar.open {
-                transform: translateX(0);
-            }
-        }
-        
-        /* Loading */
+        /* Loading spinner */
         .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
+            border: 3px solid rgba(0, 0, 0, 0.1);
             border-radius: 50%;
+            border-top: 3px solid #3498db;
             width: 30px;
             height: 30px;
             animation: spin 1s linear infinite;
@@ -107,34 +101,536 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 50;
+        }
+        
+        .toast {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            min-width: 300px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast-success {
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .toast-error {
+            border-left: 4px solid var(--danger-color);
+        }
+        
+        .toast-info {
+            border-left: 4px solid var(--info-color);
+        }
+        
+        .toast-icon {
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+        
+        .toast-close {
+            margin-left: 0.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        
+        /* Dashboard animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        /* Chart container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        @media (min-width: 1024px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        
+        /* Offer type colors */
+        .offer-fixed { background-color: #fef3c7; color: #92400e; }
+        .offer-flash { background-color: #dbeafe; color: #1e40af; }
+        .offer-value { background-color: #d1fae5; color: #065f46; }
+        .offer-platform { background-color: #fce7f3; color: #9f1239; }
+        .offer-referral { background-color: #ede9fe; color: #5b21b6; }
+        
+        /* Channel colors */
+        .channel-callcenter { background-color: #ddd6fe; color: #5b21b6; }
+        .channel-noon { background-color: #bfdbfe; color: #1e40af; }
+        .channel-careem { background-color: #a7f3d0; color: #065f46; }
+        .channel-all { background-color: #fecaca; color: #991b1b; }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 800px;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        /* Tab styles */
+        .tab {
+            cursor: pointer;
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .tab:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .tab.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        /* Google Sheets simulation */
+        .sheet-container {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sheet-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .sheet-cell {
+            padding: 10px 15px;
+            border-bottom: 1px solid #e5e7eb;
+            transition: background-color 0.2s;
+        }
+        
+        .sheet-cell:hover {
+            background-color: #f9fafb;
+        }
+        
+        .sheet-header-cell {
+            background-color: #f3f4f6;
+            font-weight: 600;
+            color: #4b5563;
+        }
+        
+        /* Offer card */
+        .offer-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .offer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: var(--primary-color);
+        }
+        
+        /* Marketing button */
+        .marketing-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .marketing-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Table styles */
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: right;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #4b5563;
+        }
+        
+        tr:hover {
+            background-color: #f9fafb;
+        }
+        
+        /* Month selector */
+        .month-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .month-btn {
+            padding: 8px 16px;
+            margin: 0 5px;
+            border-radius: 5px;
+            background-color: #f3f4f6;
+            color: #4b5563;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .month-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .month-btn:hover {
+            background-color: #e5e7eb;
+        }
+        
+        .month-btn.active:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        /* Stats card */
+        .stats-card {
+            transition: all 0.3s ease;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Offer type indicator */
+        .offer-type-indicator {
+            width: 4px;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            right: 0;
+            border-radius: 0.25rem 0 0 0.25rem;
+        }
+        
+        /* Performance progress bar */
+        .progress-bar {
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s ease-in-out;
+        }
+        
+        /* Interactive elements */
+        .interactive-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .interactive-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Pulse animation */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Calendar styles */
+        .calendar-day {
+            transition: all 0.2s ease;
+        }
+        
+        .calendar-day:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        /* Real-time updates */
+        .live-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--success-color);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        /* Action buttons */
+        .action-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .action-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Accessibility improvements */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+        
+        /* Focus styles */
+        button:focus,
+        a:focus,
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+        
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1f2937;
+                color: #f3f4f6;
+            }
+            
+            .bg-white {
+                background-color: #374151;
+            }
+            
+            .text-gray-800 {
+                color: #f3f4f6;
+            }
+            
+            .text-gray-600 {
+                color: #d1d5db;
+            }
+            
+            .border-gray-200 {
+                border-color: #4b5563;
+            }
+        }
+        
+        /* Print styles */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            
+            body {
+                background-color: white;
+                color: black;
+            }
+            
+            .stats-card,
+            .offer-card {
+                break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #e5e7eb;
+            }
+        }
+        
+        /* Loading skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Tooltip styles */
+        [data-tooltip] {
+            position: relative;
+        }
+        
+        [data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            right: 50%;
+            transform: translateX(50%);
+            background-color: #1f2937;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            z-index: 50;
+            margin-bottom: 0.5rem;
+        }
+        
+        [data-tooltip]:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            right: 50%;
+            transform: translateX(50%);
+            border: 5px solid transparent;
+            border-top-color: #1f2937;
+            z-index: 50;
+        }
+        
+        /* Responsive improvements */
+        @media (max-width: 640px) {
+            .chart-container {
+                height: 250px;
+            }
+            
+            .stats-card {
+                padding: 1rem;
+            }
+            
+            .toast {
+                min-width: 250px;
+                font-size: 0.875rem;
+            }
+        }
+        
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            .border-gray-200 {
+                border-color: #000;
+            }
+            
+            .bg-gray-50 {
+                background-color: #fff;
+            }
+            
+            .text-gray-600 {
+                color: #000;
+            }
+        }
+        
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 text-gray-800">
     <!-- Toast Container -->
-    <div id="toastContainer"></div>
+    <div id="toastContainer" class="toast-container" role="alert" aria-live="polite"></div>
+    
+    <!-- Skip to main content link for accessibility -->
+    <a href="#mainContent" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:right-4 bg-orange-500 text-white px-4 py-2 rounded-md">
+        تخطي إلى المحتوى الرئيسي
+    </a>
     
     <!-- Header -->
-    <header class="bg-white shadow-sm border-b sticky top-0 z-40">
+    <header class="bg-white shadow-md border-b border-gray-200 sticky top-0 z-40 no-print">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center">
-                    <i class="fas fa-chicken text-2xl text-orange-500 ml-3"></i>
-                    <h1 class="text-xl font-bold">نظام إدارة العروض - Crispy Chicken</h1>
+                    <i class="fas fa-chicken text-2xl text-orange-500 mr-3" aria-hidden="true"></i>
+                    <h1 class="text-xl font-bold text-gray-800">نظام إدارة العروض - Crispy Chicken</h1>
                 </div>
-                <div class="flex items-center gap-4">
-                    <button class="text-gray-600 hover:text-orange-500">
-                        <i class="fas fa-bell text-xl"></i>
+                <div class="flex items-center space-x-4">
+                    <div class="hidden sm:flex items-center space-x-1 text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                        <span class="live-indicator" aria-hidden="true"></span>
+                        <span>النظام متصل</span>
+                    </div>
+                    <button class="text-gray-500 hover:text-orange-500 relative" aria-label="الإشعارات">
+                        <i class="fas fa-bell text-xl" aria-hidden="true"></i>
+                        <span class="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full border-2 border-white text-xs" aria-hidden="true"></span>
                     </button>
                     <div class="relative">
-                        <button id="profileBtn" class="flex items-center gap-2">
-                            <img src="https://placehold.co/40x40" alt="User" class="w-10 h-10 rounded-full">
-                            <span class="hidden md:block">أحمد كناوي</span>
+                        <button id="profileButton" class="flex items-center space-x-2 focus:outline-none" aria-expanded="false" aria-haspopup="true">
+                            <img src="https://placehold.co/40x40/E2E8F0/475569?text=AK" alt="صورة المستخدم" class="h-10 w-10 rounded-full border-2 border-transparent hover:border-orange-500 transition-colors">
+                            <span class="hidden md:inline text-sm font-medium text-gray-700">أحمد كناوي</span>
+                            <i class="fas fa-chevron-down text-gray-400 hidden md:inline" aria-hidden="true"></i>
                         </button>
-                        <div id="profileMenu" class="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg hidden">
-                            <a href="#" class="block px-4 py-2 hover:bg-gray-100">الملف الشخصي</a>
-                            <a href="#" class="block px-4 py-2 hover:bg-gray-100">الإعدادات</a>
-                            <hr>
-                            <a href="#" id="logoutBtn" class="block px-4 py-2 hover:bg-gray-100 text-red-600">تسجيل الخروج</a>
+                        <div id="profileDropdown" class="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-1 origin-top-right opacity-0 transform scale-95 -translate-y-2 pointer-events-none z-30" role="menu">  
+                            <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-orange-600" role="menuitem">
+                                <i class="fas fa-user-circle w-4 h-4 mr-2" aria-hidden="true"></i>ملفي الشخصي
+                            </a>
+                            <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-orange-600" role="menuitem">
+                                <i class="fas fa-cog w-4 h-4 mr-2" aria-hidden="true"></i>الإعدادات
+                            </a>
+                            <hr class="my-1 border-gray-200" role="separator">
+                            <a href="#" id="logoutButton" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600" role="menuitem">
+                                <i class="fas fa-sign-out-alt w-4 h-4 mr-2" aria-hidden="true"></i>تسجيل الخروج
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -142,168 +638,1017 @@
         </div>
     </header>
     
-    <div class="flex">
+    <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
-        <aside id="sidebar" class="w-64 bg-gray-900 text-white fixed h-full z-30">
-            <div class="p-4 border-b border-gray-700">
-                <div class="flex items-center gap-2">
-                    <i class="fas fa-chicken-hat text-2xl text-orange-500"></i>
-                    <span class="text-xl font-semibold">Crispy Chicken</span>
-                </div>
+        <aside id="sidebar" class="w-64 bg-gray-900 text-gray-100 flex flex-col fixed inset-y-0 right-0 z-30 lg:translate-x-0 transform translate-x-full" role="navigation" aria-label="القائمة الجانبية">
+            <div class="flex items-center justify-between h-20 px-4 border-b border-gray-700">
+                <a href="#" class="flex items-center space-x-2" aria-label="الصفحة الرئيسية">
+                    <i class="fas fa-chicken-hat text-2xl text-orange-500" aria-hidden="true"></i>
+                    <span id="sidebarLogoText" class="text-xl font-semibold">Crispy Chicken</span>
+                </a>
             </div>
-            <nav class="p-4">
-                <a href="#" data-section="dashboard" class="nav-item flex items-center gap-3 p-3 rounded hover:bg-gray-800 mb-2 bg-gray-800">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <span>لوحة التحكم</span>
+            <nav class="flex-1 py-6 space-y-1 overflow-y-auto" role="menubar" aria-orientation="vertical">
+                <a href="#" data-section="dashboard" class="nav-item flex items-center space-x-3 py-3 px-4 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-150 bg-gray-700 text-white" role="menuitem" aria-current="page">
+                    <i class="fas fa-tachometer-alt menu-item-icon" aria-hidden="true"></i>
+                    <span class="text-sm font-medium menu-text">لوحة التحكم</span>
                 </a>
-                <a href="#" data-section="offers" class="nav-item flex items-center gap-3 p-3 rounded hover:bg-gray-800 mb-2">
-                    <i class="fas fa-tags"></i>
-                    <span>إدارة العروض</span>
+                <a href="#" data-section="offers" class="nav-item flex items-center space-x-3 py-3 px-4 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-150" role="menuitem">
+                    <i class="fas fa-tags menu-item-icon" aria-hidden="true"></i>
+                    <span class="text-sm font-medium menu-text">إدارة العروض</span>
                 </a>
-                <a href="#" data-section="analytics" class="nav-item flex items-center gap-3 p-3 rounded hover:bg-gray-800 mb-2">
-                    <i class="fas fa-chart-line"></i>
-                    <span>التحليلات</span>
+                <a href="#" data-section="analytics" class="nav-item flex items-center space-x-3 py-3 px-4 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-150" role="menuitem">
+                    <i class="fas fa-chart-line menu-item-icon" aria-hidden="true"></i>
+                    <span class="text-sm font-medium menu-text">التحليلات</span>
                 </a>
-                <a href="#" data-section="marketing" class="nav-item flex items-center gap-3 p-3 rounded hover:bg-gray-800 mb-2">
-                    <i class="fas fa-bullhorn"></i>
-                    <span>التسويق</span>
+                <a href="#" data-section="marketing" class="nav-item flex items-center space-x-3 py-3 px-4 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-150" role="menuitem">
+                    <i class="fas fa-bullhorn menu-item-icon" aria-hidden="true"></i>
+                    <span class="text-sm font-medium menu-text">التسويق</span>
                 </a>
-                <a href="#" data-section="sheets" class="nav-item flex items-center gap-3 p-3 rounded hover:bg-gray-800 mb-2">
-                    <i class="fas fa-table"></i>
-                    <span>الجداول</span>
+                <a href="#" data-section="sheets" class="nav-item flex items-center space-x-3 py-3 px-4 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-150" role="menuitem">
+                    <i class="fas fa-table menu-item-icon" aria-hidden="true"></i>
+                    <span class="text-sm font-medium menu-text">الجداول</span>
                 </a>
             </nav>
+            <div class="px-4 py-4 border-t border-gray-700">
+                <button id="sidebarToggle" class="w-full flex items-center justify-center space-x-3 py-3 px-4 rounded-lg text-gray-400 hover:bg-gray-700 hover:text-orange-400 transition-colors duration-150 focus:outline-none hidden lg:flex" aria-label="طي القائمة الجانبية">
+                    <i id="toggleIconOpen" class="fas fa-chevron-right menu-item-icon" aria-hidden="true"></i>
+                    <i id="toggleIconClosed" class="fas fa-chevron-left menu-item-icon hidden" aria-hidden="true"></i>
+                    <span class="text-sm font-medium menu-text">طي</span>
+                </button>
+            </div>
         </aside>
         
         <!-- Sidebar Overlay -->
-        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden lg:hidden"></div>
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden lg:hidden" aria-hidden="true"></div>
         
         <!-- Main Content -->
-        <main class="flex-1 lg:mr-64">
+        <main id="mainContent" class="flex-1 flex flex-col overflow-hidden lg:mr-64">
             <!-- Sub Header -->
-            <div class="bg-white shadow-sm p-4 sticky top-16 z-20">
-                <div class="flex items-center justify-between">
-                    <button id="mobileMenuBtn" class="lg:hidden">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                    <div class="flex-1 max-w-xs mx-4">
-                        <input type="text" placeholder="بحث..." class="w-full px-4 py-2 border rounded-full">
-                    </div>
-                    <button id="addOfferBtn" class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600">
-                        <i class="fas fa-plus ml-2"></i>إنشاء عرض جديد
+            <div class="bg-white shadow-md h-20 flex items-center justify-between px-4 sm:px-6 sticky top-16 z-20 no-print"> 
+                <button id="mobileMenuButton" class="text-gray-600 hover:text-orange-500 lg:hidden" aria-label="فتح القائمة">
+                    <i class="fas fa-bars text-xl" aria-hidden="true"></i>
+                </button>
+                <div class="relative hidden sm:block">
+                    <label for="searchInput" class="sr-only">بحث</label>
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3" aria-hidden="true">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </span>
+                    <input type="text" id="searchInput" placeholder="بحث..." class="w-full max-w-xs py-2.5 pl-10 pr-4 border border-gray-300 rounded-full text-sm text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all duration-150">
+                </div>
+                <div class="flex items-center space-x-3 sm:space-x-4">
+                    <button id="addOfferBtn" class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors action-btn" aria-label="إنشاء عرض جديد">
+                        <i class="fas fa-plus mr-2" aria-hidden="true"></i>إنشاء عرض جديد
                     </button>
                 </div>
             </div>
             
-            <!-- Content Area -->
-            <div class="p-6">
+            <!-- Main Content Area -->
+            <div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-4 sm:p-6">
                 <!-- Dashboard Section -->
-                <section id="dashboardSection" class="section">
-                    <h2 class="text-2xl font-bold mb-6">لوحة التحكم</h2>
+                <section id="dashboardSection" class="section fade-in" role="main" aria-labelledby="dashboard-heading">
+                    <h1 id="dashboard-heading" class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-6">لوحة التحكم</h1>
+                    
+                    <!-- Month Selector -->
+                    <div class="month-selector" role="tablist" aria-label="اختيار الشهر">
+                        <button class="month-btn active" data-month="january" role="tab" aria-selected="true" aria-controls="january-offers">يناير</button>
+                        <button class="month-btn" data-month="march" role="tab" aria-selected="false" aria-controls="march-offers">مارس</button>
+                    </div>
                     
                     <!-- Stats Cards -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        <div class="bg-white p-6 rounded-lg shadow">
+                        <article class="stats-card bg-white rounded-xl shadow-lg p-6 relative interactive-card" onclick="showSection('offers')" tabindex="0" role="button" aria-label="عرض إجمالي العروض النشطة">
+                            <div class="offer-type-indicator bg-orange-500" aria-hidden="true"></div>
                             <div class="flex items-center justify-between mb-4">
-                                <div class="bg-orange-100 p-3 rounded-lg">
+                                <div class="bg-orange-100 p-3 rounded-lg" aria-hidden="true">
                                     <i class="fas fa-tags text-orange-600 text-xl"></i>
                                 </div>
-                                <span class="text-green-600">+12%</span>
+                                <span class="text-sm font-medium text-green-600">+12%</span>
                             </div>
-                            <h3 class="text-2xl font-bold">6</h3>
-                            <p class="text-gray-600">إجمالي العروض النشطة</p>
-                        </div>
+                            <h2 class="text-2xl font-bold text-gray-800">6</h2>
+                            <p class="text-sm text-gray-600">إجمالي العروض النشطة</p>
+                            <div class="mt-4">
+                                <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                    <span>الأداء</span>
+                                    <span>78%</span>
+                                </div>
+                                <div class="progress-bar" role="progressbar" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100">
+                                    <div class="progress-fill bg-orange-500" style="width: 78%"></div>
+                                </div>
+                            </div>
+                        </article>
                         
-                        <div class="bg-white p-6 rounded-lg shadow">
+                        <article class="stats-card bg-white rounded-xl shadow-lg p-6 relative interactive-card" onclick="showSection('analytics')" tabindex="0" role="button" aria-label="عرض إجمالي الإيرادات">
+                            <div class="offer-type-indicator bg-green-500" aria-hidden="true"></div>
                             <div class="flex items-center justify-between mb-4">
-                                <div class="bg-green-100 p-3 rounded-lg">
+                                <div class="bg-green-100 p-3 rounded-lg" aria-hidden="true">
                                     <i class="fas fa-money-bill-wave text-green-600 text-xl"></i>
                                 </div>
-                                <span class="text-green-600">+8.5%</span>
+                                <span class="text-sm font-medium text-green-600">+8.5%</span>
                             </div>
-                            <h3 class="text-2xl font-bold">$28,725</h3>
-                            <p class="text-gray-600">إجمالي الإيرادات</p>
-                        </div>
+                            <h2 class="text-2xl font-bold text-gray-800">$28,725</h2>
+                            <p class="text-sm text-gray-600">إجمالي الإيرادات</p>
+                            <div class="mt-4">
+                                <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                    <span>الأداء</span>
+                                    <span>92%</span>
+                                </div>
+                                <div class="progress-bar" role="progressbar" aria-valuenow="92" aria-valuemin="0" aria-valuemax="100">
+                                    <div class="progress-fill bg-green-500" style="width: 92%"></div>
+                                </div>
+                            </div>
+                        </article>
                         
-                        <div class="bg-white p-6 rounded-lg shadow">
+                        <article class="stats-card bg-white rounded-xl shadow-lg p-6 relative interactive-card" onclick="showSection('offers')" tabindex="0" role="button" aria-label="عرض إجمالي الاستخدامات">
+                            <div class="offer-type-indicator bg-blue-500" aria-hidden="true"></div>
                             <div class="flex items-center justify-between mb-4">
-                                <div class="bg-blue-100 p-3 rounded-lg">
+                                <div class="bg-blue-100 p-3 rounded-lg" aria-hidden="true">
                                     <i class="fas fa-shopping-cart text-blue-600 text-xl"></i>
                                 </div>
-                                <span class="text-green-600">+15.3%</span>
+                                <span class="text-sm font-medium text-green-600">+15.3%</span>
                             </div>
-                            <h3 class="text-2xl font-bold">1,166</h3>
-                            <p class="text-gray-600">إجمالي الاستخدامات</p>
-                        </div>
+                            <h2 class="text-2xl font-bold text-gray-800">1,166</h2>
+                            <p class="text-sm text-gray-600">إجمالي الاستخدامات</p>
+                            <div class="mt-4">
+                                <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                    <span>الأداء</span>
+                                    <span>85%</span>
+                                </div>
+                                <div class="progress-bar" role="progressbar" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100">
+                                    <div class="progress-fill bg-blue-500" style="width: 85%"></div>
+                                </div>
+                            </div>
+                        </article>
                         
-                        <div class="bg-white p-6 rounded-lg shadow">
+                        <article class="stats-card bg-white rounded-xl shadow-lg p-6 relative interactive-card" onclick="showSection('marketing')" tabindex="0" role="button" aria-label="عرض متوسط التقييم">
+                            <div class="offer-type-indicator bg-purple-500" aria-hidden="true"></div>
                             <div class="flex items-center justify-between mb-4">
-                                <div class="bg-purple-100 p-3 rounded-lg">
+                                <div class="bg-purple-100 p-3 rounded-lg" aria-hidden="true">
                                     <i class="fas fa-star text-purple-600 text-xl"></i>
                                 </div>
-                                <span class="text-green-600">+2.1%</span>
+                                <span class="text-sm font-medium text-green-600">+2.1%</span>
                             </div>
-                            <h3 class="text-2xl font-bold">4.8</h3>
-                            <p class="text-gray-600">متوسط التقييم</p>
+                            <h2 class="text-2xl font-bold text-gray-800">4.8</h2>
+                            <p class="text-sm text-gray-600">متوسط التقييم</p>
+                            <div class="mt-4">
+                                <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                    <span>الأداء</span>
+                                    <span>96%</span>
+                                </div>
+                                <div class="progress-bar" role="progressbar" aria-valuenow="96" aria-valuemin="0" aria-valuemax="100">
+                                    <div class="progress-fill bg-purple-500" style="width: 96%"></div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                    
+                    <!-- Charts -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <section class="bg-white rounded-xl shadow-lg p-6 interactive-card" onclick="showSection('analytics')" tabindex="0" role="button" aria-label="عرض تحليلات أداء العروض">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">أداء العروض حسب النوع</h3>
+                            <div class="chart-container">
+                                <canvas id="offersPerformanceChart" role="img" aria-label="مخطط دائري يوضح أداء العروض حسب النوع"></canvas>
+                            </div>
+                        </section>
+                        
+                        <section class="bg-white rounded-xl shadow-lg p-6 interactive-card" onclick="showSection('analytics')" tabindex="0" role="button" aria-label="عرض تحليلات الإيرادات">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">إيرادات العروض الشهرية</h3>
+                            <div class="chart-container">
+                                <canvas id="offersRevenueChart" role="img" aria-label="مخطط خطي يوضح إيرادات العروض الشهرية"></canvas>
+                            </div>
+                        </section>
+                    </div>
+                    
+                    <!-- January Offers -->
+                    <div id="january-offers" class="month-offers" role="tabpanel" aria-labelledby="january-tab">
+                        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                            <h2 class="text-xl font-semibold text-gray-800 mb-4">عروض شهر يناير</h2>
+                            
+                            <!-- Restaurant Offers -->
+                            <h3 class="text-lg font-medium text-gray-700 mb-3">عروض المطعم</h3>
+                            <div class="table-container mb-6">
+                                <table class="min-w-full" role="table" aria-label="عروض المطعم في يناير">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">التاريخ</th>
+                                            <th scope="col">تفاصيل العرض</th>
+                                            <th scope="col">القنوات المتاحة</th>
+                                            <th scope="col">الحالة</th>
+                                            <th scope="col">الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>1 يناير</td>
+                                            <td>عرض العطلات: 12 قطعة مقابل 49 درهم إماراتي</td>
+                                            <td>المطعم، الطلب الخارجي، تناول الطعام في المطعم، والتوصيل</td>
+                                            <td><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
+                                            <td>
+                                                <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editOffer('OFF001')" aria-label="تحرير العرض OFF001">
+                                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                                </button>
+                                                <button class="text-green-600 hover:text-green-800" onclick="viewAnalytics('OFF001')" aria-label="عرض تحليلات العرض OFF001">
+                                                    <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>6-7 يناير</td>
+                                            <td>عرض الوجبة السريعة (الاثنين والثلاثاء)</td>
+                                            <td>المطعم، الطلب الخارجي، تناول الطعام في المطعم، والتوصيل</td>
+                                            <td><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
+                                            <td>
+                                                <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editOffer('OFF002')" aria-label="تحرير العرض OFF002">
+                                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                                </button>
+                                                <button class="text-green-600 hover:text-green-800" onclick="viewAnalytics('OFF002')" aria-label="عرض تحليلات العرض OFF002">
+                                                    <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>13-14 يناير</td>
+                                            <td>عرض الاثنين والثلاثاء: الوجبة المثالية (12 قطعة دجاج + 3 صلص ثوم) مقابل 30 درهم إماراتي</td>
+                                            <td>المطعم، الطلب الخارجي، تناول الطعام في المطعم، والتوصيل</td>
+                                            <td><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
+                                            <td>
+                                                <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editOffer('OFF003')" aria-label="تحرير العرض OFF003">
+                                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                                </button>
+                                                <button class="text-green-600 hover:text-green-800" onclick="viewAnalytics('OFF003')" aria-label="عرض تحليلات العرض OFF003">
+                                                    <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>20-21 يناير</td>
+                                            <td>عرض يوم الدجاج: 8 قطع + 2 صلص ثوم مقابل 20 درهم إماراتي</td>
+                                            <td>المطعم، الطلب الخارجي، تناول الطعام في المطعم، والتوصيل</td>
+                                            <td><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
+                                            <td>
+                                                <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editOffer('OFF004')" aria-label="تحرير العرض OFF004">
+                                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                                </button>
+                                                <button class="text-green-600 hover:text-green-800" onclick="viewAnalytics('OFF004')" aria-label="عرض تحليلات العرض OFF004">
+                                                    <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>27-28 يناير</td>
+                                            <td>الوجبة المثالية: 12 قطعة دجاج + 3 صلص ثوم</td>
+                                            <td>المطعم، الطلب الخارجي، تناول الطعام في المطعم، والتوصيل</td>
+                                            <td><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
+                                            <td>
+                                                <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editOffer('OFF005')" aria-label="تحرير العرض OFF005">
+                                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                                </button>
+                                                <button class="text-green-600 hover:text-green-800" onclick="viewAnalytics('OFF005')" aria-label="عرض تحليلات العرض OFF005">
+                                                    <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Careem Offers -->
+                            <h3 class="text-lg font-medium text-gray-700 mb-3">عروض Careem</h3>
+                            <div class="table-container mb-6">
+                                <table class="min-w-full" role="table" aria-label="عروض Careem في يناير">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">التاريخ</th>
+                                            <th scope="col">تفاصيل العرض</th>
+                                            <th scope="col">الملاحظات</th>
+                                            <th scope="col">الحالة</th>
+                                            <th scope="col">الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>2-11 يناير</td>
+                                            <td>خصم 30% (بحد أقصى 20 درهم إماراتي)</td>
+                                            <td>الخصم من المطعم، متاح في أبوظبي ودبي</td>
+                                            <td><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
+                                            <td>
+                                                <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editOffer('OFF006')" aria-label="تحرير العرض OFF006">
+                                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                                </button>
+                                                <button class="text-green-600 hover:text-green-800" onclick="viewAnalytics('OFF006')" aria-label="عرض تحليلات العرض OFF006">
+                                                    <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>15-22 يناير</td>
+                                            <td>خصم 30% (بحد أقصى 20 درهم إماراتي)</td>
+                                            <td>-</td>
+                                            <td><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
+                                            <td>
+                                                <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editOffer('OFF007')" aria-label="تحرير العرض OFF007">
+                                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                                </button>
+                                                <button class="text-green-600 hover:text-green-800" onclick="viewAnalytics('OFF007')" aria-label="عرض تحليلات العرض OFF007">
+                                                    <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>24-31 يناير</td>
+                                            <td>خصم 50% (بحد أقصى 20 درهم إماراتي)</td>
+                                            <td>-</td>
+                                            <td><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
+                                            <td>
+                                                <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editOffer('OFF008')" aria-label="تحرير العرض OFF008">
+                                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                                </button>
+                                                <button class="text-green-600 hover:text-green-800" onclick="viewAnalytics('OFF008')" aria-label="عرض تحليلات العرض OFF008">
+                                                    <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- App Offers -->
+                            <h3 class="text-lg font-medium text-gray-700 mb-3">عروض التطبيقات والشراكات</h3>
+                            <div class="table-container mb-6">
+                                <table class="min-w-full" role="table" aria-label="عروض التطبيقات والشراكات في يناير">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">التاريخ</th>
+                                            <th scope="col">تفاصيل العرض</th>
+                                            <th scope="col">التطبيق/الشريك</th>
+                                            <th scope="col">الحالة</th>
+                                            <th scope="col">الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>24 يناير - 2 فبراير</td>
+                                            <td>عرض مهرجان الطعام الكبير: خصم 30% (بحد أقصى 20 درهم إماراتي)</td>
+                                            <td>تطبيق Noon</td>
+                                            <td><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
+                                            <td>
+                                                <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editOffer('OFF009')" aria-label="تحرير العرض OFF009">
+                                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                                </button>
+                                                <button class="text-green-600 hover:text-green-800" onclick="viewAnalytics('OFF009')" aria-label="عرض تحليلات العرض OFF009">
+                                                    <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>15 يناير - 28 فبراير 2025</td>
+                                            <td>وجبة سريعة (3 قطع دجاج، بطاطس مقلية، وصلصة ثوم) مقابل 1 درهم إماراتي عند الاستخدام الأول</td>
+                                            <td>تطبيق Payit بالشراكة مع بنك FAB</td>
+                                            <td><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
+                                            <td>
+                                                <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editOffer('OFF010')" aria-label="تحرير العرض OFF010">
+                                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                                </button>
+                                                <button class="text-green-600 hover:text-green-800" onclick="viewAnalytics('OFF010')" aria-label="عرض تحليلات العرض OFF010">
+                                                    <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>30 يناير - (مستمر)</td>
+                                            <td>عرض Smiles: خصم 50% (بحد أقصى 10 درهم إماراتي)</td>
+                                            <td>التوصيل/الاستلام</td>
+                                            <td><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
+                                            <td>
+                                                <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editOffer('OFF011')" aria-label="تحرير العرض OFF011">
+                                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                                </button>
+                                                <button class="text-green-600 hover:text-green-800" onclick="viewAnalytics('OFF011')" aria-label="عرض تحليلات العرض OFF011">
+                                                    <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- System Updates -->
+                            <h3 class="text-lg font-medium text-gray-700 mb-3">تحديثات النظام</h3>
+                            <div class="table-container">
+                                <table class="min-w-full" role="table" aria-label="تحديثات النظام في يناير">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">التاريخ</th>
+                                            <th scope="col">التفاصيل</th>
+                                            <th scope="col">النظام المتأثر</th>
+                                            <th scope="col">الحالة</th>
+                                            <th scope="col">الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>3 يناير</td>
+                                            <td>التوقف عن استخدام جهاز Talabna</td>
+                                            <td>Talabna</td>
+                                            <td><span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800">منتهي</span></td>
+                                            <td>
+                                                <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editSystemUpdate('SYS001')" aria-label="تحرير التحديث SYS001">
+                                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                                </button>
+                                                <button class="text-red-600 hover:text-red-800" onclick="deleteSystemUpdate('SYS001')" aria-label="حذف التحديث SYS001">
+                                                    <i class="fas fa-trash" aria-hidden="true"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- March Offers -->
+                    <div id="march-offers" class="month-offers hidden" role="tabpanel" aria-labelledby="march-tab">
+                        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                            <h2 class="text-xl font-semibold text-gray-800 mb-4">عروض شهر مارس</h2>
+                            
+                            <!-- Ramadan Offers -->
+                            <h3 class="text-lg font-medium text-gray-700 mb-3">عروض رمضان</h3>
+                            <div class="table-container mb-6">
+                                <table class="min-w-full" role="table" aria-label="عروض رمضان في مارس">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">التاريخ</th>
+                                            <th scope="col">تفاصيل العرض</th>
+                                            <th scope="col">القنوات المتاحة</th>
+                                            <th scope="col">الحالة</th>
+                                            <th scope="col">الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>1-31 مارس</td>
+                                            <td>وجبة رمضان الفردية: 2 قطعة دجاج + 1 ثوم + 1 أرز مقرمش + بيبسي صغير</td>
+                                            <td>المطعم، تناول الطعام في المطعم، الطلب الخارجي، التوصيل للمنزل</td>
+                                            <td><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
+                                            <td>
+                                                <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editOffer('OFF012')" aria-label="تحرير العرض OFF012">
+                                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                                </button>
+                                                <button class="text-green-600 hover:text-green-800" onclick="viewAnalytics('OFF012')" aria-label="عرض تحليلات العرض OFF012">
+                                                    <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>1-31 مارس</td>
+                                            <td>عائلة رمضان: 8 قطع دجاج + 2 ثوم + 2 بطاطس مقلية + 2 سلطة صغيرة + 2 خبز + 2 أرز مقرمش + 1 لتر بيبسي</td>
+                                            <td>المطعم، تناول الطعام في المطعم، الطلب الخارجي، التوصيل للمنزل</td>
+                                            <td><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
+                                            <td>
+                                                <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editOffer('OFF013')" aria-label="تحرير العرض OFF013">
+                                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                                </button>
+                                                <button class="text-green-600 hover:text-green-800" onclick="viewAnalytics('OFF013')" aria-label="عرض تحليلات العرض OFF013">
+                                                    <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Careem Offers -->
+                            <h3 class="text-lg font-medium text-gray-700 mb-3">عروض Careem</h3>
+                            <div class="table-container">
+                                <table class="min-w-full" role="table" aria-label="عروض Careem في مارس">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">التاريخ</th>
+                                            <th scope="col">تفاصيل العرض</th>
+                                            <th scope="col">القنوات المتاحة</th>
+                                            <th scope="col">الحالة</th>
+                                            <th scope="col">الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>25 مارس (10 مساءً - 1 صباحاً)</td>
+                                            <td>TWIST BOX SP: 2 قطعة دجاج حارة + 1 Twist حار + حصة بطاطس مقلية</td>
+                                            <td>تطبيق Careem</td>
+                                            <td><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
+                                            <td>
+                                                <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editOffer('OFF014')" aria-label="تحرير العرض OFF014">
+                                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                                </button>
+                                                <button class="text-green-600 hover:text-green-800" onclick="viewAnalytics('OFF014')" aria-label="عرض تحليلات العرض OFF014">
+                                                    <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Top Performing Offers -->
+                    <section class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">أفضل العروض أداءً</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <article class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow interactive-card" onclick="viewAnalytics('OFF003')" tabindex="0" role="button" aria-label="عرض تحليلات عرض القيمة المضافة">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="px-3 py-1 rounded-full text-sm font-medium offer-value">عروض القيمة المضافة</span>
+                                    <span class="text-sm font-medium text-green-600">#1</span>
+                                </div>
+                                <h4 class="font-medium text-gray-800 mb-2">مشروب مجاني</h4>
+                                <p class="text-sm text-gray-600 mb-3">اشتري فوق 50 درهم واحصل على مشروب مجاني</p>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-500">الاستخدامات</span>
+                                    <span class="text-lg font-bold text-green-600">523</span>
+                                </div>
+                            </article>
+                            
+                            <article class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow interactive-card" onclick="viewAnalytics('OFF003')" tabindex="0" role="button" aria-label="عرض تحليلات عرض الاثنين والثلاثاء">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="px-3 py-1 rounded-full text-sm font-medium offer-fixed">عروض ثابتة</span>
+                                    <span class="text-sm font-medium text-blue-600">#2</span>
+                                </div>
+                                <h4 class="font-medium text-gray-800 mb-2">عرض الاثنين والثلاثاء</h4>
+                                <p class="text-sm text-gray-600 mb-3">12 قطع Crispy Chicken + 3 Garlic Sauce</p>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-500">الاستخدامات</span>
+                                    <span class="text-lg font-bold text-blue-600">245</span>
+                                </div>
+                            </article>
+                            
+                            <article class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow interactive-card" onclick="viewAnalytics('OFF002')" tabindex="0" role="button" aria-label="عرض تحليلات عرض سريع 20%">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="px-3 py-1 rounded-full text-sm font-medium offer-flash">عروض محدودة الوقت</span>
+                                    <span class="text-sm font-medium text-yellow-600">#3</span>
+                                </div>
+                                <h4 class="font-medium text-gray-800 mb-2">عرض سريع 20%</h4>
+                                <p class="text-sm text-gray-600 mb-3">خصم 20% على جميع الطلبات</p>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-500">الاستخدامات</span>
+                                    <span class="text-lg font-bold text-yellow-600">178</span>
+                                </div>
+                            </article>
+                        </div>
+                    </section>
+                </section>
+                
+                <!-- Offers Section -->
+                <section id="offersSection" class="section fade-in hidden" role="main" aria-labelledby="offers-heading">
+                    <h1 id="offers-heading" class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-6">إدارة العروض</h1>
+                    
+                    <!-- Tabs Navigation -->
+                    <div class="bg-white rounded-lg shadow-sm mb-6" role="tablist" aria-label="تبويبات إدارة العروض">
+                        <div class="flex border-b border-gray-200">
+                            <div class="tab active" data-tab="offers-list" role="tab" aria-selected="true" aria-controls="offers-list-tab" tabindex="0">
+                                <i class="fas fa-list mr-2" aria-hidden="true"></i>قائمة العروض
+                            </div>
+                            <div class="tab" data-tab="create-offer" role="tab" aria-selected="false" aria-controls="create-offer-tab" tabindex="0">
+                                <i class="fas fa-plus-circle mr-2" aria-hidden="true"></i>إنشاء عرض جديد
+                            </div>
+                            <div class="tab" data-tab="offer-calendar" role="tab" aria-selected="false" aria-controls="offer-calendar-tab" tabindex="0">
+                                <i class="fas fa-calendar-alt mr-2" aria-hidden="true"></i>تقويم العروض
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Offers List Tab -->
+                    <div id="offers-list-tab" class="tab-content" role="tabpanel" aria-labelledby="offers-list-tab">
+                        <!-- Filters -->
+                        <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+                            <div class="flex flex-wrap items-center gap-4">
+                                <div>
+                                    <label for="offerTypeFilter" class="text-sm font-medium text-gray-700">نوع العرض</label>
+                                    <select id="offerTypeFilter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md">
+                                        <option>الكل</option>
+                                        <option>عروض ثابتة</option>
+                                        <option>عروض محدودة الوقت</option>
+                                        <option>عروض القيمة المضافة</option>
+                                        <option>عروض المنصات</option>
+                                        <option>عروض المشاركة</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="channelFilter" class="text-sm font-medium text-gray-700">القناة</label>
+                                    <select id="channelFilter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md">
+                                        <option>الكل</option>
+                                        <option>الكول سنتر</option>
+                                        <option>Noon</option>
+                                        <option>Careem</option>
+                                        <option>جميع القنوات</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="statusFilter" class="text-sm font-medium text-gray-700">الحالة</label>
+                                    <select id="statusFilter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md">
+                                        <option>الكل</option>
+                                        <option>نشط</option>
+                                        <option>منتهي</option>
+                                        <option>معلق</option>
+                                    </select>
+                                </div>
+                                <div class="ml-auto">
+                                    <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors action-btn" aria-label="تطبيق الفلاتر">
+                                        <i class="fas fa-filter mr-2" aria-hidden="true"></i>تطبيق الفلاتر
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Offers Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                            <!-- Offer Card 1 -->
+                            <article class="offer-card bg-white rounded-xl shadow-lg p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="px-3 py-1 rounded-full text-sm font-medium offer-fixed">عروض ثابتة</span>
+                                    <span class="px-3 py-1 rounded-full text-sm font-medium channel-callcenter">الكول سنتر</span>
+                                </div>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-2">عرض الاثنين والثلاثاء</h3>
+                                <p class="text-sm text-gray-600 mb-4">12 قطع Crispy Chicken + 3 Garlic Sauce</p>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <p class="text-xs text-gray-500">السعر الأصلي</p>
+                                        <p class="text-lg font-bold text-gray-400 line-through">45.00 درهم</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-xs text-gray-500">السعر بعد الخصم</p>
+                                        <p class="text-2xl font-bold text-orange-600">30.00 درهم</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between text-sm">
+                                    <div>
+                                        <p class="text-gray-500">المدة: الإثنين والثلاثاء</p>
+                                        <p class="text-gray-500">الاستخدامات: 245</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-green-600 font-medium">نشط</p>
+                                        <p class="text-gray-500">7/1/2023 - 31/12/2023</p>
+                                    </div>
+                                </div>
+                                <div class="mt-4 flex space-x-2">
+                                    <button class="flex-1 px-3 py-2 bg-orange-100 text-orange-700 rounded-md hover:bg-orange-200 transition-colors text-sm action-btn" onclick="editOffer('OFF001')" aria-label="تحرير العرض">
+                                        <i class="fas fa-edit mr-1" aria-hidden="true"></i>تعديل
+                                    </button>
+                                    <button class="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm action-btn" onclick="viewAnalytics('OFF001')" aria-label="عرض التحليلات">
+                                        <i class="fas fa-chart-bar mr-1" aria-hidden="true"></i>تحليل
+                                    </button>
+                                </div>
+                            </article>
+                            
+                            <!-- Offer Card 2 -->
+                            <article class="offer-card bg-white rounded-xl shadow-lg p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="px-3 py-1 rounded-full text-sm font-medium offer-flash">عروض محدودة الوقت</span>
+                                    <span class="px-3 py-1 rounded-full text-sm font-medium channel-all">جميع القنوات</span>
+                                </div>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-2">عرض سريع 20%</h3>
+                                <p class="text-sm text-gray-600 mb-4">خصم 20% على جميع الطلبات</p>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <p class="text-xs text-gray-500">السعر الأصلي</p>
+                                        <p class="text-lg font-bold text-gray-400 line-through">50.00 درهم</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-xs text-gray-500">السعر بعد الخصم</p>
+                                        <p class="text-2xl font-bold text-orange-600">40.00 درهم</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between text-sm">
+                                    <div>
+                                        <p class="text-gray-500">المدة: ساعتين فقط</p>
+                                        <p class="text-gray-500">الاستخدامات: 178</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-green-600 font-medium">نشط</p>
+                                        <p class="text-gray-500">1/7/2023 - 31/12/2023</p>
+                                    </div>
+                                </div>
+                                <div class="mt-4 flex space-x-2">
+                                    <button class="flex-1 px-3 py-2 bg-orange-100 text-orange-700 rounded-md hover:bg-orange-200 transition-colors text-sm action-btn" onclick="editOffer('OFF002')" aria-label="تحرير العرض">
+                                        <i class="fas fa-edit mr-1" aria-hidden="true"></i>تعديل
+                                    </button>
+                                    <button class="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm action-btn" onclick="viewAnalytics('OFF002')" aria-label="عرض التحليلات">
+                                        <i class="fas fa-chart-bar mr-1" aria-hidden="true"></i>تحليل
+                                    </button>
+                                </div>
+                            </article>
+                            
+                            <!-- Offer Card 3 -->
+                            <article class="offer-card bg-white rounded-xl shadow-lg p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="px-3 py-1 rounded-full text-sm font-medium offer-value">عروض القيمة المضافة</span>
+                                    <span class="px-3 py-1 rounded-full text-sm font-medium channel-all">جميع القنوات</span>
+                                </div>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-2">مشروب مجاني</h3>
+                                <p class="text-sm text-gray-600 mb-4">اشتري فوق 50 درهم واحصل على مشروب مجاني</p>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <p class="text-xs text-gray-500">القيمة</p>
+                                        <p class="text-lg font-bold text-green-600">مجاني</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-xs text-gray-500">الحد الأدنى للطلب</p>
+                                        <p class="text-2xl font-bold text-gray-800">50.00 درهم</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between text-sm">
+                                    <div>
+                                        <p class="text-gray-500">المدة: مستمر</p>
+                                        <p class="text-gray-500">الاستخدامات: 523</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-green-600 font-medium">نشط</p>
+                                        <p class="text-gray-500">1/7/2023 - 31/12/2023</p>
+                                    </div>
+                                </div>
+                                <div class="mt-4 flex space-x-2">
+                                    <button class="flex-1 px-3 py-2 bg-orange-100 text-orange-700 rounded-md hover:bg-orange-200 transition-colors text-sm action-btn" onclick="editOffer('OFF003')" aria-label="تحرير العرض">
+                                        <i class="fas fa-edit mr-1" aria-hidden="true"></i>تعديل
+                                    </button>
+                                    <button class="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm action-btn" onclick="viewAnalytics('OFF003')" aria-label="عرض التحليلات">
+                                        <i class="fas fa-chart-bar mr-1" aria-hidden="true"></i>تحليل
+                                    </button>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                    
+                    <!-- Create Offer Tab -->
+                    <div id="create-offer-tab" class="tab-content hidden" role="tabpanel" aria-labelledby="create-offer-tab">
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">إنشاء عرض جديد</h3>
+                            <form id="createOfferForm" class="space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="offerName" class="block text-sm font-medium text-gray-700 mb-1">اسم العرض</label>
+                                        <input type="text" id="offerName" name="offerName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                                    </div>
+                                    <div>
+                                        <label for="offerType" class="block text-sm font-medium text-gray-700 mb-1">نوع العرض</label>
+                                        <select id="offerType" name="offerType" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                                            <option value="">اختر النوع</option>
+                                            <option value="fixed">عروض ثابتة</option>
+                                            <option value="flash">عروض محدودة الوقت</option>
+                                            <option value="value">عروض القيمة المضافة</option>
+                                            <option value="platform">عروض المنصات</option>
+                                            <option value="referral">عروض المشاركة</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="startDate" class="block text-sm font-medium text-gray-700 mb-1">تاريخ البدء</label>
+                                        <input type="date" id="startDate" name="startDate" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                                    </div>
+                                    <div>
+                                        <label for="endDate" class="block text-sm font-medium text-gray-700 mb-1">تاريخ الانتهاء</label>
+                                        <input type="date" id="endDate" name="endDate" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                                    </div>
+                                    <div>
+                                        <label for="channel" class="block text-sm font-medium text-gray-700 mb-1">القناة</label>
+                                        <select id="channel" name="channel" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                                            <option value="">اختر القناة</option>
+                                            <option value="callcenter">الكول سنتر</option>
+                                            <option value="noon">Noon</option>
+                                            <option value="careem">Careem</option>
+                                            <option value="all">جميع القنوات</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="status" class="block text-sm font-medium text-gray-700 mb-1">الحالة</label>
+                                        <select id="status" name="status" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                                            <option value="active">نشط</option>
+                                            <option value="inactive">غير نشط</option>
+                                            <option value="draft">مسودة</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">وصف العرض</label>
+                                    <textarea id="description" name="description" rows="3" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"></textarea>
+                                </div>
+                                <div class="flex justify-end space-x-3">
+                                    <button type="button" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors action-btn">
+                                        إلغاء
+                                    </button>
+                                    <button type="submit" class="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors action-btn">
+                                        حفظ العرض
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Offer Calendar Tab -->
+                    <div id="offer-calendar-tab" class="tab-content hidden" role="tabpanel" aria-labelledby="offer-calendar-tab">
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">تقويم العروض</h3>
+                            <div class="grid grid-cols-7 gap-1 mb-4">
+                                <div class="text-center font-medium text-gray-700 p-2">الأحد</div>
+                                <div class="text-center font-medium text-gray-700 p-2">الاثنين</div>
+                                <div class="text-center font-medium text-gray-700 p-2">الثلاثاء</div>
+                                <div class="text-center font-medium text-gray-700 p-2">الأربعاء</div>
+                                <div class="text-center font-medium text-gray-700 p-2">الخميس</div>
+                                <div class="text-center font-medium text-gray-700 p-2">الجمعة</div>
+                                <div class="text-center font-medium text-gray-700 p-2">السبت</div>
+                                
+                                <!-- Calendar days -->
+                                <div class="calendar-day text-center p-2 text-gray-400">29</div>
+                                <div class="calendar-day text-center p-2 text-gray-400">30</div>
+                                <div class="calendar-day text-center p-2">1</div>
+                                <div class="calendar-day text-center p-2">2</div>
+                                <div class="calendar-day text-center p-2">3</div>
+                                <div class="calendar-day text-center p-2">4</div>
+                                <div class="calendar-day text-center p-2">5</div>
+                                <div class="calendar-day text-center p-2">6</div>
+                                <div class="calendar-day text-center p-2 bg-orange-100 rounded">7</div>
+                                <div class="calendar-day text-center p-2 bg-orange-100 rounded">8</div>
+                                <div class="calendar-day text-center p-2">9</div>
+                                <div class="calendar-day text-center p-2">10</div>
+                                <div class="calendar-day text-center p-2">11</div>
+                                <div class="calendar-day text-center p-2">12</div>
+                                <div class="calendar-day text-center p-2 bg-orange-100 rounded">13</div>
+                                <div class="calendar-day text-center p-2 bg-orange-100 rounded">14</div>
+                                <div class="calendar-day text-center p-2">15</div>
+                                <div class="calendar-day text-center p-2">16</div>
+                                <div class="calendar-day text-center p-2">17</div>
+                                <div class="calendar-day text-center p-2">18</div>
+                                <div class="calendar-day text-center p-2">19</div>
+                                <div class="calendar-day text-center p-2 bg-orange-100 rounded">20</div>
+                                <div class="calendar-day text-center p-2 bg-orange-100 rounded">21</div>
+                                <div class="calendar-day text-center p-2">22</div>
+                                <div class="calendar-day text-center p-2">23</div>
+                                <div class="calendar-day text-center p-2">24</div>
+                                <div class="calendar-day text-center p-2">25</div>
+                                <div class="calendar-day text-center p-2">26</div>
+                                <div class="calendar-day text-center p-2 bg-orange-100 rounded">27</div>
+                                <div class="calendar-day text-center p-2 bg-orange-100 rounded">28</div>
+                                <div class="calendar-day text-center p-2">29</div>
+                                <div class="calendar-day text-center p-2">30</div>
+                                <div class="calendar-day text-center p-2">31</div>
+                                <div class="calendar-day text-center p-2 text-gray-400">1</div>
+                                <div class="calendar-day text-center p-2 text-gray-400">2</div>
+                            </div>
+                            <div class="mt-4">
+                                <h4 class="font-medium text-gray-700 mb-2">العروض النشطة هذا الشهر</h4>
+                                <ul class="space-y-2">
+                                    <li class="flex items-center">
+                                        <span class="w-3 h-3 bg-orange-500 rounded-full ml-2"></span>
+                                        <span class="text-sm">عرض الاثنين والثلاثاء - كل اثنين وثلاثاء</span>
+                                    </li>
+                                    <li class="flex items-center">
+                                        <span class="w-3 h-3 bg-blue-500 rounded-full ml-2"></span>
+                                        <span class="text-sm">عرض سريع 20% - 15-22 يناير</span>
+                                    </li>
+                                    <li class="flex items-center">
+                                        <span class="w-3 h-3 bg-green-500 rounded-full ml-2"></span>
+                                        <span class="text-sm">مشروب مجاني - مستمر</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Analytics Section -->
+                <section id="analyticsSection" class="section fade-in hidden" role="main" aria-labelledby="analytics-heading">
+                    <h1 id="analytics-heading" class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-6">التحليلات</h1>
+                    
+                    <!-- Analytics Filters -->
+                    <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+                        <div class="flex flex-wrap items-center gap-4">
+                            <div>
+                                <label for="analyticsPeriod" class="text-sm font-medium text-gray-700">الفترة</label>
+                                <select id="analyticsPeriod" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md">
+                                    <option value="7days">آخر 7 أيام</option>
+                                    <option value="30days" selected>آخر 30 يوم</option>
+                                    <option value="90days">آخر 90 يوم</option>
+                                    <option value="1year">آخر سنة</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="analyticsOfferType" class="text-sm font-medium text-gray-700">نوع العرض</label>
+                                <select id="analyticsOfferType" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md">
+                                    <option value="all" selected>الكل</option>
+                                    <option value="fixed">عروض ثابتة</option>
+                                    <option value="flash">عروض محدودة الوقت</option>
+                                    <option value="value">عروض القيمة المضافة</option>
+                                    <option value="platform">عروض المنصات</option>
+                                    <option value="referral">عروض المشاركة</option>
+                                </select>
+                            </div>
+                            <div class="ml-auto">
+                                <button class="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors action-btn" aria-label="تصدير التقرير">
+                                    <i class="fas fa-download ml-2" aria-hidden="true"></i>تصدير التقرير
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Analytics Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="bg-blue-100 p-3 rounded-lg">
+                                    <i class="fas fa-users text-blue-600 text-xl" aria-hidden="true"></i>
+                                </div>
+                                <span class="text-sm font-medium text-green-600">+12.5%</span>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-800">2,847</h3>
+                            <p class="text-sm text-gray-600">إجمالي المستخدمين</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="bg-green-100 p-3 rounded-lg">
+                                    <i class="fas fa-chart-line text-green-600 text-xl" aria-hidden="true"></i>
+                                </div>
+                                <span class="text-sm font-medium text-green-600">+8.3%</span>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-800">1,166</h3>
+                            <p class="text-sm text-gray-600">الاستخدامات الفعلية</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="bg-purple-100 p-3 rounded-lg">
+                                    <i class="fas fa-percentage text-purple-600 text-xl" aria-hidden="true"></i>
+                                </div>
+                                <span class="text-sm font-medium text-red-600">-2.1%</span>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-800">41%</h3>
+                            <p class="text-sm text-gray-600">معدل التحويل</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="bg-orange-100 p-3 rounded-lg">
+                                    <i class="fas fa-money-bill-wave text-orange-600 text-xl" aria-hidden="true"></i>
+                                </div>
+                                <span class="text-sm font-medium text-green-600">+15.7%</span>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-800">$24.63</h3>
+                            <p class="text-sm text-gray-600">متوسط القيمة</p>
                         </div>
                     </div>
                     
                     <!-- Charts -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                        <div class="bg-white p-6 rounded-lg shadow">
-                            <h3 class="text-lg font-semibold mb-4">أداء العروض حسب النوع</h3>
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">أداء العروض بمرور الوقت</h3>
                             <div class="chart-container">
-                                <canvas id="offersChart"></canvas>
+                                <canvas id="performanceOverTimeChart" role="img" aria-label="مخطط خطي يوضح أداء العروض بمرور الوقت"></canvas>
                             </div>
                         </div>
                         
-                        <div class="bg-white p-6 rounded-lg shadow">
-                            <h3 class="text-lg font-semibold mb-4">إيرادات العروض الشهرية</h3>
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">توزيع العروض حسب القناة</h3>
                             <div class="chart-container">
-                                <canvas id="revenueChart"></canvas>
+                                <canvas id="channelDistributionChart" role="img" aria-label="مخطط دائري يوضح توزيع العروض حسب القناة"></canvas>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Recent Offers -->
-                    <div class="bg-white p-6 rounded-lg shadow">
-                        <h3 class="text-lg font-semibold mb-4">العروض الحالية</h3>
-                        <div class="overflow-x-auto">
-                            <table class="w-full">
+                    <!-- Top Offers Table -->
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">أفضل العروض أداءً</h3>
+                        <div class="table-container">
+                            <table class="min-w-full" role="table" aria-label="أفضل العروض أداءً">
                                 <thead>
-                                    <tr class="border-b">
-                                        <th class="text-right p-2">العرض</th>
-                                        <th class="text-right p-2">النوع</th>
-                                        <th class="text-right p-2">الحالة</th>
-                                        <th class="text-right p-2">الإجراءات</th>
+                                    <tr>
+                                        <th scope="col">اسم العرض</th>
+                                        <th scope="col">النوع</th>
+                                        <th scope="col">الاستخدامات</th>
+                                        <th scope="col">الإيرادات</th>
+                                        <th scope="col">معدل التحويل</th>
+                                        <th scope="col">الحالة</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr class="border-b">
-                                        <td class="p-2">عرض الاثنين والثلاثاء</td>
-                                        <td class="p-2"><span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm">ثابت</span></td>
-                                        <td class="p-2"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">نشط</span></td>
-                                        <td class="p-2">
-                                            <button class="text-blue-600 hover:text-blue-800 ml-2">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="text-green-600 hover:text-green-800">
-                                                <i class="fas fa-chart-bar"></i>
-                                            </button>
-                                        </td>
+                                    <tr>
+                                        <td>مشروب مجاني</td>
+                                        <td><span class="px-2 py-1 rounded-full text-xs offer-value">عروض القيمة المضافة</span></td>
+                                        <td>523</td>
+                                        <td>$2,615</td>
+                                        <td>45%</td>
+                                        <td><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
                                     </tr>
-                                    <tr class="border-b">
-                                        <td class="p-2">خصم 20%</td>
-                                        <td class="p-2"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">محدود</span></td>
-                                        <td class="p-2"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">نشط</span></td>
-                                        <td class="p-2">
-                                            <button class="text-blue-600 hover:text-blue-800 ml-2">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="text-green-600 hover:text-green-800">
-                                                <i class="fas fa-chart-bar"></i>
-                                            </button>
-                                        </td>
+                                    <tr>
+                                        <td>عرض الاثنين والثلاثاء</td>
+                                        <td><span class="px-2 py-1 rounded-full text-xs offer-fixed">عروض ثابتة</span></td>
+                                        <td>245</td>
+                                        <td>$7,350</td>
+                                        <td>38%</td>
+                                        <td><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>عرض سريع 20%</td>
+                                        <td><span class="px-2 py-1 rounded-full text-xs offer-flash">عروض محدودة الوقت</span></td>
+                                        <td>178</td>
+                                        <td>$3,560</td>
+                                        <td>42%</td>
+                                        <td><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -311,215 +1656,1583 @@
                     </div>
                 </section>
                 
-                <!-- Other sections would be here -->
-                <section id="offersSection" class="section hidden">
-                    <h2 class="text-2xl font-bold mb-6">إدارة العروض</h2>
-                    <p>محتوى قسم إدارة العروض...</p>
+                <!-- Marketing Section -->
+                <section id="marketingSection" class="section fade-in hidden" role="main" aria-labelledby="marketing-heading">
+                    <h1 id="marketing-heading" class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-6">التسويق</h1>
+                    
+                    <!-- Marketing Campaigns -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-gray-800">حملة رمضان</h3>
+                                <span class="px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">نشطة</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-4">حملة ترويجية خاصة بشهر رمضان المبارك</p>
+                            <div class="space-y-2 mb-4">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-500">الوصول</span>
+                                    <span class="font-medium">45,231</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-500">التفاعل</span>
+                                    <span class="font-medium">12,543</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-500">التحويلات</span>
+                                    <span class="font-medium">2,341</span>
+                                </div>
+                            </div>
+                            <button class="w-full px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors marketing-btn" aria-label="عرض تفاصيل حملة رمضان">
+                                عرض التفاصيل
+                            </button>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-gray-800">عروض نهاية الأسبوع</h3>
+                                <span class="px-3 py-1 rounded-full text-sm bg-yellow-100 text-yellow-800">قريباً</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-4">عروض خاصة أيام الجمعة والسبت</p>
+                            <div class="space-y-2 mb-4">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-500">الوصول المستهدف</span>
+                                    <span class="font-medium">30,000</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-500">الميزانية</span>
+                                    <span class="font-medium">$5,000</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-500">تاريخ البدء</span>
+                                    <span class="font-medium">15 مارس</span>
+                                </div>
+                            </div>
+                            <button class="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors marketing-btn" aria-label="تعديل حملة عروض نهاية الأسبوع">
+                                تعديل الحملة
+                            </button>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-gray-800">حملة التطبيق</h3>
+                                <span class="px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800">منتهية</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-4">حملة ترويجية لتطبيق Crispy Chicken</p>
+                            <div class="space-y-2 mb-4">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-500">الوصول</span>
+                                    <span class="font-medium">28,945</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-500">التحميلات</span>
+                                    <span class="font-medium">3,421</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-500">التحويلات</span>
+                                    <span class="font-medium">1,234</span>
+                                </div>
+                            </div>
+                            <button class="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors marketing-btn" aria-label="عرض تقرير حملة التطبيق">
+                                عرض التقرير
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Social Media Integration -->
+                    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">التكامل مع وسائل التواصل الاجتماعي</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-medium text-gray-700 mb-3">المنشورات المجدولة</h4>
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div class="flex items-center">
+                                            <i class="fab fa-instagram text-pink-500 text-xl ml-3" aria-hidden="true"></i>
+                                            <div>
+                                                <p class="font-medium text-sm">عرض رمضان الخاص</p>
+                                                <p class="text-xs text-gray-500">مجدول لـ 15 مارس</p>
+                                            </div>
+                                        </div>
+                                        <button class="text-blue-600 hover:text-blue-800" aria-label="تعديل المنشور">
+                                            <i class="fas fa-edit" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div class="flex items-center">
+                                            <i class="fab fa-facebook text-blue-600 text-xl ml-3" aria-hidden="true"></i>
+                                            <div>
+                                                <p class="font-medium text-sm">وجبة العائلة المثالية</p>
+                                                <p class="text-xs text-gray-500">مجدول لـ 18 مارس</p>
+                                            </div>
+                                        </div>
+                                        <button class="text-blue-600 hover:text-blue-800" aria-label="تعديل المنشور">
+                                            <i class="fas fa-edit" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-700 mb-3">الأداء الحالي</h4>
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-600">متابعين انستغرام</span>
+                                        <span class="font-medium">45.2K</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-600">معجبين فيسبوك</span>
+                                        <span class="font-medium">32.8K</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-600">معدل التفاعل</span>
+                                        <span class="font-medium">4.2%</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-600">الوصول الأسبوعي</span>
+                                        <span class="font-medium">125.4K</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Email Marketing -->
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">التسويق عبر البريد الإلكتروني</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-orange-600 mb-2">8,542</div>
+                                <p class="text-sm text-gray-600">المشتركين النشطين</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-green-600 mb-2">42.3%</div>
+                                <p class="text-sm text-gray-600">معدل الفتح</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-blue-600 mb-2">12.7%</div>
+                                <p class="text-sm text-gray-600">معدل النقر</p>
+                            </div>
+                        </div>
+                        <div class="mt-6">
+                            <button class="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors marketing-btn" aria-label="إنشاء حملة بريدية جديدة">
+                                <i class="fas fa-plus ml-2" aria-hidden="true"></i>إنشاء حملة جديدة
+                            </button>
+                        </div>
+                    </div>
                 </section>
                 
-                <section id="analyticsSection" class="section hidden">
-                    <h2 class="text-2xl font-bold mb-6">التحليلات</h2>
-                    <p>محتوى قسم التحليلات...</p>
-                </section>
-                
-                <section id="marketingSection" class="section hidden">
-                    <h2 class="text-2xl font-bold mb-6">التسويق</h2>
-                    <p>محتوى قسم التسويق...</p>
-                </section>
-                
-                <section id="sheetsSection" class="section hidden">
-                    <h2 class="text-2xl font-bold mb-6">الجداول</h2>
-                    <p>محتوى قسم الجداول...</p>
+                <!-- Sheets Section -->
+                <section id="sheetsSection" class="section fade-in hidden" role="main" aria-labelledby="sheets-heading">
+                    <h1 id="sheets-heading" class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-6">الجداول</h1>
+                    
+                    <!-- Sheet Tabs -->
+                    <div class="bg-white rounded-lg shadow-sm mb-6">
+                        <div class="flex border-b border-gray-200">
+                            <div class="tab active" data-tab="offers-sheet" role="tab" aria-selected="true" aria-controls="offers-sheet-tab" tabindex="0">
+                                <i class="fas fa-tags mr-2" aria-hidden="true"></i>جدول العروض
+                            </div>
+                            <div class="tab" data-tab="revenue-sheet" role="tab" aria-selected="false" aria-controls="revenue-sheet-tab" tabindex="0">
+                                <i class="fas fa-chart-line mr-2" aria-hidden="true"></i>جدول الإيرادات
+                            </div>
+                            <div class="tab" data-tab="customers-sheet" role="tab" aria-selected="false" aria-controls="customers-sheet-tab" tabindex="0">
+                                <i class="fas fa-users mr-2" aria-hidden="true"></i>جدول العملاء
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Offers Sheet -->
+                    <div id="offers-sheet-tab" class="tab-content" role="tabpanel" aria-labelledby="offers-sheet-tab">
+                        <div class="sheet-container">
+                            <div class="sheet-header">
+                                <i class="fas fa-tags ml-2" aria-hidden="true"></i>
+                                <span>جدول العروض</span>
+                                <div class="ml-auto flex space-x-2">
+                                    <button class="text-gray-600 hover:text-orange-500" aria-label="تصفية الجدول">
+                                        <i class="fas fa-filter" aria-hidden="true"></i>
+                                    </button>
+                                    <button class="text-gray-600 hover:text-orange-500" aria-label="بحث في الجدول">
+                                        <i class="fas fa-search" aria-hidden="true"></i>
+                                    </button>
+                                    <button class="text-gray-600 hover:text-orange-500" aria-label="تحميل الجدول">
+                                        <i class="fas fa-download" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="table-container">
+                                <table class="min-w-full" role="table" aria-label="جدول العروض">
+                                    <thead>
+                                        <tr>
+                                            <th class="sheet-header-cell">معرف العرض</th>
+                                            <th class="sheet-header-cell">اسم العرض</th>
+                                            <th class="sheet-header-cell">النوع</th>
+                                            <th class="sheet-header-cell">القناة</th>
+                                            <th class="sheet-header-cell">تاريخ البدء</th>
+                                            <th class="sheet-header-cell">تاريخ الانتهاء</th>
+                                            <th class="sheet-header-cell">الحالة</th>
+                                            <th class="sheet-header-cell">الاستخدامات</th>
+                                            <th class="sheet-header-cell">الإيرادات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="sheet-cell">OFF001</td>
+                                            <td class="sheet-cell">عرض العطلات</td>
+                                            <td class="sheet-cell"><span class="px-2 py-1 rounded-full text-xs offer-fixed">عروض ثابتة</span></td>
+                                            <td class="sheet-cell"><span class="px-2 py-1 rounded-full text-xs channel-all">جميع القنوات</span></td>
+                                            <td class="sheet-cell">1 يناير 2023</td>
+                                            <td class="sheet-cell">31 ديسمبر 2023</td>
+                                            <td class="sheet-cell"><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
+                                            <td class="sheet-cell">156</td>
+                                            <td class="sheet-cell">$7,644</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="sheet-cell">OFF002</td>
+                                            <td class="sheet-cell">عرض سريع 20%</td>
+                                            <td class="sheet-cell"><span class="px-2 py-1 rounded-full text-xs offer-flash">عروض محدودة الوقت</span></td>
+                                            <td class="sheet-cell"><span class="px-2 py-1 rounded-full text-xs channel-all">جميع القنوات</span></td>
+                                            <td class="sheet-cell">1 يوليو 2023</td>
+                                            <td class="sheet-cell">31 ديسمبر 2023</td>
+                                            <td class="sheet-cell"><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
+                                            <td class="sheet-cell">178</td>
+                                            <td class="sheet-cell">$7,120</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="sheet-cell">OFF003</td>
+                                            <td class="sheet-cell">مشروب مجاني</td>
+                                            <td class="sheet-cell"><span class="px-2 py-1 rounded-full text-xs offer-value">عروض القيمة المضافة</span></td>
+                                            <td class="sheet-cell"><span class="px-2 py-1 rounded-full text-xs channel-all">جميع القنوات</span></td>
+                                            <td class="sheet-cell">1 يوليو 2023</td>
+                                            <td class="sheet-cell">31 ديسمبر 2023</td>
+                                            <td class="sheet-cell"><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
+                                            <td class="sheet-cell">523</td>
+                                            <td class="sheet-cell">$26,150</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Revenue Sheet -->
+                    <div id="revenue-sheet-tab" class="tab-content hidden" role="tabpanel" aria-labelledby="revenue-sheet-tab">
+                        <div class="sheet-container">
+                            <div class="sheet-header">
+                                <i class="fas fa-chart-line ml-2" aria-hidden="true"></i>
+                                <span>جدول الإيرادات</span>
+                                <div class="ml-auto flex space-x-2">
+                                    <button class="text-gray-600 hover:text-orange-500" aria-label="تصفية الجدول">
+                                        <i class="fas fa-filter" aria-hidden="true"></i>
+                                    </button>
+                                    <button class="text-gray-600 hover:text-orange-500" aria-label="بحث في الجدول">
+                                        <i class="fas fa-search" aria-hidden="true"></i>
+                                    </button>
+                                    <button class="text-gray-600 hover:text-orange-500" aria-label="تحميل الجدول">
+                                        <i class="fas fa-download" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="table-container">
+                                <table class="min-w-full" role="table" aria-label="جدول الإيرادات">
+                                    <thead>
+                                        <tr>
+                                            <th class="sheet-header-cell">التاريخ</th>
+                                            <th class="sheet-header-cell">معرف العرض</th>
+                                            <th class="sheet-header-cell">اسم العرض</th>
+                                            <th class="sheet-header-cell">الطلبات</th>
+                                            <th class="sheet-header-cell">الإيرادات</th>
+                                            <th class="sheet-header-cell">متوسط القيمة</th>
+                                            <th class="sheet-header-cell">القناة</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="sheet-cell">2023-01-15</td>
+                                            <td class="sheet-cell">OFF001</td>
+                                            <td class="sheet-cell">عرض العطلات</td>
+                                            <td class="sheet-cell">45</td>
+                                            <td class="sheet-cell">$2,205</td>
+                                            <td class="sheet-cell">$49.00</td>
+                                            <td class="sheet-cell"><span class="px-2 py-1 rounded-full text-xs channel-callcenter">الكول سنتر</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="sheet-cell">2023-01-16</td>
+                                            <td class="sheet-cell">OFF002</td>
+                                            <td class="sheet-cell">عرض سريع 20%</td>
+                                            <td class="sheet-cell">38</td>
+                                            <td class="sheet-cell">$1,520</td>
+                                            <td class="sheet-cell">$40.00</td>
+                                            <td class="sheet-cell"><span class="px-2 py-1 rounded-full text-xs channel-careem">Careem</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="sheet-cell">2023-01-17</td>
+                                            <td class="sheet-cell">OFF003</td>
+                                            <td class="sheet-cell">مشروب مجاني</td>
+                                            <td class="sheet-cell">67</td>
+                                            <td class="sheet-cell">$3,350</td>
+                                            <td class="sheet-cell">$50.00</td>
+                                            <td class="sheet-cell"><span class="px-2 py-1 rounded-full text-xs channel-noon">Noon</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Customers Sheet -->
+                    <div id="customers-sheet-tab" class="tab-content hidden" role="tabpanel" aria-labelledby="customers-sheet-tab">
+                        <div class="sheet-container">
+                            <div class="sheet-header">
+                                <i class="fas fa-users ml-2" aria-hidden="true"></i>
+                                <span>جدول العملاء</span>
+                                <div class="ml-auto flex space-x-2">
+                                    <button class="text-gray-600 hover:text-orange-500" aria-label="تصفية الجدول">
+                                        <i class="fas fa-filter" aria-hidden="true"></i>
+                                    </button>
+                                    <button class="text-gray-600 hover:text-orange-500" aria-label="بحث في الجدول">
+                                        <i class="fas fa-search" aria-hidden="true"></i>
+                                    </button>
+                                    <button class="text-gray-600 hover:text-orange-500" aria-label="تحميل الجدول">
+                                        <i class="fas fa-download" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="table-container">
+                                <table class="min-w-full" role="table" aria-label="جدول العملاء">
+                                    <thead>
+                                        <tr>
+                                            <th class="sheet-header-cell">معرف العميل</th>
+                                            <th class="sheet-header-cell">الاسم</th>
+                                            <th class="sheet-header-cell">البريد الإلكتروني</th>
+                                            <th class="sheet-header-cell">الهاتف</th>
+                                            <th class="sheet-header-cell">الطلبات</th>
+                                            <th class="sheet-header-cell">الإجمالي</th>
+                                            <th class="sheet-header-cell">آخر طلب</th>
+                                            <th class="sheet-header-cell">الحالة</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="sheet-cell">CUST001</td>
+                                            <td class="sheet-cell">أحمد محمد</td>
+                                            <td class="sheet-cell">ahmed@example.com</td>
+                                            <td class="sheet-cell">+971 50 123 4567</td>
+                                            <td class="sheet-cell">23</td>
+                                            <td class="sheet-cell">$1,156</td>
+                                            <td class="sheet-cell">2023-01-15</td>
+                                            <td class="sheet-cell"><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="sheet-cell">CUST002</td>
+                                            <td class="sheet-cell">فاطمة علي</td>
+                                            <td class="sheet-cell">fatima@example.com</td>
+                                            <td class="sheet-cell">+971 55 987 6543</td>
+                                            <td class="sheet-cell">18</td>
+                                            <td class="sheet-cell">$892</td>
+                                            <td class="sheet-cell">2023-01-14</td>
+                                            <td class="sheet-cell"><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="sheet-cell">CUST003</td>
+                                            <td class="sheet-cell">خالد سعيد</td>
+                                            <td class="sheet-cell">khalid@example.com</td>
+                                            <td class="sheet-cell">+971 52 456 7890</td>
+                                            <td class="sheet-cell">31</td>
+                                            <td class="sheet-cell">$1,543</td>
+                                            <td class="sheet-cell">2023-01-16</td>
+                                            <td class="sheet-cell"><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">نشط</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </section>
             </div>
         </main>
     </div>
 
+    <!-- JavaScript -->
     <script>
-        // Simple and efficient JavaScript
-        class App {
-            constructor() {
-                this.currentSection = 'dashboard';
-                this.charts = {};
-                this.init();
+        // Global variables
+        let currentSection = 'dashboard';
+        let currentMonth = 'january';
+        let offersChart, revenueChart, performanceOverTimeChart, channelDistributionChart;
+        let autoSaveInterval;
+        
+        // DOM Elements
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const mobileMenuButton = document.getElementById('mobileMenuButton');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const profileButton = document.getElementById('profileButton');
+        const profileDropdown = document.getElementById('profileDropdown');
+        const addOfferBtn = document.getElementById('addOfferBtn');
+        const logoutButton = document.getElementById('logoutButton');
+        const toastContainer = document.getElementById('toastContainer');
+        const searchInput = document.getElementById('searchInput');
+        const createOfferForm = document.getElementById('createOfferForm');
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                initializeApp();
+                console.log('Application initialized successfully');
+            } catch (error) {
+                console.error('Error initializing application:', error);
+                showToast('حدث خطأ أثناء تهيئة التطبيق', 'error');
+            }
+        });
+        
+        function initializeApp() {
+            // Initialize all components
+            initializeSidebar();
+            initializeNavigation();
+            initializeMonthSelector();
+            initializeTabs();
+            initializeCharts();
+            initializeProfileDropdown();
+            initializeModals();
+            initializeTooltips();
+            initializeSearch();
+            initializeForms();
+            initializeKeyboardShortcuts();
+            initializeAccessibility();
+            initializePerformanceOptimizations();
+            
+            // Check for any URL parameters
+            checkURLParameters();
+            
+            // Start auto-save if needed
+            startAutoSave();
+            
+            // Add event listeners for dynamic content
+            addDynamicEventListeners();
+        }
+        
+        // Sidebar functionality
+        function initializeSidebar() {
+            if (!sidebar || !sidebarToggle || !mobileMenuButton || !sidebarOverlay) {
+                console.warn('Sidebar elements not found');
+                return;
             }
             
-            init() {
-                this.setupEventListeners();
-                this.initCharts();
-                this.loadSectionFromURL();
-            }
+            // Toggle sidebar on desktop
+            sidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('sidebar-collapsed');
+                const mainContent = document.getElementById('mainContent');
+                mainContent.classList.toggle('lg:mr-64');
+                mainContent.classList.toggle('lg:mr-16');
+                
+                // Save preference
+                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('sidebar-collapsed'));
+            });
             
-            setupEventListeners() {
-                // Navigation
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    item.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const section = item.dataset.section;
-                        this.showSection(section);
-                    });
-                });
-                
-                // Mobile menu
-                document.getElementById('mobileMenuBtn')?.addEventListener('click', () => {
-                    document.getElementById('sidebar').classList.toggle('open');
-                    document.getElementById('sidebarOverlay').classList.toggle('hidden');
-                });
-                
-                // Sidebar overlay
-                document.getElementById('sidebarOverlay')?.addEventListener('click', () => {
-                    document.getElementById('sidebar').classList.remove('open');
-                    document.getElementById('sidebarOverlay').classList.add('hidden');
-                });
-                
-                // Profile menu
-                document.getElementById('profileBtn')?.addEventListener('click', () => {
-                    document.getElementById('profileMenu').classList.toggle('hidden');
-                });
-                
-                // Logout
-                document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+            // Toggle sidebar on mobile
+            mobileMenuButton.addEventListener('click', function() {
+                sidebar.classList.toggle('translate-x-full');
+                sidebarOverlay.classList.toggle('hidden');
+            });
+            
+            // Close sidebar when clicking overlay
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.add('translate-x-full');
+                sidebarOverlay.classList.add('hidden');
+            });
+            
+            // Load saved preference
+            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                sidebar.classList.add('sidebar-collapsed');
+                document.getElementById('mainContent').classList.add('lg:mr-16');
+                document.getElementById('mainContent').classList.remove('lg:mr-64');
+            }
+        }
+        
+        // Navigation functionality
+        function initializeNavigation() {
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', function(e) {
                     e.preventDefault();
-                    this.showToast('تم تسجيل الخروج بنجاح', 'success');
-                    setTimeout(() => window.location.reload(), 1500);
+                    const section = this.getAttribute('data-section');
+                    if (section) {
+                        showSection(section);
+                        
+                        // Update active nav item
+                        navItems.forEach(nav => {
+                            nav.classList.remove('bg-gray-700', 'text-white');
+                            nav.setAttribute('aria-current', 'false');
+                        });
+                        this.classList.add('bg-gray-700', 'text-white');
+                        this.setAttribute('aria-current', 'page');
+                        
+                        // Close mobile sidebar
+                        if (window.innerWidth < 1024) {
+                            sidebar.classList.add('translate-x-full');
+                            sidebarOverlay.classList.add('hidden');
+                        }
+                        
+                        // Announce navigation change for screen readers
+                        announceNavigationChange(section);
+                    }
                 });
                 
-                // Add offer
-                document.getElementById('addOfferBtn')?.addEventListener('click', () => {
-                    this.showSection('offers');
+                // Add keyboard support
+                item.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.click();
+                    }
+                });
+            });
+        }
+        
+        // Show section with accessibility support
+        function showSection(sectionName) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                section.classList.add('hidden');
+                section.setAttribute('aria-hidden', 'true');
+            });
+            
+            // Show selected section
+            const targetSection = document.getElementById(sectionName + 'Section');
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+                targetSection.setAttribute('aria-hidden', 'false');
+                currentSection = sectionName;
+                
+                // Update URL without reloading
+                const url = new URL(window.location);
+                url.searchParams.set('section', sectionName);
+                window.history.pushState({}, '', url);
+                
+                // Initialize section-specific functionality
+                initializeSectionSpecific(sectionName);
+                
+                // Focus management
+                targetSection.focus();
+            }
+        }
+        
+        // Initialize section-specific functionality
+        function initializeSectionSpecific(sectionName) {
+            switch(sectionName) {
+                case 'analytics':
+                    setTimeout(() => {
+                        if (offersChart) offersChart.resize();
+                        if (revenueChart) revenueChart.resize();
+                        if (performanceOverTimeChart) performanceOverTimeChart.resize();
+                        if (channelDistributionChart) channelDistributionChart.resize();
+                    }, 300);
+                    break;
+                case 'offers':
+                    // Initialize offer-specific functionality
+                    initializeOfferFilters();
+                    break;
+                case 'sheets':
+                    // Initialize sheet-specific functionality
+                    initializeSheetFilters();
+                    break;
+            }
+        }
+        
+        // Month selector functionality
+        function initializeMonthSelector() {
+            const monthButtons = document.querySelectorAll('.month-btn');
+            monthButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const month = this.getAttribute('data-month');
+                    if (month) {
+                        // Update active button
+                        monthButtons.forEach(b => {
+                            b.classList.remove('active');
+                            b.setAttribute('aria-selected', 'false');
+                        });
+                        this.classList.add('active');
+                        this.setAttribute('aria-selected', 'true');
+                        
+                        // Show selected month offers
+                        const monthOffers = document.querySelectorAll('.month-offers');
+                        monthOffers.forEach(offers => {
+                            offers.classList.add('hidden');
+                            offers.setAttribute('aria-hidden', 'true');
+                        });
+                        
+                        const targetMonth = document.getElementById(month + '-offers');
+                        if (targetMonth) {
+                            targetMonth.classList.remove('hidden');
+                            targetMonth.setAttribute('aria-hidden', 'false');
+                            currentMonth = month;
+                        }
+                    }
                 });
                 
-                // Close menus when clicking outside
-                document.addEventListener('click', (e) => {
-                    if (!e.target.closest('#profileBtn') && !e.target.closest('#profileMenu')) {
-                        document.getElementById('profileMenu')?.classList.add('hidden');
+                // Add keyboard support
+                btn.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.click();
+                    }
+                });
+            });
+        }
+        
+        // Tabs functionality
+        function initializeTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    if (tabName) {
+                        // Update active tab
+                        tabs.forEach(t => {
+                            t.classList.remove('active');
+                            t.setAttribute('aria-selected', 'false');
+                        });
+                        this.classList.add('active');
+                        this.setAttribute('aria-selected', 'true');
+                        
+                        // Show tab content
+                        const tabContents = document.querySelectorAll('.tab-content');
+                        tabContents.forEach(content => {
+                            content.classList.add('hidden');
+                            content.setAttribute('aria-hidden', 'true');
+                        });
+                        
+                        const targetTab = document.getElementById(tabName + '-tab');
+                        if (targetTab) {
+                            targetTab.classList.remove('hidden');
+                            targetTab.setAttribute('aria-hidden', 'false');
+                        }
+                    }
+                });
+                
+                // Add keyboard support
+                tab.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.click();
+                    }
+                });
+            });
+        }
+        
+        // Profile dropdown functionality
+        function initializeProfileDropdown() {
+            if (!profileButton || !profileDropdown) {
+                console.warn('Profile dropdown elements not found');
+                return;
+            }
+            
+            profileButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isOpen = !profileDropdown.classList.contains('pointer-events-none');
+                
+                if (isOpen) {
+                    closeProfileDropdown();
+                } else {
+                    openProfileDropdown();
+                }
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function() {
+                closeProfileDropdown();
+            });
+            
+            // Prevent dropdown from closing when clicking inside
+            profileDropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+            
+            // Add keyboard support
+            profileButton.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    this.click();
+                    if (!profileDropdown.classList.contains('pointer-events-none')) {
+                        profileDropdown.querySelector('a').focus();
+                    }
+                }
+            });
+        }
+        
+        function openProfileDropdown() {
+            profileDropdown.classList.remove('opacity-0', 'scale-95', '-translate-y-2', 'pointer-events-none');
+            profileButton.setAttribute('aria-expanded', 'true');
+        }
+        
+        function closeProfileDropdown() {
+            profileDropdown.classList.add('opacity-0', 'scale-95', '-translate-y-2', 'pointer-events-none');
+            profileButton.setAttribute('aria-expanded', 'false');
+        }
+        
+        // Charts initialization
+        function initializeCharts() {
+            // Offers Performance Chart
+            const offersCtx = document.getElementById('offersPerformanceChart');
+            if (offersCtx) {
+                offersChart = new Chart(offersCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['عروض ثابتة', 'عروض محدودة الوقت', 'عروض القيمة المضافة', 'عروض المنصات', 'عروض المشاركة'],
+                        datasets: [{
+                            data: [30, 25, 20, 15, 10],
+                            backgroundColor: [
+                                '#F59E0B',
+                                '#3B82F6',
+                                '#10B981',
+                                '#EC4899',
+                                '#8B5CF6'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    font: {
+                                        family: 'Tajawal',
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.label + ': ' + context.parsed + '%';
+                                    }
+                                }
+                            }
+                        }
                     }
                 });
             }
             
-            showSection(sectionName) {
-                // Hide all sections
-                document.querySelectorAll('.section').forEach(section => {
-                    section.classList.add('hidden');
+            // Revenue Chart
+            const revenueCtx = document.getElementById('offersRevenueChart');
+            if (revenueCtx) {
+                revenueChart = new Chart(revenueCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'],
+                        datasets: [{
+                            label: 'الإيرادات (درهم)',
+                            data: [12000, 19000, 15000, 25000, 22000, 30000],
+                            borderColor: '#F59E0B',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + context.parsed.y.toLocaleString() + ' درهم';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value.toLocaleString() + ' درهم';
+                                    },
+                                    font: {
+                                        family: 'Tajawal'
+                                    }
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    font: {
+                                        family: 'Tajawal'
+                                    }
+                                }
+                            }
+                        }
+                    }
                 });
-                
-                // Show selected section
-                const targetSection = document.getElementById(sectionName + 'Section');
-                if (targetSection) {
-                    targetSection.classList.remove('hidden');
-                    targetSection.classList.add('fade-in');
-                    this.currentSection = sectionName;
-                    
-                    // Update navigation
-                    document.querySelectorAll('.nav-item').forEach(item => {
-                        item.classList.remove('bg-gray-800');
-                    });
-                    document.querySelector(`[data-section="${sectionName}"]`)?.classList.add('bg-gray-800');
-                    
-                    // Update URL
-                    const url = new URL(window.location);
-                    url.searchParams.set('section', sectionName);
-                    window.history.pushState({}, '', url);
-                }
             }
             
-            initCharts() {
-                // Offers Performance Chart
-                const offersCtx = document.getElementById('offersChart');
-                if (offersCtx) {
-                    this.charts.offers = new Chart(offersCtx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: ['عروض ثابتة', 'عروض محدودة', 'قيمة مضافة', 'عروض منصات'],
-                            datasets: [{
-                                data: [30, 25, 20, 25],
-                                backgroundColor: ['#F59E0B', '#3B82F6', '#10B981', '#EC4899']
-                            }]
+            // Performance Over Time Chart
+            const performanceCtx = document.getElementById('performanceOverTimeChart');
+            if (performanceCtx) {
+                performanceOverTimeChart = new Chart(performanceCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['1 يناير', '8 يناير', '15 يناير', '22 يناير', '29 يناير', '5 فبراير'],
+                        datasets: [{
+                            label: 'الاستخدامات',
+                            data: [120, 190, 150, 250, 220, 300],
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }, {
+                            label: 'الإيرادات',
+                            data: [2400, 3800, 3000, 5000, 4400, 6000],
+                            borderColor: '#F59E0B',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            yAxisID: 'y1'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
                         },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'bottom'
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += context.parsed.y.toLocaleString();
+                                            if (context.datasetIndex === 1) {
+                                                label += ' درهم';
+                                            }
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                ticks: {
+                                    font: {
+                                        family: 'Tajawal'
+                                    }
+                                }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                grid: {
+                                    drawOnChartArea: false,
+                                },
+                                ticks: {
+                                    font: {
+                                        family: 'Tajawal'
+                                    },
+                                    callback: function(value) {
+                                        return value.toLocaleString() + ' درهم';
+                                    }
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    font: {
+                                        family: 'Tajawal'
+                                    }
                                 }
                             }
                         }
-                    });
-                }
-                
-                // Revenue Chart
-                const revenueCtx = document.getElementById('revenueChart');
-                if (revenueCtx) {
-                    this.charts.revenue = new Chart(revenueCtx, {
-                        type: 'line',
-                        data: {
-                            labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'],
-                            datasets: [{
-                                label: 'الإيرادات',
-                                data: [12000, 19000, 15000, 25000, 22000, 30000],
-                                borderColor: '#F59E0B',
-                                backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                                fill: true
-                            }]
+                    }
+                });
+            }
+            
+            // Channel Distribution Chart
+            const channelCtx = document.getElementById('channelDistributionChart');
+            if (channelCtx) {
+                channelDistributionChart = new Chart(channelCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['الكول سنتر', 'Noon', 'Careem', 'جميع القنوات'],
+                        datasets: [{
+                            label: 'عدد العروض',
+                            data: [15, 12, 8, 25],
+                            backgroundColor: [
+                                '#8B5CF6',
+                                '#3B82F6',
+                                '#10B981',
+                                '#F59E0B'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
                         },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: false
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    font: {
+                                        family: 'Tajawal'
+                                    }
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    font: {
+                                        family: 'Tajawal'
+                                    }
                                 }
                             }
                         }
-                    });
-                }
-            }
-            
-            loadSectionFromURL() {
-                const urlParams = new URLSearchParams(window.location.search);
-                const section = urlParams.get('section');
-                if (section) {
-                    this.showSection(section);
-                }
-            }
-            
-            showToast(message, type = 'info') {
-                const toast = document.createElement('div');
-                toast.className = `toast toast-${type}`;
-                toast.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-                        <span>${message}</span>
-                    </div>
-                `;
-                
-                document.getElementById('toastContainer').appendChild(toast);
-                
-                // Show toast
-                setTimeout(() => toast.classList.add('show'), 10);
-                
-                // Remove toast
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                    setTimeout(() => toast.remove(), 300);
-                }, 3000);
+                    }
+                });
             }
         }
         
-        // Initialize app when DOM is ready
-        document.addEventListener('DOMContentLoaded', () => {
-            new App();
-        });
+        // Toast notifications
+        function showToast(message, type = 'info', duration = 5000) {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            
+            let icon = '';
+            let iconColor = '';
+            switch(type) {
+                case 'success':
+                    icon = '<i class="fas fa-check-circle"></i>';
+                    iconColor = 'text-green-500';
+                    break;
+                case 'error':
+                    icon = '<i class="fas fa-exclamation-circle"></i>';
+                    iconColor = 'text-red-500';
+                    break;
+                case 'warning':
+                    icon = '<i class="fas fa-exclamation-triangle"></i>';
+                    iconColor = 'text-yellow-500';
+                    break;
+                case 'info':
+                default:
+                    icon = '<i class="fas fa-info-circle"></i>';
+                    iconColor = 'text-blue-500';
+                    break;
+            }
+            
+            toast.innerHTML = `
+                <div class="toast-icon ${iconColor}">${icon}</div>
+                <div class="toast-message">${message}</div>
+                <button class="toast-close" onclick="this.parentElement.remove()" aria-label="إغلاق الإشعار">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Show toast
+            requestAnimationFrame(() => {
+                toast.classList.add('show');
+            });
+            
+            // Auto remove after duration
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, duration);
+        }
         
-        // Handle browser back/forward
-        window.addEventListener('popstate', () => {
+        // Modal functionality
+        function initializeModals() {
+            // Add offer button
+            if (addOfferBtn) {
+                addOfferBtn.addEventListener('click', function() {
+                    showSection('offers');
+                    // Switch to create offer tab
+                    const createOfferTab = document.querySelector('[data-tab="create-offer"]');
+                    if (createOfferTab) {
+                        createOfferTab.click();
+                    }
+                    showToast('يمكنك الآن إنشاء عرض جديد', 'info');
+                });
+            }
+            
+            // Logout button
+            if (logoutButton) {
+                logoutButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showToast('جاري تسجيل الخروج...', 'info');
+                    setTimeout(() => {
+                        showToast('تم تسجيل الخروج بنجاح', 'success');
+                        setTimeout(() => {
+                            window.location.href = '#login';
+                        }, 1500);
+                    }, 1000);
+                });
+            }
+        }
+        
+        // Tooltips
+        function initializeTooltips() {
+            // Add hover effects to interactive cards
+            const interactiveCards = document.querySelectorAll('.interactive-card');
+            interactiveCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.cursor = 'pointer';
+                });
+                
+                // Add keyboard support
+                card.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.click();
+                    }
+                });
+            });
+        }
+        
+        // Search functionality
+        function initializeSearch() {
+            if (!searchInput) return;
+            
+            searchInput.addEventListener('input', debounce(function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                performSearch(searchTerm);
+            }, 300));
+            
+            // Clear search on Escape
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    e.target.value = '';
+                    performSearch('');
+                }
+            });
+        }
+        
+        function performSearch(searchTerm) {
+            // Search implementation would go here
+            console.log('Searching for:', searchTerm);
+            
+            // Example: Highlight search results
+            if (searchTerm) {
+                showToast(`البحث عن: ${searchTerm}`, 'info');
+            }
+        }
+        
+        // Form handling
+        function initializeForms() {
+            if (!createOfferForm) return;
+            
+            createOfferForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (validateForm(this)) {
+                    // Simulate form submission
+                    showToast('جاري حفظ العرض...', 'info');
+                    
+                    setTimeout(() => {
+                        showToast('تم حفظ العرض بنجاح', 'success');
+                        this.reset();
+                        
+                        // Switch to offers list
+                        const offersListTab = document.querySelector('[data-tab="offers-list"]');
+                        if (offersListTab) {
+                            offersListTab.click();
+                        }
+                    }, 1500);
+                }
+            });
+            
+            // Setup auto-save
+            setupAutoSave(createOfferForm);
+        }
+        
+        function validateForm(form) {
+            let isValid = true;
+            const requiredFields = form.querySelectorAll('[required]');
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('border-red-500');
+                    field.setAttribute('aria-invalid', 'true');
+                    isValid = false;
+                    
+                    // Add error message
+                    const errorMsg = document.createElement('p');
+                    errorMsg.className = 'text-red-500 text-xs mt-1';
+                    errorMsg.textContent = 'هذا الحقل مطلوب';
+                    errorMsg.id = field.id + '-error';
+                    
+                    // Remove existing error message
+                    const existingError = document.getElementById(field.id + '-error');
+                    if (existingError) {
+                        existingError.remove();
+                    }
+                    
+                    field.parentNode.appendChild(errorMsg);
+                } else {
+                    field.classList.remove('border-red-500');
+                    field.setAttribute('aria-invalid', 'false');
+                    
+                    // Remove error message
+                    const errorMsg = document.getElementById(field.id + '-error');
+                    if (errorMsg) {
+                        errorMsg.remove();
+                    }
+                }
+            });
+            
+            if (!isValid) {
+                showToast('يرجى ملء جميع الحقول المطلوبة', 'error');
+            }
+            
+            return isValid;
+        }
+        
+        // Auto-save functionality
+        function setupAutoSave(form) {
+            form.addEventListener('input', debounce(function() {
+                // Simulate auto-save
+                showToast('تم الحفظ التلقائي', 'success');
+            }, 2000));
+        }
+        
+        function startAutoSave() {
+            // Auto-save every 30 seconds
+            autoSaveInterval = setInterval(() => {
+                // Check if there are unsaved changes
+                if (hasUnsavedChanges()) {
+                    showToast('تم الحفظ التلقائي', 'success');
+                }
+            }, 30000);
+        }
+        
+        function hasUnsavedChanges() {
+            // Implementation would check for unsaved changes
+            return false;
+        }
+        
+        // Keyboard shortcuts
+        function initializeKeyboardShortcuts() {
+            document.addEventListener('keydown', function(e) {
+                // Ctrl/Cmd + K to focus search
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    if (searchInput) {
+                        searchInput.focus();
+                        searchInput.select();
+                    }
+                }
+                
+                // Ctrl/Cmd + S to save
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    if (createOfferForm && !createOfferForm.classList.contains('hidden')) {
+                        createOfferForm.dispatchEvent(new Event('submit'));
+                    }
+                }
+                
+                // Escape to close modals/dropdowns
+                if (e.key === 'Escape') {
+                    closeProfileDropdown();
+                    
+                    // Close mobile sidebar
+                    if (window.innerWidth < 1024 && sidebar && !sidebar.classList.contains('translate-x-full')) {
+                        sidebar.classList.add('translate-x-full');
+                        sidebarOverlay.classList.add('hidden');
+                    }
+                }
+                
+                // Alt + Arrow keys for navigation
+                if (e.altKey) {
+                    const navItems = Array.from(document.querySelectorAll('.nav-item'));
+                    const currentIndex = navItems.findIndex(item => item.classList.contains('bg-gray-700'));
+                    
+                    if (e.key === 'ArrowRight' && currentIndex > 0) {
+                        e.preventDefault();
+                        navItems[currentIndex - 1].click();
+                    } else if (e.key === 'ArrowLeft' && currentIndex < navItems.length - 1) {
+                        e.preventDefault();
+                        navItems[currentIndex + 1].click();
+                    }
+                }
+            });
+        }
+        
+        // Accessibility features
+        function initializeAccessibility() {
+            // Skip link functionality
+            const skipLink = document.querySelector('.sr-only');
+            if (skipLink) {
+                skipLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const mainContent = document.getElementById('mainContent');
+                    if (mainContent) {
+                        mainContent.setAttribute('tabindex', '-1');
+                        mainContent.focus();
+                        mainContent.removeAttribute('tabindex');
+                    }
+                });
+            }
+            
+            // Add ARIA labels to dynamic content
+            addAriaLabels();
+            
+            // Handle focus management
+            manageFocus();
+        }
+        
+        function addAriaLabels() {
+            // Add ARIA labels to interactive elements
+            const interactiveElements = document.querySelectorAll('button, a, [tabindex]');
+            interactiveElements.forEach(element => {
+                if (!element.getAttribute('aria-label') && !element.getAttribute('aria-labelledby')) {
+                    const text = element.textContent.trim();
+                    if (text) {
+                        element.setAttribute('aria-label', text);
+                    }
+                }
+            });
+        }
+        
+        function manageFocus() {
+            // Trap focus in modals
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    // Focus trap implementation would go here
+                }
+            });
+        }
+        
+        function announceNavigationChange(section) {
+            // Announce to screen readers
+            const announcement = document.createElement('div');
+            announcement.setAttribute('role', 'status');
+            announcement.setAttribute('aria-live', 'polite');
+            announcement.className = 'sr-only';
+            announcement.textContent = `تم الانتقال إلى قسم ${section}`;
+            document.body.appendChild(announcement);
+            
+            setTimeout(() => {
+                announcement.remove();
+            }, 1000);
+        }
+        
+        // Performance optimizations
+        function initializePerformanceOptimizations() {
+            // Lazy load images
+            lazyLoadImages();
+            
+            // Optimize scroll events
+            optimizeScrollEvents();
+            
+            // Use requestAnimationFrame for animations
+            optimizeAnimations();
+        }
+        
+        function lazyLoadImages() {
+            const images = document.querySelectorAll('img[data-src]');
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.removeAttribute('data-src');
+                        observer.unobserve(img);
+                    }
+                });
+            });
+            
+            images.forEach(img => imageObserver.observe(img));
+        }
+        
+        function optimizeScrollEvents() {
+            let ticking = false;
+            
+            window.addEventListener('scroll', function() {
+                if (!ticking) {
+                    requestAnimationFrame(function() {
+                        // Handle scroll events
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+        }
+        
+        function optimizeAnimations() {
+            // Use CSS transforms for better performance
+            const animatedElements = document.querySelectorAll('.fade-in, .offer-card, .stats-card');
+            animatedElements.forEach(element => {
+                element.style.willChange = 'transform, opacity';
+            });
+        }
+        
+        // Utility functions
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        function throttle(func, limit) {
+            let inThrottle;
+            return function() {
+                const args = arguments;
+                const context = this;
+                if (!inThrottle) {
+                    func.apply(context, args);
+                    inThrottle = true;
+                    setTimeout(() => inThrottle = false, limit);
+                }
+            };
+        }
+        
+        // Check URL parameters
+        function checkURLParameters() {
             const urlParams = new URLSearchParams(window.location.search);
             const section = urlParams.get('section');
+            if (section && document.getElementById(section + 'Section')) {
+                showSection(section);
+                // Update active nav item
+                const navItem = document.querySelector(`[data-section="${section}"]`);
+                if (navItem) {
+                    document.querySelectorAll('.nav-item').forEach(nav => {
+                        nav.classList.remove('bg-gray-700', 'text-white');
+                        nav.setAttribute('aria-current', 'false');
+                    });
+                    navItem.classList.add('bg-gray-700', 'text-white');
+                    navItem.setAttribute('aria-current', 'page');
+                }
+            }
+        }
+        
+        // Offer actions
+        function editOffer(offerId) {
+            showToast(`جاري تحرير العرض: ${offerId}`, 'info');
+            showSection('offers');
+            const createOfferTab = document.querySelector('[data-tab="create-offer"]');
+            if (createOfferTab) {
+                createOfferTab.click();
+            }
+        }
+        
+        function viewAnalytics(offerId) {
+            showToast(`عرض تحليلات العرض: ${offerId}`, 'info');
+            showSection('analytics');
+        }
+        
+        function deleteSystemUpdate(updateId) {
+            if (confirm('هل أنت متأكد من حذف هذا التحديث؟')) {
+                showToast(`تم حذف التحديث: ${updateId}`, 'success');
+                // Here you would typically make an API call to delete the item
+            }
+        }
+        
+        function editSystemUpdate(updateId) {
+            showToast(`جاري تحرير التحديث: ${updateId}`, 'info');
+        }
+        
+        // Initialize offer filters
+        function initializeOfferFilters() {
+            const filters = ['offerTypeFilter', 'channelFilter', 'statusFilter'];
+            filters.forEach(filterId => {
+                const filter = document.getElementById(filterId);
+                if (filter) {
+                    filter.addEventListener('change', function() {
+                        applyFilters();
+                    });
+                }
+            });
+        }
+        
+        function applyFilters() {
+            // Filter implementation would go here
+            showToast('تم تطبيق الفلاتر', 'info');
+        }
+        
+        // Initialize sheet filters
+        function initializeSheetFilters() {
+            // Sheet filter implementation would go here
+        }
+        
+        // Add dynamic event listeners
+        function addDynamicEventListeners() {
+            // Add event listeners for dynamically added content
+            document.addEventListener('click', function(e) {
+                // Handle dynamic button clicks
+                if (e.target.closest('.action-btn')) {
+                    // Handle action button clicks
+                }
+            });
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', throttle(function() {
+            // Resize charts
+            if (offersChart) offersChart.resize();
+            if (revenueChart) revenueChart.resize();
+            if (performanceOverTimeChart) performanceOverTimeChart.resize();
+            if (channelDistributionChart) channelDistributionChart.resize();
+            
+            // Handle responsive layout changes
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.remove('translate-x-full');
+                sidebarOverlay.classList.add('hidden');
+            }
+        }, 250));
+        
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', function() {
+            checkURLParameters();
+        });
+        
+        // Simulate real-time updates
+        setInterval(function() {
+            // Update random stat
+            const stats = document.querySelectorAll('.stats-card h2, .stats-card h3');
+            if (stats.length > 0) {
+                const randomStat = stats[Math.floor(Math.random() * stats.length)];
+                const currentValue = randomStat.textContent;
+                
+                // Simulate small change
+                if (currentValue.includes('$')) {
+                    const numericValue = parseFloat(currentValue.replace(/[$,]/g, ''));
+                    const change = (Math.random() - 0.5) * 100;
+                    randomStat.textContent = '$' + (numericValue + change).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                } else if (!isNaN(currentValue.replace(/,/g, ''))) {
+                    const numericValue = parseInt(currentValue.replace(/,/g, ''));
+                    const change = Math.floor((Math.random() - 0.5) * 10);
+                    randomStat.textContent = (numericValue + change).toLocaleString();
+                }
+            }
+        }, 5000);
+        
+        // Print functionality
+        function printSection(sectionId) {
+            const section = document.getElementById(sectionId);
             if (section) {
-                app.showSection(section);
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(`
+                    <html>
+                        <head>
+                            <title>طباعة ${sectionId}</title>
+                            <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+                            <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+                            <style>
+                                body { font-family: 'Tajawal', sans-serif; direction: rtl; }
+                                @media print { .no-print { display: none !important; } }
+                            </style>
+                        </head>
+                        <body class="p-8">
+                            ${section.innerHTML}
+                        </body>
+                    </html>
+                `);
+                printWindow.document.close();
+                printWindow.print();
+            }
+        }
+        
+        // Export functionality
+        function exportData(format, data) {
+            if (format === 'csv') {
+                let csv = 'data:text/csv;charset=utf-8,\uFEFF'; // Add BOM for UTF-8
+                data.forEach(row => {
+                    csv += row.join(',') + '\r\n';
+                });
+                
+                const encodedUri = encodeURI(csv);
+                const link = document.createElement('a');
+                link.setAttribute('href', encodedUri);
+                link.setAttribute('download', `export_${new Date().toISOString().split('T')[0]}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+            
+            showToast(`تم تصدير البيانات بصيغة ${format.toUpperCase()}`, 'success');
+        }
+        
+        // Dark mode toggle
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+            
+            // Update charts for dark mode
+            const isDark = document.body.classList.contains('dark');
+            Chart.defaults.color = isDark ? '#f3f4f6' : '#374151';
+            Chart.defaults.borderColor = isDark ? '#4b5563' : '#e5e7eb';
+            
+            // Update all charts
+            [offersChart, revenueChart, performanceOverTimeChart, channelDistributionChart].forEach(chart => {
+                if (chart) {
+                    chart.update();
+                }
+            });
+        }
+        
+        // Check for saved dark mode preference
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+            Chart.defaults.color = '#f3f4f6';
+            Chart.defaults.borderColor = '#4b5563';
+        }
+        
+        // Error handling
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e.error);
+            showToast('حدث خطأ غير متوقع', 'error');
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Unhandled promise rejection:', e.reason);
+            showToast('حدث خطأ في معالجة الطلب', 'error');
+        });
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (autoSaveInterval) {
+                clearInterval(autoSaveInterval);
             }
         });
+        
+        // Initialize any additional plugins or libraries here
+        console.log('Crispy Chicken Offers Management System initialized successfully!');
+        
+        // Expose functions globally if needed
+        window.showToast = showToast;
+        window.showSection = showSection;
+        window.editOffer = editOffer;
+        window.viewAnalytics = viewAnalytics;
+        window.deleteSystemUpdate = deleteSystemUpdate;
+        window.editSystemUpdate = editSystemUpdate;
+        window.printSection = printSection;
+        window.exportData = exportData;
+        window.toggleDarkMode = toggleDarkMode;
     </script>
 </body>
 </html>
