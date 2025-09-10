@@ -1,19 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant OS - Dashboard</title>
+    <title>نظام إدارة مطعم Crispy Chicken</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
-        /* Custom styles for Restaurant OS */
         body {
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-            /* Prevent horizontal scrollbar if modals cause overflow during transition */
+            font-family: 'Tajawal', sans-serif;
         }
         
         /* Custom scrollbar */
@@ -42,61 +39,9 @@
         }
         
         #mainContent {
-            transition: margin-left 0.3s ease-in-out;
+            transition: margin-right 0.3s ease-in-out;
         }
         
-        .sidebar-nav-items::-webkit-scrollbar {
-            display: none;
-        }
-        
-        .sidebar-nav-items {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        
-        /* Profile dropdown */
-        #profileDropdown {
-            transition: opacity 0.2s ease-out, transform 0.2s ease-out;
-        }
-        
-        /* Icon styling */
-        .menu-item-icon,
-        .modal-icon {
-            width: 1.5rem;
-            height: 1.5rem;
-            stroke-width: 1.5;
-        }
-        
-        .stat-card-icon-container {
-            padding: 0.75rem;
-            border-radius: 9999px;
-        }
-        
-        .stat-card-icon {
-            width: 1.75rem;
-            height: 1.75rem;
-        }
-        
-        .activity-icon-container {
-            padding: 0.5rem;
-            border-radius: 9999px;
-        }
-        
-        .activity-icon {
-            width: 1.25rem;
-            height: 1.25rem;
-        }
-        
-        /* Modal Styling */
-        .modal-backdrop {
-            transition: opacity 0.3s ease-in-out;
-        }
-        
-        .modal-content {
-            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-        }
-        
-        /* Additional improvements */
         .sidebar-collapsed .menu-text {
             display: none;
         }
@@ -111,11 +56,6 @@
         
         .sidebar-collapsed #toggleIconClosed {
             display: block;
-        }
-        
-        /* Table hover effects */
-        table tr {
-            transition: background-color 0.2s ease;
         }
         
         /* Status badges */
@@ -186,503 +126,939 @@
         }
         
         .toast-close {
-            margin-right: 0.5rem;
+            margin-left: 0.5rem;
             cursor: pointer;
             color: #6b7280;
         }
         
-        /* Responsive adjustments */
-        @media (max-width: 640px) {
-            .stat-card-icon-container {
-                width: 2.5rem;
-                height: 2.5rem;
-                padding: 0.5rem;
-            }
-            
-            .stat-card-icon {
-                width: 1.25rem;
-                height: 1.25rem;
-            }
-            
-            .activity-icon-container {
-                width: 2rem;
-                height: 2rem;
-                padding: 0.375rem;
-            }
-            
-            .activity-icon {
-                width: 1rem;
-                height: 1rem;
-            }
-            
-            .menu-item-icon,
-            .modal-icon {
-                width: 1.25rem;
-                height: 1.25rem;
-            }
+        /* Dashboard animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
-        /* Dark mode support */
-        @media (prefers-color-scheme: dark) {
-            ::-webkit-scrollbar-track {
-                background: #1e293b;
-            }
-            
-            ::-webkit-scrollbar-thumb {
-                background: #475569;
-            }
-            
-            ::-webkit-scrollbar-thumb:hover {
-                background: #64748b;
-            }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
         }
         
-        /* Focus styles for accessibility */
-        button:focus,
-        input:focus,
-        select:focus,
-        textarea:focus {
-            outline: 2px solid #3b82f6;
-            outline-offset: 2px;
+        /* Chart container */
+        .chart-container {
+            position: relative;
+            height: 300px;
         }
         
-        /* Print styles */
-        @media print {
-            #sidebar,
-            #mobileMenuButton,
-            .toast-container,
-            .modal-backdrop {
-                display: none !important;
-            }
-            
-            #mainContent {
-                margin-left: 0 !important;
-            }
-            
-            .stat-card-icon-container,
-            .activity-icon-container {
-                print-color-adjust: exact;
-                -webkit-print-color-adjust: exact;
+        @media (min-width: 1024px) {
+            .chart-container {
+                height: 400px;
             }
         }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800">
+<body class="bg-gray-50 text-gray-800">
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+    
     <div class="flex h-screen overflow-hidden">
-        <aside id="sidebar" class="w-64 bg-slate-900 text-slate-100 flex flex-col fixed inset-y-0 left-0 z-30 lg:translate-x-0 transform -translate-x-full">
-            <div class="flex items-center justify-between h-20 px-4 border-b border-slate-700">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-64 bg-gray-900 text-gray-100 flex flex-col fixed inset-y-0 right-0 z-30 lg:translate-x-0 transform translate-x-full">
+            <div class="flex items-center justify-between h-20 px-4 border-b border-gray-700">
                 <a href="#" class="flex items-center space-x-2">
                     <i data-lucide="chef-hat" class="h-8 w-8 text-sky-500"></i>
-                    <span id="sidebarLogoText" class="text-xl font-semibold">RestaurantOS</span>
+                    <span id="sidebarLogoText" class="text-xl font-semibold">Crispy Chicken</span>
                 </a>
             </div>
-            <nav class="flex-1 py-6 space-y-1 overflow-y-auto sidebar-nav-items">
-                <a href="#" class="flex items-center space-x-3 py-3 px-4 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors duration-150">
+            <nav class="flex-1 py-6 space-y-1 overflow-y-auto">
+                <a href="#" data-section="dashboard" class="nav-item flex items-center space-x-3 py-3 px-4 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-150">
                     <i data-lucide="layout-dashboard" class="menu-item-icon"></i>
-                    <span class="text-sm font-medium menu-text">Dashboard</span>
+                    <span class="text-sm font-medium menu-text">لوحة التحكم</span>
                 </a>
-                <a href="#" class="flex items-center space-x-3 py-3 px-4 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors duration-150">
-                    <i data-lucide="shopping-cart" class="menu-item-icon"></i>
-                    <span class="text-sm font-medium menu-text">Orders</span>
+                <a href="#" data-section="branches" class="nav-item flex items-center space-x-3 py-3 px-4 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-150">
+                    <i data-lucide="store" class="menu-item-icon"></i>
+                    <span class="text-sm font-medium menu-text">الفروع</span>
                 </a>
-                 <a href="#" class="flex items-center space-x-3 py-3 px-4 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors duration-150">
-                    <i data-lucide="bar-chart-3" class="menu-item-icon"></i>
-                    <span class="text-sm font-medium menu-text">Reports</span>
-                </a>
-                <a href="#" class="flex items-center space-x-3 py-3 px-4 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors duration-150">
-                    <i data-lucide="book-open" class="menu-item-icon"></i>
-                    <span class="text-sm font-medium menu-text">Menu</span>
-                </a>
-                <a href="#" class="flex items-center space-x-3 py-3 px-4 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors duration-150">
-                    <i data-lucide="calendar-check" class="menu-item-icon"></i>
-                    <span class="text-sm font-medium menu-text">Reservations</span>
-                </a>
-                <a href="#" class="flex items-center space-x-3 py-3 px-4 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors duration-150">
-                    <i data-lucide="users" class="menu-item-icon"></i>
-                    <span class="text-sm font-medium menu-text">Customers</span>
-                </a>
-                 <a href="#" class="flex items-center space-x-3 py-3 px-4 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors duration-150">
+                <a href="#" data-section="delivery" class="nav-item flex items-center space-x-3 py-3 px-4 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-150">
                     <i data-lucide="truck" class="menu-item-icon"></i>
-                    <span class="text-sm font-medium menu-text">Delivery</span>
+                    <span class="text-sm font-medium menu-text">التوصيل</span>
                 </a>
-                 <a href="#" class="flex items-center space-x-3 py-3 px-4 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors duration-150">
-                    <i data-lucide="credit-card" class="menu-item-icon"></i>
-                    <span class="text-sm font-medium menu-text">Billing</span>
+                <a href="#" data-section="platforms" class="nav-item flex items-center space-x-3 py-3 px-4 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-150">
+                    <i data-lucide="globe" class="menu-item-icon"></i>
+                    <span class="text-sm font-medium menu-text">المنصات</span>
+                </a>
+                <a href="#" data-section="online" class="nav-item flex items-center space-x-3 py-3 px-4 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-150">
+                    <i data-lucide="smartphone" class="menu-item-icon"></i>
+                    <span class="text-sm font-medium menu-text">طلبات أونلاين</span>
+                </a>
+                <a href="#" data-section="reports" class="nav-item flex items-center space-x-3 py-3 px-4 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-150">
+                    <i data-lucide="bar-chart-3" class="menu-item-icon"></i>
+                    <span class="text-sm font-medium menu-text">التقارير والتحليلات</span>
                 </a>
             </nav>
-            <div class="px-4 py-4 border-t border-slate-700">
-                <a href="#" class="flex items-center space-x-3 py-3 px-4 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors duration-150">
-                    <i data-lucide="settings" class="menu-item-icon"></i>
-                    <span class="text-sm font-medium menu-text">Settings</span>
-                </a>
-                 <button id="sidebarToggle" class="w-full flex items-center justify-center space-x-3 py-3 px-4 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-sky-400 transition-colors duration-150 focus:outline-none hidden lg:flex">
-                    <i id="toggleIconOpen" data-lucide="chevrons-left" class="menu-item-icon"></i>
-                    <i id="toggleIconClosed" data-lucide="chevrons-right" class="menu-item-icon hidden"></i>
-                    <span class="text-sm font-medium menu-text">Collapse</span>
+            <div class="px-4 py-4 border-t border-gray-700">
+                <button id="sidebarToggle" class="w-full flex items-center justify-center space-x-3 py-3 px-4 rounded-lg text-gray-400 hover:bg-gray-700 hover:text-sky-400 transition-colors duration-150 focus:outline-none hidden lg:flex">
+                    <i id="toggleIconOpen" data-lucide="chevrons-right" class="menu-item-icon"></i>
+                    <i id="toggleIconClosed" data-lucide="chevrons-left" class="menu-item-icon hidden"></i>
+                    <span class="text-sm font-medium menu-text">طي</span>
                 </button>
             </div>
         </aside>
+        
+        <!-- Sidebar Overlay -->
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden lg:hidden" aria-hidden="true"></div>
-
-        <div id="mainContent" class="flex-1 flex flex-col overflow-hidden lg:ml-64">
+        
+        <!-- Main Content -->
+        <div id="mainContent" class="flex-1 flex flex-col overflow-hidden lg:mr-64">
+            <!-- Header -->
             <header class="bg-white shadow-md h-20 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-20"> 
-                <button id="mobileMenuButton" class="text-slate-600 hover:text-sky-500 lg:hidden">
+                <button id="mobileMenuButton" class="text-gray-600 hover:text-sky-500 lg:hidden">
                     <i data-lucide="menu" class="h-7 w-7"></i>
                 </button>
                 <div class="relative hidden sm:block">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                        <i data-lucide="search" class="h-5 w-5 text-slate-400"></i>
+                        <i data-lucide="search" class="h-5 w-5 text-gray-400"></i>
                     </span>
-                    <input type="text" placeholder="Search..." class="w-full max-w-xs py-2.5 pl-10 pr-4 border border-slate-300 rounded-full text-sm text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all duration-150">
+                    <input type="text" placeholder="بحث..." class="w-full max-w-xs py-2.5 pl-10 pr-4 border border-gray-300 rounded-full text-sm text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all duration-150">
                 </div>
                 <div class="flex items-center space-x-3 sm:space-x-4">
                     <div class="hidden sm:flex items-center space-x-1 text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">
                         <i data-lucide="circle" class="h-2 w-2 fill-current"></i>
-                        <span>System Online</span>
+                        <span>النظام متصل</span>
                     </div>
-                    <button class="text-slate-500 hover:text-sky-500 relative">
+                    <button class="text-gray-500 hover:text-sky-500 relative">
                         <i data-lucide="bell" class="h-6 w-6"></i>
                         <span class="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full border-2 border-white text-xs"></span>
                     </button>
                     <div class="relative">
                         <button id="profileButton" class="flex items-center space-x-2 focus:outline-none">
-                            <img src="https://placehold.co/40x40/E2E8F0/475569?text=JD" alt="User Avatar" class="h-10 w-10 rounded-full border-2 border-transparent hover:border-sky-500 transition-colors">
-                            <span class="hidden md:inline text-sm font-medium text-slate-700">John Doe</span>
-                            <i data-lucide="chevron-down" class="h-4 w-4 text-slate-400 hidden md:inline"></i>
+                            <img src="https://placehold.co/40x40/E2E8F0/475569?text=JD" alt="صورة المستخدم" class="h-10 w-10 rounded-full border-2 border-transparent hover:border-sky-500 transition-colors">
+                            <span class="hidden md:inline text-sm font-medium text-gray-700">أحمد محمد</span>
+                            <i data-lucide="chevron-down" class="h-4 w-4 text-gray-400 hidden md:inline"></i>
                         </button>
-                        <div id="profileDropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-1 origin-top-right opacity-0 transform scale-95 -translate-y-2 pointer-events-none z-30">  
-                            <a href="#" class="flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-sky-600">
-                                <i data-lucide="user-circle" class="w-4 h-4 mr-2"></i>Your Profile
+                        <div id="profileDropdown" class="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-1 origin-top-right opacity-0 transform scale-95 -translate-y-2 pointer-events-none z-30">  
+                            <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-sky-600">
+                                <i data-lucide="user-circle" class="w-4 h-4 mr-2"></i>ملفي الشخصي
                             </a>
-                            <a href="#" class="flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-sky-600">
-                                <i data-lucide="settings-2" class="w-4 h-4 mr-2"></i>Settings
+                            <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-sky-600">
+                                <i data-lucide="settings-2" class="w-4 h-4 mr-2"></i>الإعدادات
                             </a>
-                            <hr class="my-1 border-slate-200">
-                            <a href="#" id="logoutButton" class="flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-red-50 hover:text-red-600">
-                                <i data-lucide="log-out" class="w-4 h-4 mr-2"></i>Logout
+                            <hr class="my-1 border-gray-200">
+                            <a href="#" id="logoutButton" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600">
+                                <i data-lucide="log-out" class="w-4 h-4 mr-2"></i>تسجيل الخروج
                             </a>
                         </div>
                     </div>
                 </div>
             </header>
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100 p-4 sm:p-6">
-                <h1 class="text-2xl sm:text-3xl font-semibold text-slate-800 mb-6">Dashboard</h1>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
-                    <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex items-center space-x-3 sm:space-x-4">
-                        <div class="stat-card-icon-container bg-sky-100 text-sky-600">
-                            <i data-lucide="shopping-bag" class="stat-card-icon"></i>
+            
+            <!-- Main Content Area -->
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-4 sm:p-6">
+                <!-- Dashboard Section -->
+                <section id="dashboardSection" class="section fade-in">
+                    <h1 class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-6">لوحة التحكم</h1>
+                    
+                    <!-- Key Metrics -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
+                        <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex items-center space-x-3 sm:space-x-4 hover:shadow-xl transition-shadow duration-300">
+                            <div class="stat-card-icon-container bg-sky-100 text-sky-600">
+                                <i data-lucide="shopping-bag" class="stat-card-icon"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs sm:text-sm text-gray-500">طلبات اليوم</p>
+                                <p class="text-xl sm:text-2xl font-semibold text-gray-800">156</p>
+                                <p class="text-xs text-green-600 mt-1">↑ 12%</p>
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-xs sm:text-sm text-slate-500">Today's Orders</p>
-                            <p class="text-xl sm:text-2xl font-semibold text-slate-800">156</p>
+                        <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex items-center space-x-3 sm:space-x-4 hover:shadow-xl transition-shadow duration-300">
+                            <div class="stat-card-icon-container bg-emerald-100 text-emerald-600">
+                                <i data-lucide="dollar-sign" class="stat-card-icon"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs sm:text-sm text-gray-500">إيرادات اليوم</p>
+                                <p class="text-xl sm:text-2xl font-semibold text-gray-800">$8,750</p>
+                                <p class="text-xs text-green-600 mt-1">↑ 8%</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex items-center space-x-3 sm:space-x-4">
-                        <div class="stat-card-icon-container bg-emerald-100 text-emerald-600">
-                            <i data-lucide="dollar-sign" class="stat-card-icon"></i>
+                        <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex items-center space-x-3 sm:space-x-4 hover:shadow-xl transition-shadow duration-300">
+                            <div class="stat-card-icon-container bg-amber-100 text-amber-600">
+                               <i data-lucide="layout-list" class="stat-card-icon"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs sm:text-sm text-gray-500">الطاولات النشطة</p>
+                                <p class="text-xl sm:text-2xl font-semibold text-gray-800">23 / 40</p>
+                                <div class="w-full bg-gray-200 rounded-full h-1 mt-1">
+                                    <div class="bg-amber-500 h-1 rounded-full" style="width: 57.5%"></div>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-xs sm:text-sm text-slate-500">Today's Revenue</p>
-                            <p class="text-xl sm:text-2xl font-semibold text-slate-800">$8,750</p>
-                        </div>
-                    </div>
-                    <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex items-center space-x-3 sm:space-x-4">
-                        <div class="stat-card-icon-container bg-amber-100 text-amber-600">
-                           <i data-lucide="layout-list" class="stat-card-icon"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs sm:text-sm text-slate-500">Active Tables</p>
-                            <p class="text-xl sm:text-2xl font-semibold text-slate-800">23 / 40</p>
-                        </div>
-                    </div>
-                    <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex items-center space-x-3 sm:space-x-4">
-                        <div class="stat-card-icon-container bg-indigo-100 text-indigo-600">
-                            <i data-lucide="calendar-days" class="stat-card-icon"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs sm:text-sm text-slate-500">Upcoming Res.</p>
-                            <p class="text-xl sm:text-2xl font-semibold text-slate-800">12</p>
-                        </div>
-                    </div>
-                     <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex items-center space-x-3 sm:space-x-4">
-                        <div class="stat-card-icon-container bg-pink-100 text-pink-600">
-                           <i data-lucide="user-plus" class="stat-card-icon"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs sm:text-sm text-slate-500">New Customers</p>
-                            <p class="text-xl sm:text-2xl font-semibold text-slate-800">8</p>
-                        </div>
-                    </div>
-                     <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex items-center space-x-3 sm:space-x-4">
-                        <div class="stat-card-icon-container bg-teal-100 text-teal-600">
-                            <i data-lucide="package-check" class="stat-card-icon"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs sm:text-sm text-slate-500">Pending Delivery</p>
-                            <p class="text-xl sm:text-2xl font-semibold text-slate-800">5</p>
+                        <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex items-center space-x-3 sm:space-x-4 hover:shadow-xl transition-shadow duration-300">
+                            <div class="stat-card-icon-container bg-indigo-100 text-indigo-600">
+                                <i data-lucide="calendar-days" class="stat-card-icon"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs sm:text-sm text-gray-500">الحجوزات القادمة</p>
+                                <p class="text-xl sm:text-2xl font-semibold text-gray-800">12</p>
+                                <p class="text-xs text-blue-600 mt-1">3 اليوم</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex items-center space-x-3 sm:space-x-4">
-                        <div class="stat-card-icon-container bg-orange-100 text-orange-600">
-                            <i data-lucide="book-marked" class="stat-card-icon"></i>
+                    
+                    <!-- Charts Row -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                        <!-- Sales Chart -->
+                        <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg sm:text-xl font-semibold text-gray-700">مبيعات الأسبوع</h3>
+                                <div class="flex space-x-2">
+                                    <button class="px-3 py-1 text-xs font-medium rounded-md bg-sky-100 text-sky-700">يومي</button>
+                                    <button class="px-3 py-1 text-xs font-medium rounded-md text-gray-600 hover:bg-gray-100">أسبوعي</button>
+                                    <button class="px-3 py-1 text-xs font-medium rounded-md text-gray-600 hover:bg-gray-100">شهري</button>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="salesChart"></canvas>
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-xs sm:text-sm text-slate-500">Total Menu Items</p>
-                            <p class="text-xl sm:text-2xl font-semibold text-slate-800">78</p>
+                        
+                        <!-- Popular Dishes -->
+                        <div class="bg-white p-6 rounded-xl shadow-lg">
+                            <h3 class="text-lg sm:text-xl font-semibold text-gray-700 mb-4">الأطباب الشعبية</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center mr-3">
+                                            <i data-lucide="award" class="w-4 h-4 text-amber-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-800">وجبة Crispy Chicken</p>
+                                            <p class="text-xs text-gray-500">45 طلب</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm font-semibold text-gray-800">28%</p>
+                                        <div class="w-16 bg-gray-200 rounded-full h-1.5 mt-1">
+                                            <div class="bg-amber-500 h-1.5 rounded-full" style="width: 28%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                            <i data-lucide="utensils" class="w-4 h-4 text-blue-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-800">برجر Crispy</p>
+                                            <p class="text-xs text-gray-500">38 طلب</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm font-semibold text-gray-800">24%</p>
+                                        <div class="w-16 bg-gray-200 rounded-full h-1.5 mt-1">
+                                            <div class="bg-blue-500 h-1.5 rounded-full" style="width: 24%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                            <i data-lucide="pizza" class="w-4 h-4 text-green-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-800">بيتزا Crispy</p>
+                                            <p class="text-xs text-gray-500">32 طلب</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm font-semibold text-gray-800">20%</p>
+                                        <div class="w-16 bg-gray-200 rounded-full h-1.5 mt-1">
+                                            <div class="bg-green-500 h-1.5 rounded-full" style="width: 20%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                                            <i data-lucide="ice-cream" class="w-4 h-4 text-purple-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-800">آيس كريم Crispy</p>
+                                            <p class="text-xs text-gray-500">25 طلب</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm font-semibold text-gray-800">16%</p>
+                                        <div class="w-16 bg-gray-200 rounded-full h-1.5 mt-1">
+                                            <div class="bg-purple-500 h-1.5 rounded-full" style="width: 16%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-6">
+                                <canvas id="popularDishesChart" class="max-h-40"></canvas>
+                            </div>
                         </div>
                     </div>
-                    <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex items-center space-x-3 sm:space-x-4">
-                        <div class="stat-card-icon-container bg-purple-100 text-purple-600">
-                            <i data-lucide="calendar-clock" class="stat-card-icon"></i>
+                    
+                    <!-- Recent Activity -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg sm:text-xl font-semibold text-gray-700">النشاط الأخير</h3>
+                            <button class="text-sm text-sky-600 hover:text-sky-800">عرض الكل</button>
                         </div>
-                        <div>
-                            <p class="text-xs sm:text-sm text-slate-500">Total Reservations</p>
-                            <p class="text-xl sm:text-2xl font-semibold text-slate-800">35</p>
-                        </div>
+                        <ul class="space-y-4 max-h-96 overflow-y-auto" id="activityFeed">
+                            <li class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors duration-150">
+                                <div class="activity-icon-container bg-green-100 text-green-600">
+                                    <i data-lucide="check-circle-2" class="activity-icon"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-700">طلب جديد <span class="font-semibold text-sky-600">#ORD-1235</span> من جان ك.</p>
+                                    <p class="text-xs text-gray-400 mt-1">منذ دقيقتين</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors duration-150">
+                                <div class="activity-icon-container bg-blue-100 text-blue-600">
+                                    <i data-lucide="calendar-check-2" class="activity-icon"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-700">حجز طاولة 5 مؤكد لسارة ل. الساعة 7:00 م.</p>
+                                    <p class="text-xs text-gray-400 mt-1">منذ 15 دقيقة</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors duration-150">
+                                <div class="activity-icon-container bg-yellow-100 text-yellow-600">
+                                    <i data-lucide="alert-triangle" class="activity-icon"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-700">تحذير: مخزون الدجاج منخفض (10 وحدات متبقية)</p>
+                                    <p class="text-xs text-gray-400 mt-1">منذ 1 ساعة</p>
+                                </div>
+                            </li>
+                        </ul>
                     </div>
-                </div>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                    <div class="lg:col-span-1 bg-white p-4 sm:p-6 rounded-xl shadow-lg">
-                        <h3 class="text-lg sm:text-xl font-semibold text-slate-700 mb-4">Quick Actions</h3>
-                        <div class="space-y-3">
-                            <button id="openNewOrderModal" class="w-full flex items-center justify-center text-sm bg-sky-500 hover:bg-sky-600 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-150">
-                                <i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> New Order
-                            </button>
-                            <button id="openAddMenuItemModal" class="w-full flex items-center justify-center text-sm bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-150">
-                                <i data-lucide="utensils-crossed" class="w-4 h-4 mr-2"></i> Add Menu Item
-                            </button>
-                            <button id="openNewReservationModal" class="w-full flex items-center justify-center text-sm bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-150">
-                                <i data-lucide="calendar-plus" class="w-4 h-4 mr-2"></i> New Reservation
-                            </button>
-                        </div>
+                </section>
+                
+                <!-- Branches Section -->
+                <section id="branchesSection" class="section hidden">
+                    <h1 class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-6">إدارة الفروع</h1>
+                    
+                    <!-- Add Branch Form -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">إضافة فرع جديد</h3>
+                        <form id="addBranchForm" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="branchName" class="block text-sm font-medium text-gray-700 mb-1">اسم الفرع</label>
+                                    <input type="text" id="branchName" name="branchName" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="مثال: Crispy Chicken Al Regga">
+                                </div>
+                                <div>
+                                    <label for="branchPhone" class="block text-sm font-medium text-gray-700 mb-1">الهاتف</label>
+                                    <input type="tel" id="branchPhone" name="branchPhone" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="مثال: +971551234567">
+                                </div>
+                            </div>
+                            <div>
+                                <label for="branchAddress" class="block text-sm font-medium text-gray-700 mb-1">العنوان</label>
+                                <input type="text" id="branchAddress" name="branchAddress" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="مثال: شارع الريج">
+                            </div>
+                            <div>
+                                <label for="branchManager" class="block text-sm font-medium text-gray-700 mb-1">مدير الفرع</label>
+                                <input type="text" id="branchManager" name="branchManager" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="مثال: أحمد خالد">
+                            </div>
+                            <div class="flex justify-end space-x-3 pt-2">
+                                <button type="button" id="cancelAddBranch" class="px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-200 text-gray-700 hover:bg-gray-300 focus:ring-gray-400">إلغاء</button>
+                                <button type="submit" class="px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-sky-600 text-white hover:bg-sky-700 focus:ring-sky-500">إضافة الفرع</button>
+                            </div>
+                        </form>
                     </div>
-                    <div class="lg:col-span-2 bg-white p-4 sm:p-6 rounded-xl shadow-lg">
-                        <h3 class="text-lg sm:text-xl font-semibold text-slate-700 mb-4">Recent Order Summary</h3>
+                    
+                    <!-- Branches List -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">قائمة الفروع</h3>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-sm text-left text-slate-500">
-                                <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
                                     <tr>
-                                        <th scope="col" class="px-4 py-3">Order ID</th>
-                                        <th scope="col" class="px-4 py-3">Customer</th>
-                                        <th scope="col" class="px-4 py-3">Status</th>
-                                        <th scope="col" class="px-4 py-3">Total</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">اسم الفرع</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">العنوان</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الهاتف</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المدير</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr class="bg-white border-b hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-medium text-slate-900">#ORD-1235</td>
-                                        <td class="px-4 py-3">John K.</td>
-                                        <td class="px-4 py-3"><span class="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700">Completed</span></td>
-                                        <td class="px-4 py-3">$45.00</td>
+                                <tbody class="bg-white divide-y divide-gray-200" id="branchesTableBody">
+                                    <!-- Branches will be added here dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Delivery Section -->
+                <section id="deliverySection" class="section hidden">
+                    <h1 class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-6">متابعة التوصيل</h1>
+                    
+                    <!-- Alert for delayed orders -->
+                    <div id="delayAlert" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-8" style="display: none;">
+                        <div class="flex items-start">
+                            <i data-lucide="alert-triangle" class="w-5 h-5 text-red-500 mr-2 mt-0.5"></i>
+                            <div>
+                                <p class="text-sm font-medium text-red-800">تنبيه: طلب متأخر</p>
+                                <p class="text-xs text-red-600 mt-1">الطلب #ORD-1234 تجاوز مدة SLA (45 دقيقة). تم إخطار العميل.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Delivery Tracking Dashboard -->
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+                        <!-- Orders in Preparation -->
+                        <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                                <i data-lucide="clock" class="w-5 h-5 mr-2 text-amber-500"></i>
+                                الطلبات قيد التحضير
+                            </h3>
+                            <div class="space-y-3" id="preparingOrders">
+                                <div class="p-3 bg-amber-50 rounded-lg border border-amber-200">
+                                    <p class="text-sm font-medium text-gray-700">#ORD-1236</p>
+                                    <p class="text-xs text-gray-500">وجبة Crispy Chicken - شارع حمدان</p>
+                                    <p class="text-xs text-gray-400 mt-1">بدأ: 10:15 ص</p>
+                                </div>
+                                <div class="p-3 bg-amber-50 rounded-lg border border-amber-200">
+                                    <p class="text-sm font-medium text-gray-700">#ORD-1237</p>
+                                    <p class="text-xs text-gray-500">وجبة مختلطة - البرشاء</p>
+                                    <p class="text-xs text-gray-400 mt-1">بدأ: 10:22 ص</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Orders with Driver -->
+                        <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                                <i data-lucide="truck" class="w-5 h-5 mr-2 text-blue-500"></i>
+                                الطلبات مع السائق
+                            </h3>
+                            <div class="space-y-3" id="driverOrders">
+                                <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                    <p class="text-sm font-medium text-gray-700">#ORD-1234</p>
+                                    <p class="text-xs text-gray-500">السائق: أحمد خ.</p>
+                                    <p class="text-xs text-gray-500">المتوقع: 10:45 ص</p>
+                                    <p class="text-xs text-gray-400 mt-1">تم استلامه: 10:30 ص</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Delivered Orders -->
+                        <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                                <i data-lucide="check-circle" class="w-5 h-5 mr-2 text-green-500"></i>
+                                الطلبات المسلمة
+                            </h3>
+                            <div class="space-y-3" id="deliveredOrders">
+                                <div class="p-3 bg-green-50 rounded-lg border border-green-200">
+                                    <p class="text-sm font-medium text-gray-700">#ORD-1233</p>
+                                    <p class="text-xs text-gray-500">تم التوصيل إلى: الخالدية</p>
+                                    <p class="text-xs text-gray-400 mt-1">تم التوصيل: 10:20 ص</p>
+                                    <p class="text-xs text-emerald-600 font-medium">المدة: 25 دقيقة</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Delivery Stats -->
+                        <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                                <i data-lucide="bar-chart" class="w-5 h-5 mr-2 text-purple-500"></i>
+                                إحصائيات التوصيل
+                            </h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">متوسط مدة التوصيل</p>
+                                    <p class="text-2xl font-bold text-gray-800">28 دقيقة</p>
+                                    <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
+                                        <div class="bg-purple-600 h-2 rounded-full" style="width: 62%"></div>
+                                    </div>
+                                    <p class="text-xs text-gray-400 mt-1">الهدف: 45 دقيقة</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">نسبة التوصيل في الوقت المحدد</p>
+                                    <p class="text-2xl font-bold text-gray-800">94%</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">السائقون النشطون</p>
+                                    <p class="text-2xl font-bold text-gray-800">8</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Driver Performance -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">أداء السائقين</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">السائق</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الطلبات</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">متوسط الوقت</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">التقييم</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
                                     </tr>
-                                    <tr class="bg-white border-b hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-medium text-slate-900">#ORD-1234</td>
-                                        <td class="px-4 py-3">Sarah L.</td>
-                                        <td class="px-4 py-3"><span class="px-2 py-0.5 text-xs font-medium rounded-full bg-yellow-100 text-yellow-700">Pending</span></td>
-                                        <td class="px-4 py-3">$22.50</td>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">أحمد خ.</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">12</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">25 دقيقة</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
+                                                <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
+                                                <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
+                                                <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
+                                                <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
+                                                <span class="text-sm text-gray-600 mr-1">5.0</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">نشط</span>
+                                        </td>
                                     </tr>
-                                    <tr class="bg-white hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-medium text-slate-900">#ORD-1233</td>
-                                        <td class="px-4 py-3">Mike P.</td>
-                                        <td class="px-4 py-3"><span class="px-2 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-700">Cancelled</span></td>
-                                        <td class="px-4 py-3">$10.00</td>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">محمد ي.</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">10</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">28 دقيقة</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
+                                                <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
+                                                <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
+                                                <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
+                                                <i data-lucide="star" class="w-4 h-4 text-yellow-400"></i>
+                                                <span class="text-sm text-gray-600 mr-1">4.2</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">نشط</span>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 bg-white p-4 sm:p-6 rounded-xl shadow-lg">
-                        <h3 class="text-lg sm:text-xl font-semibold text-slate-700 mb-4">Sales Overview (Weekly)</h3>
-                        <div class="h-80 md:h-96">
-                            <canvas id="salesChart"></canvas>
+                </section>
+                
+                <!-- Platforms Section -->
+                <section id="platformsSection" class="section hidden">
+                    <h1 class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-6">إدارة المنصات</h1>
+                    
+                    <!-- Platform Reports -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                        <!-- Talabat -->
+                        <div class="bg-white p-6 rounded-xl shadow-lg">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-gray-700">Talabat</h3>
+                                <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">نشط</span>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">طلبات اليوم</p>
+                                    <p class="text-xl font-bold text-gray-800">42</p>
+                                    <p class="text-xs text-green-600 mt-1">↑ 5%</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">إيرادات</p>
+                                    <p class="text-xl font-bold text-gray-800">$2,450</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">متوسط قيمة الطلب</p>
+                                    <p class="text-xl font-bold text-gray-800">$58.33</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">نسبة الإلغاء</p>
+                                    <p class="text-xl font-bold text-gray-800">5%</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">العمولة</p>
+                                    <p class="text-xl font-bold text-gray-800">20%</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Noon Food -->
+                        <div class="bg-white p-6 rounded-xl shadow-lg">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-gray-700">Noon Food</h3>
+                                <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">نشط</span>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">طلبات اليوم</p>
+                                    <p class="text-xl font-bold text-gray-800">28</p>
+                                    <p class="text-xs text-red-600 mt-1">↓ 3%</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">إيرادات</p>
+                                    <p class="text-xl font-bold text-gray-800">$1,680</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">متوسط قيمة الطلب</p>
+                                    <p class="text-xl font-bold text-gray-800">$60.00</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">نسبة الإلغاء</p>
+                                    <p class="text-xl font-bold text-gray-800">8%</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">العمولة</p>
+                                    <p class="text-xl font-bold text-gray-800">18%</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Careem -->
+                        <div class="bg-white p-6 rounded-xl shadow-lg">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-gray-700">Careem</h3>
+                                <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">نشط</span>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">طلبات اليوم</p>
+                                    <p class="text-xl font-bold text-gray-800">35</p>
+                                    <p class="text-xs text-green-600 mt-1">↑ 8%</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">إيرادات</p>
+                                    <p class="text-xl font-bold text-gray-800">$2,100</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">متوسط قيمة الطلب</p>
+                                    <p class="text-xl font-bold text-gray-800">$60.00</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">نسبة الإلغاء</p>
+                                    <p class="text-xl font-bold text-gray-800">6%</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">العمولة</p>
+                                    <p class="text-xl font-bold text-gray-800">15%</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
-                        <h3 class="text-lg sm:text-xl font-semibold text-slate-700 mb-4">Popular Dishes</h3>
-                        <div class="h-80 md:h-96 flex items-center justify-center">
-                             <canvas id="popularDishesChart" class="max-h-full max-w-full"></canvas>
+                    
+                    <!-- Platform Comparison -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">مقارنة أداء المنصات</h3>
+                        <div class="h-80">
+                            <canvas id="platformComparisonChart"></canvas>
                         </div>
                     </div>
-                    <div class="lg:col-span-3 bg-white p-4 sm:p-6 rounded-xl shadow-lg">
-                        <h3 class="text-lg sm:text-xl font-semibold text-slate-700 mb-4">Recent Activity</h3>
-                        <ul class="space-y-4 max-h-96 overflow-y-auto" id="activityFeed">
-                            <li class="flex items-start space-x-3 p-3 rounded-lg hover:bg-slate-50">
-                                <div class="activity-icon-container bg-green-100 text-green-600">
-                                    <i data-lucide="check-circle-2" class="activity-icon"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-slate-700">New order <span class="font-semibold text-sky-600">#ORD-1235</span> placed by John K.</p>
-                                    <p class="text-xs text-slate-400">2 minutes ago</p>
-                                </div>
-                            </li>
-                            <li class="flex items-start space-x-3 p-3 rounded-lg hover:bg-slate-50">
-                                <div class="activity-icon-container bg-blue-100 text-blue-600">
-                                    <i data-lucide="calendar-check-2" class="activity-icon"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-slate-700">Table 5 reservation confirmed for Sarah L. at 7:00 PM.</p>
-                                    <p class="text-xs text-slate-400">15 minutes ago</p>
-                                </div>
-                            </li>
-                            <li class="flex items-start space-x-3 p-3 rounded-lg hover:bg-slate-50">
-                                <div class="activity-icon-container bg-yellow-100 text-yellow-600">
-                                     <i data-lucide="alert-triangle" class="activity-icon"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-slate-700">Low stock warning: Tomatoes (5 units left).</p>
-                                    <p class="text-xs text-slate-400">1 hour ago</p>
-                                </div>
-                            </li>
-                             <li class="flex items-start space-x-3 p-3 rounded-lg hover:bg-slate-50">
-                                <div class="activity-icon-container bg-purple-100 text-purple-600">
-                                     <i data-lucide="edit-3" class="activity-icon"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-slate-700">Chef Michael updated the "Pasta Carbonara" recipe.</p>
-                                    <p class="text-xs text-slate-400">3 hours ago</p>
-                                </div>
-                            </li>
-                        </ul>
+                    
+                    <!-- Commission Management -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">إدارة العمولات والعروض</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المنصة</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">العمولة الحالية</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">العروض النشطة</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Talabat</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">20%</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">عرض الشهر: خصم 15%</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <button class="text-sky-600 hover:text-sky-900">تعديل</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Noon Food</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">18%</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">لا توجد عروض</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <button class="text-sky-600 hover:text-sky-900">تعديل</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Careem</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">15%</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">عرض جديد: خصم 10%</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <button class="text-sky-600 hover:text-sky-900">تعديل</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
+                </section>
+                
+                <!-- Online Orders Section -->
+                <section id="onlineSection" class="section hidden">
+                    <h1 class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-6">الطلبات أونلاين</h1>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                        <!-- Online Orders Stats -->
+                        <div class="bg-white p-6 rounded-xl shadow-lg">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4">إحصائيات الطلبات أونلاين</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">طلبات اليوم</p>
+                                    <p class="text-2xl font-bold text-gray-800">68</p>
+                                    <p class="text-xs text-green-600 mt-1">↑ 12% من الأمس</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">إجمالي الإيرادات</p>
+                                    <p class="text-2xl font-bold text-gray-800">$4,130</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">متوسط قيمة الطلب</p>
+                                    <p class="text-2xl font-bold text-gray-800">$60.74</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">تقييم العملاء</p>
+                                    <div class="flex items-center">
+                                        <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
+                                        <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
+                                        <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
+                                        <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
+                                        <i data-lucide="star" class="w-4 h-4 text-yellow-400"></i>
+                                        <span class="text-sm text-gray-600 ml-1">4.2</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Orders by Source -->
+                        <div class="bg-white p-6 rounded-xl shadow-lg">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4">الطلبات حسب المصدر</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 bg-sky-500 rounded-full mr-2"></div>
+                                        <span class="text-sm text-gray-700">الموقع الإلكتروني</span>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-800">45%</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 bg-emerald-500 rounded-full mr-2"></div>
+                                        <span class="text-sm text-gray-700">التطبيق المحمول</span>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-800">35%</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 bg-amber-500 rounded-full mr-2"></div>
+                                        <span class="text-sm text-gray-700">وسائل التواصل الاجتماعي</span>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-800">20%</span>
+                                </div>
+                            </div>
+                            <div class="h-40 mt-4">
+                                <canvas id="onlineOrdersSourceChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- Recent Online Orders -->
+                        <div class="bg-white p-6 rounded-xl shadow-lg">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4">الطلبات الأخيرة أونلاين</h3>
+                            <div class="space-y-3 max-h-80 overflow-y-auto">
+                                <div class="p-3 border border-gray-200 rounded-lg">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-700">#WEB-1234</p>
+                                            <p class="text-xs text-gray-500">الموقع - جان دو</p>
+                                        </div>
+                                        <span class="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-700">مكتمل</span>
+                                    </div>
+                                    <p class="text-xs text-gray-400 mt-1">2 منتجات • $35.00</p>
+                                </div>
+                                <div class="p-3 border border-gray-200 rounded-lg">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-700">#APP-1235</p>
+                                            <p class="text-xs text-gray-500">التطبيق - سارة ل.</p>
+                                        </div>
+                                        <span class="text-xs font-medium px-2 py-1 rounded-full bg-yellow-100 text-yellow-700">قيد التحضير</span>
+                                    </div>
+                                    <p class="text-xs text-gray-400 mt-1">3 منتجات • $42.50</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Online Order Details -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">تفاصيل الطلبات أونلاين</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم الطلب</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المصدر</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">العميل</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المبلغ</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#WEB-1234</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">الموقع الإلكتروني</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">جان دو</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$35.00</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">مكتمل</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <button class="text-sky-600 hover:text-sky-900 mr-2">عرض</button>
+                                            <button class="text-gray-600 hover:text-gray-900">طباعة</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Reports Section -->
+                <section id="reportsSection" class="section hidden">
+                    <h1 class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-6">التقارير والتحليلات</h1>
+                    
+                    <!-- Report Filters -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">فلترة التقرير</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">الفرع</label>
+                                <select id="branchFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500">
+                                    <option value="all">جميع الفروع</option>
+                                    <option value="Crispy Chicken Al Regga">Crispy Chicken Al Regga</option>
+                                    <option value="Hamdan St">Hamdan St</option>
+                                    <option value="Khaldia">Khaldia</option>
+                                    <option value="Shabiya 11">Shabiya 11</option>
+                                    <option value="Muroor">Muroor</option>
+                                    <option value="Al Electra">Al Electra</option>
+                                    <option value="Al Barsha">Al Barsha</option>
+                                    <option value="Al Satwa">Al Satwa</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">المنصة</label>
+                                <select id="platformFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500">
+                                    <option value="all">جميع المنصات</option>
+                                    <option value="website">الموقع الإلكتروني</option>
+                                    <option value="app">التطبيق المحمول</option>
+                                    <option value="talabat">Talabat</option>
+                                    <option value="noon">Noon Food</option>
+                                    <option value="careem">Careem</option>
+                                    <option value="deliveroo">Deliveroo</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">نوع الطلب</label>
+                                <select id="orderTypeFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500">
+                                    <option value="all">جميع الأنواع</option>
+                                    <option value="online">أونلاين</option>
+                                    <option value="delivery">توصيل</option>
+                                    <option value="dine-in">مطعم</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">نطاق التاريخ</label>
+                                <div class="flex space-x-2">
+                                    <input type="date" id="startDate" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500">
+                                    <input type="date" id="endDate" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 flex justify-end">
+                            <button id="generateReport" class="px-4 py-2 bg-sky-600 text-white font-medium rounded-md hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500">
+                                توليد التقرير
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <!-- Orders by Branch -->
+                        <div class="bg-white p-6 rounded-xl shadow-lg">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4">توزيع الطلبات حسب الفرع</h3>
+                            <div class="h-80">
+                                <canvas id="branchOrdersChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- Platform Comparison -->
+                        <div class="bg-white p-6 rounded-xl shadow-lg">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-4">مقارنة المنصات</h3>
+                            <div class="h-80">
+                                <canvas id="platformComparisonChart2"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Monthly Trends -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">تطور الطلبات الشهري</h3>
+                        <div class="h-80">
+                            <canvas id="monthlyTrendsChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Order Details Table -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">تفاصيل الطلبات</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم الطلب</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الفرع</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المنصة</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">نوع الطلب</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">التاريخ</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المبلغ</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200" id="orderDetailsTable">
+                                    <!-- Table rows will be added dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
             </main>
         </div>
     </div>
-    <div id="newOrderModal" class="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50 modal-backdrop hidden opacity-0">
-        <div class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-11/12 max-w-lg modal-content transform scale-95 opacity-0">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-semibold text-slate-800 flex items-center">
-                    <i data-lucide="plus-circle" class="modal-icon mr-2 text-sky-600"></i>Create New Order
-                </h2>
-                <button id="closeNewOrderModal" class="text-slate-400 hover:text-slate-600">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-            <form id="newOrderForm" class="space-y-4">
-                <div>
-                    <label for="orderCustomerName" class="block text-sm font-medium text-slate-700 mb-1">Customer Name</label>
-                    <input type="text" id="orderCustomerName" name="orderCustomerName" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="e.g., John Doe">
-                </div>
-                <div>
-                    <label for="orderTableNumber" class="block text-sm font-medium text-slate-700 mb-1">Table Number</label>
-                    <input type="text" id="orderTableNumber" name="orderTableNumber" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="e.g., T5 or Delivery">
-                </div>
-                <div>
-                    <label for="orderItems" class="block text-sm font-medium text-slate-700 mb-1">Items (comma separated)</label>
-                    <textarea id="orderItems" name="orderItems" rows="3" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="e.g., Pizza, Coke, Salad"></textarea>
-                </div>
-                <div class="flex justify-end space-x-3 pt-2">
-                    <button type="button" id="cancelNewOrder" class="px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-slate-200 text-slate-700 hover:bg-slate-300 focus:ring-slate-400">Cancel</button>
-                    <button type="submit" class="px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-sky-600 text-white hover:bg-sky-700 focus:ring-sky-500">Save Order</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    <div id="addMenuItemModal" class="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50 modal-backdrop hidden opacity-0">
-        <div class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-11/12 max-w-lg modal-content transform scale-95 opacity-0">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-semibold text-slate-800 flex items-center">
-                    <i data-lucide="utensils-crossed" class="modal-icon mr-2 text-emerald-600"></i>Add New Menu Item
-                </h2>
-                <button id="closeAddMenuItemModal" class="text-slate-400 hover:text-slate-600">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-            <form id="addMenuItemForm" class="space-y-4">
-                <div>
-                    <label for="menuItemName" class="block text-sm font-medium text-slate-700 mb-1">Item Name</label>
-                    <input type="text" id="menuItemName" name="menuItemName" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="e.g., Margherita Pizza">
-                </div>
-                <div>
-                    <label for="menuItemDescription" class="block text-sm font-medium text-slate-700 mb-1">Description</label>
-                    <textarea id="menuItemDescription" name="menuItemDescription" rows="3" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="e.g., Classic pizza with tomato, mozzarella, and basil"></textarea>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="menuItemPrice" class="block text-sm font-medium text-slate-700 mb-1">Price ($)</label>
-                        <input type="number" id="menuItemPrice" name="menuItemPrice" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="e.g., 12.99" step="0.01">
-                    </div>
-                    <div>
-                        <label for="menuItemCategory" class="block text-sm font-medium text-slate-700 mb-1">Category</label>
-                        <select id="menuItemCategory" name="menuItemCategory" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
-                            <option value="">Select Category</option>
-                            <option value="appetizer">Appetizer</option>
-                            <option value="main_course">Main Course</option>
-                            <option value="dessert">Dessert</option>
-                            <option value="drink">Drink</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="flex justify-end space-x-3 pt-2">
-                    <button type="button" id="cancelAddMenuItem" class="px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-slate-200 text-slate-700 hover:bg-slate-300 focus:ring-slate-400">Cancel</button>
-                    <button type="submit" class="px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-sky-600 text-white hover:bg-sky-700 focus:ring-sky-500">Add Item</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    <div id="newReservationModal" class="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50 modal-backdrop hidden opacity-0">
-        <div class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-11/12 max-w-lg modal-content transform scale-95 opacity-0">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-semibold text-slate-800 flex items-center">
-                    <i data-lucide="calendar-plus" class="modal-icon mr-2 text-indigo-600"></i>Create New Reservation
-                </h2>
-                <button id="closeNewReservationModal" class="text-slate-400 hover:text-slate-600">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-            <form id="newReservationForm" class="space-y-4">
-                <div>
-                    <label for="reservationCustomerName" class="block text-sm font-medium text-slate-700 mb-1">Customer Name</label>
-                    <input type="text" id="reservationCustomerName" name="reservationCustomerName" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="e.g., Alice Wonderland">
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="reservationDate" class="block text-sm font-medium text-slate-700 mb-1">Date</label>
-                        <input type="date" id="reservationDate" name="reservationDate" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
-                    </div>
-                    <div>
-                        <label for="reservationTime" class="block text-sm font-medium text-slate-700 mb-1">Time</label>
-                        <input type="time" id="reservationTime" name="reservationTime" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
-                    </div>
-                </div>
-                <div>
-                    <label for="reservationPartySize" class="block text-sm font-medium text-slate-700 mb-1">Party Size</label>
-                    <input type="number" id="reservationPartySize" name="reservationPartySize" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="e.g., 4" min="1">
-                </div>
-                <div>
-                    <label for="reservationNotes" class="block text-sm font-medium text-slate-700 mb-1">Special Requests (Optional)</label>
-                    <textarea id="reservationNotes" name="reservationNotes" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="e.g., Window seat, high chair"></textarea>
-                </div>
-                <div class="flex justify-end space-x-3 pt-2">
-                    <button type="button" id="cancelNewReservation" class="px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-slate-200 text-slate-700 hover:bg-slate-300 focus:ring-slate-400">Cancel</button>
-                    <button type="submit" class="px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-sky-600 text-white hover:bg-sky-700 focus:ring-sky-500">Create Reservation</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
+    
     <script>
         // Initialize Lucide icons
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Lucide icons
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
             
-            // Initialize charts
-            initializeCharts();
-            
-            // Initialize event listeners
-            initializeEventListeners();
+            // Initialize the system
+            initializeSystem();
+        });
+        
+        function initializeSystem() {
+            // Initialize navigation
+            initializeNavigation();
             
             // Initialize sidebar toggle
             initializeSidebarToggle();
-            
-            // Initialize modals
-            initializeModals();
             
             // Initialize profile dropdown
             initializeProfileDropdown();
@@ -690,234 +1066,87 @@
             // Initialize mobile menu
             initializeMobileMenu();
             
-            // Check for system status
+            // Initialize charts
+            initializeCharts();
+            
+            // Initialize forms
+            initializeForms();
+            
+            // Initialize real-time updates
+            initializeRealTimeUpdates();
+            
+            // Check system status
             checkSystemStatus();
-        });
-
-        // Initialize Charts
-        function initializeCharts() {
-            // Sales Chart
-            const salesCtx = document.getElementById('salesChart');
-            if (salesCtx) {
-                const salesChart = new Chart(salesCtx.getContext('2d'), {
-                    type: 'line',
-                    data: {
-                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                        datasets: [{
-                            label: 'Sales ($)',
-                            data: [3200, 4500, 3800, 5200, 6100, 7500, 8750],
-                            backgroundColor: 'rgba(14, 165, 233, 0.1)',
-                            borderColor: 'rgba(14, 165, 233, 1)',
-                            borderWidth: 2,
-                            tension: 0.4,
-                            fill: true,
-                            pointBackgroundColor: 'rgba(14, 165, 233, 1)',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: 4,
-                            pointHoverRadius: 6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(30, 41, 59, 0.9)',
-                                titleFont: {
-                                    size: 14,
-                                    weight: 'bold'
-                                },
-                                bodyFont: {
-                                    size: 13
-                                },
-                                padding: 12,
-                                cornerRadius: 8,
-                                displayColors: false,
-                                callbacks: {
-                                    label: function(context) {
-                                        return `Sales: $${context.parsed.y}`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: {
-                                    color: 'rgba(203, 213, 225, 0.2)'
-                                },
-                                ticks: {
-                                    callback: function(value) {
-                                        return '$' + value;
-                                    }
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    display: false
-                                }
-                            }
-                        }
-                    }
+            
+            // Initialize branches
+            loadBranches();
+        }
+        
+        // Navigation
+        function initializeNavigation() {
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all items
+                    navItems.forEach(nav => {
+                        nav.classList.remove('bg-gray-700', 'text-white');
+                        nav.classList.add('text-gray-300');
+                    });
+                    
+                    // Add active class to clicked item
+                    this.classList.remove('text-gray-300');
+                    this.classList.add('bg-gray-700', 'text-white');
+                    
+                    // Show corresponding section
+                    const sectionId = this.getAttribute('data-section');
+                    showSection(sectionId);
                 });
+            });
+        }
+        
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show selected section
+            const section = document.getElementById(sectionId + 'Section');
+            if (section) {
+                section.classList.remove('hidden');
+                section.classList.add('fade-in');
             }
             
-            // Popular Dishes Chart
-            const dishesCtx = document.getElementById('popularDishesChart');
-            if (dishesCtx) {
-                const dishesChart = new Chart(dishesCtx.getContext('2d'), {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Margherita Pizza', 'Caesar Salad', 'Grilled Salmon', 'Chocolate Cake', 'Beef Burger'],
-                        datasets: [{
-                            data: [30, 20, 15, 10, 25],
-                            backgroundColor: [
-                                'rgba(14, 165, 233, 0.8)',
-                                'rgba(16, 185, 129, 0.8)',
-                                'rgba(245, 158, 11, 0.8)',
-                                'rgba(139, 92, 246, 0.8)',
-                                'rgba(236, 72, 153, 0.8)'
-                            ],
-                            borderColor: [
-                                'rgba(14, 165, 233, 1)',
-                                'rgba(16, 185, 129, 1)',
-                                'rgba(245, 158, 11, 1)',
-                                'rgba(139, 92, 246, 1)',
-                                'rgba(236, 72, 153, 1)'
-                            ],
-                            borderWidth: 1,
-                            hoverOffset: 10
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'right',
-                                labels: {
-                                    font: {
-                                        size: 12
-                                    },
-                                    padding: 15
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(30, 41, 59, 0.9)',
-                                titleFont: {
-                                    size: 14,
-                                    weight: 'bold'
-                                },
-                                bodyFont: {
-                                    size: 13
-                                },
-                                padding: 12,
-                                cornerRadius: 8,
-                                displayColors: false,
-                                callbacks: {
-                                    label: function(context) {
-                                        return `${context.label}: ${context.parsed}%`;
-                                    }
-                                }
-                            }
-                        },
-                        cutout: '60%'
-                    }
-                });
+            // Initialize section-specific features
+            initializeSection(sectionId);
+        }
+        
+        function initializeSection(sectionId) {
+            switch(sectionId) {
+                case 'dashboard':
+                    // Dashboard initialization
+                    break;
+                case 'branches':
+                    loadBranches();
+                    break;
+                case 'delivery':
+                    // Delivery initialization
+                    break;
+                case 'platforms':
+                    // Platforms initialization
+                    break;
+                case 'online':
+                    // Online orders initialization
+                    break;
+                case 'reports':
+                    // Reports initialization
+                    break;
             }
         }
-
-        // Initialize Event Listeners
-        function initializeEventListeners() {
-            // New Order Form
-            const newOrderForm = document.getElementById('newOrderForm');
-            if (newOrderForm) {
-                newOrderForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    const customerName = document.getElementById('orderCustomerName').value;
-                    const tableNumber = document.getElementById('orderTableNumber').value;
-                    const items = document.getElementById('orderItems').value;
-                    
-                    if (!customerName || !tableNumber || !items) {
-                        showToast('Please fill in all required fields', 'error');
-                        return;
-                    }
-                    
-                    // Simulate saving order
-                    setTimeout(() => {
-                        closeModal('newOrderModal');
-                        newOrderForm.reset();
-                        showToast('Order created successfully', 'success');
-                        
-                        // Update stats
-                        updateStats('orders');
-                    }, 1000);
-                });
-            }
-            
-            // Add Menu Item Form
-            const addMenuItemForm = document.getElementById('addMenuItemForm');
-            if (addMenuItemForm) {
-                addMenuItemForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    const itemName = document.getElementById('menuItemName').value;
-                    const itemDescription = document.getElementById('menuItemDescription').value;
-                    const itemPrice = document.getElementById('menuItemPrice').value;
-                    const itemCategory = document.getElementById('menuItemCategory').value;
-                    
-                    if (!itemName || !itemDescription || !itemPrice || !itemCategory) {
-                        showToast('Please fill in all required fields', 'error');
-                        return;
-                    }
-                    
-                    // Simulate saving menu item
-                    setTimeout(() => {
-                        closeModal('addMenuItemModal');
-                        addMenuItemForm.reset();
-                        showToast('Menu item added successfully', 'success');
-                        
-                        // Update stats
-                        updateStats('menuItems');
-                    }, 1000);
-                });
-            }
-            
-            // New Reservation Form
-            const newReservationForm = document.getElementById('newReservationForm');
-            if (newReservationForm) {
-                newReservationForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    const customerName = document.getElementById('reservationCustomerName').value;
-                    const reservationDate = document.getElementById('reservationDate').value;
-                    const reservationTime = document.getElementById('reservationTime').value;
-                    const partySize = document.getElementById('reservationPartySize').value;
-                    
-                    if (!customerName || !reservationDate || !reservationTime || !partySize) {
-                        showToast('Please fill in all required fields', 'error');
-                        return;
-                    }
-                    
-                    // Simulate saving reservation
-                    setTimeout(() => {
-                        closeModal('newReservationModal');
-                        newReservationForm.reset();
-                        showToast('Reservation created successfully', 'success');
-                        
-                        // Update stats
-                        updateStats('reservations');
-                    }, 1000);
-                });
-            }
-        }
-
-        // Initialize Sidebar Toggle
+        
+        // Sidebar Toggle
         function initializeSidebarToggle() {
             const sidebarToggle = document.getElementById('sidebarToggle');
             const sidebar = document.getElementById('sidebar');
@@ -928,102 +1157,20 @@
                     sidebar.classList.toggle('sidebar-collapsed');
                     
                     if (sidebar.classList.contains('sidebar-collapsed')) {
-                        mainContent.classList.remove('lg:ml-64');
-                        mainContent.classList.add('lg:ml-16');
+                        mainContent.classList.remove('lg:mr-64');
+                        mainContent.classList.add('lg:mr-16');
                     } else {
-                        mainContent.classList.remove('lg:ml-16');
-                        mainContent.classList.add('lg:ml-64');
+                        mainContent.classList.remove('lg:mr-16');
+                        mainContent.classList.add('lg:mr-64');
                     }
                 });
             }
         }
-
-        // Initialize Modals
-        function initializeModals() {
-            // New Order Modal
-            const openNewOrderModal = document.getElementById('openNewOrderModal');
-            const closeNewOrderModal = document.getElementById('closeNewOrderModal');
-            const cancelNewOrder = document.getElementById('cancelNewOrder');
-            
-            if (openNewOrderModal) {
-                openNewOrderModal.addEventListener('click', function() {
-                    openModal('newOrderModal');
-                });
-            }
-            
-            if (closeNewOrderModal) {
-                closeNewOrderModal.addEventListener('click', function() {
-                    closeModal('newOrderModal');
-                });
-            }
-            
-            if (cancelNewOrder) {
-                cancelNewOrder.addEventListener('click', function() {
-                    closeModal('newOrderModal');
-                });
-            }
-            
-            // Add Menu Item Modal
-            const openAddMenuItemModal = document.getElementById('openAddMenuItemModal');
-            const closeAddMenuItemModal = document.getElementById('closeAddMenuItemModal');
-            const cancelAddMenuItem = document.getElementById('cancelAddMenuItem');
-            
-            if (openAddMenuItemModal) {
-                openAddMenuItemModal.addEventListener('click', function() {
-                    openModal('addMenuItemModal');
-                });
-            }
-            
-            if (closeAddMenuItemModal) {
-                closeAddMenuItemModal.addEventListener('click', function() {
-                    closeModal('addMenuItemModal');
-                });
-            }
-            
-            if (cancelAddMenuItem) {
-                cancelAddMenuItem.addEventListener('click', function() {
-                    closeModal('addMenuItemModal');
-                });
-            }
-            
-            // New Reservation Modal
-            const openNewReservationModal = document.getElementById('openNewReservationModal');
-            const closeNewReservationModal = document.getElementById('closeNewReservationModal');
-            const cancelNewReservation = document.getElementById('cancelNewReservation');
-            
-            if (openNewReservationModal) {
-                openNewReservationModal.addEventListener('click', function() {
-                    openModal('newReservationModal');
-                });
-            }
-            
-            if (closeNewReservationModal) {
-                closeNewReservationModal.addEventListener('click', function() {
-                    closeModal('newReservationModal');
-                });
-            }
-            
-            if (cancelNewReservation) {
-                cancelNewReservation.addEventListener('click', function() {
-                    closeModal('newReservationModal');
-                });
-            }
-            
-            // Close modal when clicking outside
-            document.querySelectorAll('.modal-backdrop').forEach(modal => {
-                modal.addEventListener('click', function(e) {
-                    if (e.target === modal) {
-                        closeModal(modal.id);
-                    }
-                });
-            });
-        }
-
-        // Initialize Profile Dropdown
+        
+        // Profile Dropdown
         function initializeProfileDropdown() {
             const profileButton = document.getElementById('profileButton');
             const profileDropdown = document.getElementById('profileDropdown');
-            const logoutButton = document.getElementById('logoutButton');
             
             if (profileButton && profileDropdown) {
                 profileButton.addEventListener('click', function(e) {
@@ -1034,31 +1181,29 @@
                     profileDropdown.classList.toggle('pointer-events-none');
                 });
                 
-                // Close dropdown when clicking outside
                 document.addEventListener('click', function() {
                     profileDropdown.classList.add('opacity-0', 'scale-95', '-translate-y-2', 'pointer-events-none');
                 });
                 
-                // Prevent dropdown from closing when clicking inside
                 profileDropdown.addEventListener('click', function(e) {
                     e.stopPropagation();
                 });
             }
             
+            const logoutButton = document.getElementById('logoutButton');
             if (logoutButton) {
                 logoutButton.addEventListener('click', function(e) {
                     e.preventDefault();
-                    showToast('Logging out...', 'info');
+                    showToast('جاري تسجيل الخروج...', 'info');
                     
-                    // Simulate logout process
                     setTimeout(() => {
                         window.location.href = 'login.html';
                     }, 1500);
                 });
             }
         }
-
-        // Initialize Mobile Menu
+        
+        // Mobile Menu
         function initializeMobileMenu() {
             const mobileMenuButton = document.getElementById('mobileMenuButton');
             const sidebar = document.getElementById('sidebar');
@@ -1066,76 +1211,559 @@
             
             if (mobileMenuButton && sidebar && sidebarOverlay) {
                 mobileMenuButton.addEventListener('click', function() {
-                    sidebar.classList.remove('-translate-x-full');
+                    sidebar.classList.remove('translate-x-full');
                     sidebarOverlay.classList.remove('hidden');
                 });
                 
                 sidebarOverlay.addEventListener('click', function() {
-                    sidebar.classList.add('-translate-x-full');
+                    sidebar.classList.add('translate-x-full');
                     sidebarOverlay.classList.add('hidden');
                 });
             }
         }
-
-        // Check System Status
-        function checkSystemStatus() {
-            // Simulate checking system status
-            setTimeout(() => {
-                const statusIndicator = document.querySelector('.bg-green-100');
-                if (statusIndicator) {
-                    statusIndicator.classList.remove('bg-green-100', 'text-green-600');
-                    statusIndicator.classList.add('bg-yellow-100', 'text-yellow-600');
-                    statusIndicator.querySelector('span').textContent = 'System Syncing...';
+        
+        // Charts
+        function initializeCharts() {
+            // Sales Chart
+            const salesCtx = document.getElementById('salesChart');
+            if (salesCtx) {
+                new Chart(salesCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'],
+                        datasets: [{
+                            label: 'المبيعات ($)',
+                            data: [3200, 4500, 3800, 5200, 6100, 7500, 8750],
+                            backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                            borderColor: 'rgba(14, 165, 233, 1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Popular Dishes Chart
+            const dishesCtx = document.getElementById('popularDishesChart');
+            if (dishesCtx) {
+                new Chart(dishesCtx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['وجبة Crispy Chicken', 'برجر Crispy', 'بيتزا Crispy', 'آيس كريم Crispy'],
+                        datasets: [{
+                            data: [28, 24, 20, 16],
+                            backgroundColor: [
+                                'rgba(245, 158, 11, 0.8)',
+                                'rgba(14, 165, 233, 0.8)',
+                                'rgba(16, 185, 129, 0.8)',
+                                'rgba(139, 92, 246, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        },
+                        cutout: '60%'
+                    }
+                });
+            }
+            
+            // Platform Comparison Chart
+            const platformCtx = document.getElementById('platformComparisonChart');
+            if (platformCtx) {
+                new Chart(platformCtx.getContext('2d'), {
+                    type: 'radar',
+                    data: {
+                        labels: ['الطلبات', 'الإيرادات', 'متوسط قيمة الطلب', 'تقييم العملاء', 'التوصيل في الوقت المحدد'],
+                        datasets: [{
+                            label: 'Talabat',
+                            data: [85, 80, 75, 90, 85],
+                            backgroundColor: 'rgba(14, 165, 233, 0.2)',
+                            borderColor: 'rgba(14, 165, 233, 1)',
+                            borderWidth: 2
+                        }, {
+                            label: 'Noon Food',
+                            data: [70, 75, 80, 85, 80],
+                            backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            borderWidth: 2
+                        }, {
+                            label: 'Careem',
+                            data: [75, 85, 85, 80, 90],
+                            backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                            borderColor: 'rgba(245, 158, 11, 1)',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Online Orders Source Chart
+            const onlineSourceCtx = document.getElementById('onlineOrdersSourceChart');
+            if (onlineSourceCtx) {
+                new Chart(onlineSourceCtx.getContext('2d'), {
+                    type: 'pie',
+                    data: {
+                        labels: ['الموقع الإلكتروني', 'التطبيق المحمول', 'وسائل التواصل الاجتماعي'],
+                        datasets: [{
+                            data: [45, 35, 20],
+                            backgroundColor: [
+                                'rgba(14, 165, 233, 0.8)',
+                                'rgba(16, 185, 129, 0.8)',
+                                'rgba(245, 158, 11, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Branch Orders Chart
+            const branchOrdersCtx = document.getElementById('branchOrdersChart');
+            if (branchOrdersCtx) {
+                new Chart(branchOrdersCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Al Regga', 'Hamdan St', 'Khaldia', 'Shabiya 11', 'Muroor', 'Al Electra', 'Al Barsha', 'Al Satwa'],
+                        datasets: [{
+                            label: 'الطلبات',
+                            data: [45, 38, 42, 35, 40, 33, 41, 37],
+                            backgroundColor: 'rgba(14, 165, 233, 0.8)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Platform Comparison Chart 2
+            const platformComparisonCtx = document.getElementById('platformComparisonChart2');
+            if (platformComparisonCtx) {
+                new Chart(platformComparisonCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Talabat', 'Noon Food', 'Careem', 'Deliveroo'],
+                        datasets: [{
+                            label: 'الطلبات',
+                            data: [42, 28, 35, 20],
+                            backgroundColor: 'rgba(14, 165, 233, 0.8)'
+                        }, {
+                            label: 'الإيرادات ($)',
+                            data: [2450, 1680, 2100, 1200],
+                            backgroundColor: 'rgba(16, 185, 129, 0.8)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Monthly Trends Chart
+            const monthlyTrendsCtx = document.getElementById('monthlyTrendsChart');
+            if (monthlyTrendsCtx) {
+                new Chart(monthlyTrendsCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'],
+                        datasets: [{
+                            label: 'الطلبات أونلاين',
+                            data: [1200, 1350, 1250, 1400, 1550, 1700, 1650, 1800, 1900, 1850, 2000, 2100],
+                            borderColor: 'rgba(14, 165, 233, 1)',
+                            backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }, {
+                            label: 'طلبات التوصيل',
+                            data: [800, 950, 900, 1000, 1100, 1200, 1150, 1250, 1300, 1280, 1400, 1450],
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Forms
+        function initializeForms() {
+            // Add Branch Form
+            const addBranchForm = document.getElementById('addBranchForm');
+            if (addBranchForm) {
+                addBranchForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
                     
-                    // After another delay, show online status
+                    const branchName = document.getElementById('branchName').value;
+                    const branchAddress = document.getElementById('branchAddress').value;
+                    const branchPhone = document.getElementById('branchPhone').value;
+                    const branchManager = document.getElementById('branchManager').value;
+                    
+                    if (!branchName || !branchAddress || !branchPhone || !branchManager) {
+                        showToast('يرجى ملء جميع الحقول المطلوبة', 'error');
+                        return;
+                    }
+                    
+                    // Simulate adding branch
                     setTimeout(() => {
-                        statusIndicator.classList.remove('bg-yellow-100', 'text-yellow-600');
-                        statusIndicator.classList.add('bg-green-100', 'text-green-600');
-                        statusIndicator.querySelector('span').textContent = 'System Online';
+                        showToast('تم إضافة الفرع بنجاح', 'success');
+                        loadBranches();
+                        addBranchForm.reset();
+                    }, 1000);
+                });
+            }
+            
+            // Cancel Add Branch
+            const cancelAddBranch = document.getElementById('cancelAddBranch');
+            if (cancelAddBranch) {
+                cancelAddBranch.addEventListener('click', function() {
+                    addBranchForm.reset();
+                });
+            }
+            
+            // Generate Report Button
+            const generateReportButton = document.getElementById('generateReport');
+            if (generateReportButton) {
+                generateReportButton.addEventListener('click', function() {
+                    showToast('جاري توليد التقرير...', 'info');
+                    
+                    setTimeout(() => {
+                        showToast('تم توليد التقرير بنجاح', 'success');
+                        updateOrderDetailsTable();
                     }, 2000);
+                });
+            }
+        }
+        
+        // Real-time Updates
+        function initializeRealTimeUpdates() {
+            // Update preparing orders
+            setInterval(() => {
+                updatePreparingOrders();
+            }, 15000);
+            
+            // Update driver orders
+            setInterval(() => {
+                updateDriverOrders();
+            }, 20000);
+            
+            // Update delivered orders
+            setInterval(() => {
+                updateDeliveredOrders();
+            }, 25000);
+            
+            // Check for SLA violations
+            setInterval(() => {
+                checkSLAViolations();
+            }, 30000);
+            
+            // Update delivery stats
+            setInterval(() => {
+                updateDeliveryStats();
+            }, 60000);
+        }
+        
+        function updatePreparingOrders() {
+            const preparingOrders = document.getElementById('preparingOrders');
+            if (preparingOrders) {
+                const newOrder = document.createElement('div');
+                newOrder.className = 'p-3 bg-amber-50 rounded-lg border border-amber-200';
+                newOrder.innerHTML = `
+                    <p class="text-sm font-medium text-gray-700">#ORD-${Math.floor(Math.random() * 10000)}</p>
+                    <p class="text-xs text-gray-500">وجبة Crispy Chicken - ${branches[Math.floor(Math.random() * branches.length)]}</p>
+                    <p class="text-xs text-gray-400 mt-1">بدأ: ${new Date().toLocaleTimeString()}</p>
+                `;
+                preparingOrders.insertBefore(newOrder, preparingOrders.firstChild);
+                
+                // Keep only latest 3 orders
+                while (preparingOrders.children.length > 3) {
+                    preparingOrders.removeChild(preparingOrders.lastChild);
                 }
-            }, 5000);
-        }
-
-        // Open Modal
-        function openModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.remove('hidden');
-                setTimeout(() => {
-                    modal.classList.add('opacity-100');
-                    modal.querySelector('.modal-content').classList.add('show');
-                }, 10);
             }
         }
-
-        // Close Modal
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.remove('opacity-100');
-                modal.querySelector('.modal-content').classList.remove('show');
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                }, 300);
+        
+        function updateDriverOrders() {
+            const driverOrders = document.getElementById('driverOrders');
+            if (driverOrders) {
+                const preparingOrder = document.querySelector('#preparingOrders > div');
+                if (preparingOrder) {
+                    preparingOrder.remove();
+                    
+                    const newDriverOrder = document.createElement('div');
+                    newDriverOrder.className = 'p-3 bg-blue-50 rounded-lg border border-blue-200';
+                    newDriverOrder.innerHTML = `
+                        <p class="text-sm font-medium text-gray-700">#ORD-${Math.floor(Math.random() * 10000)}</p>
+                        <p class="text-xs text-gray-500">السائق: السائق ${Math.floor(Math.random() * 10)}</p>
+                        <p class="text-xs text-gray-500">المتوقع: ${new Date(Date.now() + 15 * 60000).toLocaleTimeString()}</p>
+                        <p class="text-xs text-gray-400 mt-1">تم استلامه: ${new Date().toLocaleTimeString()}</p>
+                    `;
+                    driverOrders.insertBefore(newDriverOrder, driverOrders.firstChild);
+                    
+                    // Keep only latest 3 orders
+                    while (driverOrders.children.length > 3) {
+                        driverOrders.removeChild(driverOrders.lastChild);
+                    }
+                }
             }
         }
-
-        // Show Toast Notification
+        
+        function updateDeliveredOrders() {
+            const deliveredOrders = document.getElementById('deliveredOrders');
+            if (deliveredOrders) {
+                const driverOrder = document.querySelector('#driverOrders > div');
+                if (driverOrder) {
+                    driverOrder.remove();
+                    
+                    const newDeliveredOrder = document.createElement('div');
+                    newDeliveredOrder.className = 'p-3 bg-green-50 rounded-lg border border-green-200';
+                    const deliveryTime = Math.floor(Math.random() * 20) + 20; // 20-40 minutes
+                    newDeliveredOrder.innerHTML = `
+                        <p class="text-sm font-medium text-gray-700">#ORD-${Math.floor(Math.random() * 10000)}</p>
+                        <p class="text-xs text-gray-500">تم التوصيل إلى: ${branches[Math.floor(Math.random() * branches.length)]}</p>
+                        <p class="text-xs text-gray-400 mt-1">تم التوصيل: ${new Date().toLocaleTimeString()}</p>
+                        <p class="text-xs text-emerald-600 font-medium">المدة: ${deliveryTime} دقيقة</p>
+                    `;
+                    deliveredOrders.insertBefore(newDeliveredOrder, deliveredOrders.firstChild);
+                    
+                    // Keep only latest 5 orders
+                    while (deliveredOrders.children.length > 5) {
+                        deliveredOrders.removeChild(deliveredOrders.lastChild);
+                    }
+                }
+            }
+        }
+        
+        function checkSLAViolations() {
+            const preparingOrders = document.querySelectorAll('#preparingOrders > div');
+            preparingOrders.forEach(order => {
+                const timeElement = order.querySelector('.text-gray-400');
+                if (timeElement) {
+                    const timeText = timeElement.textContent;
+                    const timeMatch = timeText.match(/(\d{1,2}):(\d{2})\s(ص|م)/);
+                    if (timeMatch) {
+                        const orderTime = new Date();
+                        const [hours, minutes, period] = timeMatch.slice(1);
+                        let orderHours = parseInt(hours);
+                        if (period === 'م' && orderHours !== 12) orderHours += 12;
+                        if (period === 'ص' && orderHours === 12) orderHours = 0;
+                        
+                        orderTime.setHours(orderHours, parseInt(minutes), 0, 0);
+                        const timeDiff = (new Date() - orderTime) / 60000; // Difference in minutes
+                        
+                        if (timeDiff > 45) {
+                            // Show delay alert
+                            const delayAlert = document.getElementById('delayAlert');
+                            if (delayAlert) {
+                                delayAlert.style.display = 'block';
+                                setTimeout(() => {
+                                    delayAlert.style.display = 'none';
+                                }, 10000);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateDeliveryStats() {
+            const avgTimeElement = document.querySelector('.text-purple-600');
+            if (avgTimeElement) {
+                const newAvgTime = Math.floor(Math.random() * 10) + 25; // 25-35 minutes
+                avgTimeElement.textContent = `${newAvgTime} دقيقة`;
+                
+                // Update progress bar
+                const progressBar = document.querySelector('.bg-purple-600.h-2');
+                if (progressBar) {
+                    const percentage = Math.min(100, Math.floor((newAvgTime / 45) * 100));
+                    progressBar.style.width = `${percentage}%`;
+                }
+            }
+            
+            const onTimeRateElement = document.querySelector('.text-gray-800.font-bold');
+            if (onTimeRateElement && onTimeRateElement.textContent.includes('%')) {
+                const newOnTimeRate = Math.floor(Math.random() * 5) + 90; // 90-95%
+                onTimeRateElement.textContent = `${newOnTimeRate}%`;
+            }
+        }
+        
+        // Branch Management
+        function loadBranches() {
+            const branches = [
+                { name: 'Crispy Chicken Al Regga', address: 'شارع الريج', phone: '+971551234567', manager: 'أحمد خالد', status: 'نشط' },
+                { name: 'Hamdan St', address: 'شارع حمدان', phone: '+971552345678', manager: 'محمد يوسف', status: 'نشط' },
+                { name: 'Khaldia', address: 'الخالدية', phone: '+971553456789', manager: 'فاطمة علي', status: 'نشط' },
+                { name: 'Shabiya 11', address: 'الشبيبة 11', phone: '+971554567890', manager: 'عبد الله سعيد', status: 'نشط' },
+                { name: 'Muroor', address: 'مورور', phone: '+971555678901', manager: 'نورا أحمد', status: 'نشط' },
+                { name: 'Al Electra', address: 'الكهرباء', phone: '+971556789012', manager: 'خالد حسن', status: 'نشط' },
+                { name: 'Al Barsha', address: 'البرشاء', phone: '+971557890123', manager: 'سارة محمود', status: 'نشط' },
+                { name: 'Al Satwa', address: 'السطوة', phone: '+971558901234', manager: 'مصطفى إبراهيم', status: 'نشط' }
+            ];
+            
+            const tableBody = document.getElementById('branchesTableBody');
+            if (tableBody) {
+                tableBody.innerHTML = '';
+                
+                branches.forEach(branch => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${branch.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${branch.address}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${branch.phone}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${branch.manager}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">${branch.status}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <button class="text-sky-600 hover:text-sky-900 mr-2">تعديل</button>
+                            <button class="text-red-600 hover:text-red-900">حذف</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+        }
+        
+        // Update Order Details Table
+        function updateOrderDetailsTable() {
+            const tableBody = document.getElementById('orderDetailsTable');
+            if (!tableBody) return;
+            
+            // Simulate order data
+            const orders = [];
+            const statuses = ['مكتمل', 'قيد التحضير', 'ملغى', 'قيد المعالجة'];
+            
+            for (let i = 0; i < 20; i++) {
+                orders.push({
+                    id: `ORD-${1230 + i}`,
+                    branch: branches[Math.floor(Math.random() * branches.length)],
+                    platform: ['الموقع الإلكتروني', 'التطبيق المحمول', 'Talabat', 'Noon Food', 'Careem', 'Deliveroo'][Math.floor(Math.random() * 6)],
+                    type: ['أونلاين', 'توصيل', 'مطعم'][Math.floor(Math.random() * 3)],
+                    date: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toLocaleDateString(),
+                    amount: Math.floor(Math.random() * 50) + 20,
+                    status: statuses[Math.floor(Math.random() * 4)]
+                });
+            }
+            
+            // Clear table
+            tableBody.innerHTML = '';
+            
+            // Add rows
+            orders.forEach(order => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${order.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${order.branch}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${order.platform}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${order.type}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${order.date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${order.amount}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(order.status)}">
+                            ${order.status}
+                        </span>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        function getStatusClass(status) {
+            switch(status) {
+                case 'مكتمل': return 'bg-green-100 text-green-800';
+                case 'قيد التحضير': return 'bg-yellow-100 text-yellow-800';
+                case 'ملغى': return 'bg-red-100 text-red-800';
+                case 'قيد المعالجة': return 'bg-blue-100 text-blue-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+        
+        // Toast Notifications
         function showToast(message, type = 'info') {
-            // Create toast container if it doesn't exist
-            let toastContainer = document.querySelector('.toast-container');
+            let toastContainer = document.getElementById('toastContainer');
             if (!toastContainer) {
                 toastContainer = document.createElement('div');
                 toastContainer.className = 'toast-container';
                 document.body.appendChild(toastContainer);
             }
             
-            // Create toast element
             const toast = document.createElement('div');
             toast.className = `toast toast-${type}`;
             
-            // Set icon based on type
             let icon = '';
             if (type === 'success') {
                 icon = '<i data-lucide="check-circle" class="toast-icon text-green-500"></i>';
@@ -1151,15 +1779,12 @@
                 <i data-lucide="x" class="toast-close"></i>
             `;
             
-            // Add toast to container
             toastContainer.appendChild(toast);
             
-            // Initialize Lucide icons for the new toast
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons({ nameAttr: 'data-lucide' });
             }
             
-            // Add event listener to close button
             const closeButton = toast.querySelector('.toast-close');
             if (closeButton) {
                 closeButton.addEventListener('click', function() {
@@ -1172,12 +1797,10 @@
                 });
             }
             
-            // Show toast
             setTimeout(() => {
                 toast.classList.add('show');
             }, 10);
             
-            // Auto remove toast after 5 seconds
             setTimeout(() => {
                 toast.classList.remove('show');
                 setTimeout(() => {
@@ -1187,85 +1810,36 @@
                 }, 300);
             }, 5000);
         }
-
-        // Update Stats
-        function updateStats(type) {
-            // Simulate updating stats based on type
-            if (type === 'orders') {
-                const ordersStat = document.querySelector('.stat-card-icon-container.bg-sky-100').parentElement;
-                const ordersValue = ordersStat.querySelector('p:last-child');
-                const currentValue = parseInt(ordersValue.textContent);
-                ordersValue.textContent = currentValue + 1;
-            } else if (type === 'menuItems') {
-                const menuItemsStat = document.querySelector('.stat-card-icon-container.bg-orange-100').parentElement;
-                const menuItemsValue = menuItemsStat.querySelector('p:last-child');
-                const currentValue = parseInt(menuItemsValue.textContent);
-                menuItemsValue.textContent = currentValue + 1;
-            } else if (type === 'reservations') {
-                const reservationsStat = document.querySelector('.stat-card-icon-container.bg-indigo-100').parentElement;
-                const reservationsValue = reservationsStat.querySelector('p:last-child');
-                const currentValue = parseInt(reservationsValue.textContent);
-                reservationsValue.textContent = currentValue + 1;
-            }
-            
-            // Add new activity to the activity feed
-            addActivity(type);
+        
+        // System Status
+        function checkSystemStatus() {
+            setTimeout(() => {
+                const statusIndicator = document.querySelector('.bg-green-100');
+                if (statusIndicator) {
+                    statusIndicator.classList.remove('bg-green-100', 'text-green-600');
+                    statusIndicator.classList.add('bg-yellow-100', 'text-yellow-600');
+                    statusIndicator.querySelector('span').textContent = 'جاري مزامنة النظام...';
+                    
+                    setTimeout(() => {
+                        statusIndicator.classList.remove('bg-yellow-100', 'text-yellow-600');
+                        statusIndicator.classList.add('bg-green-100', 'text-green-600');
+                        statusIndicator.querySelector('span').textContent = 'النظام متصل';
+                    }, 2000);
+                }
+            }, 5000);
         }
-
-        // Add Activity
-        function addActivity(type) {
-            const activityList = document.getElementById('activityFeed');
-            if (!activityList) return;
-            
-            let activityHTML = '';
-            const now = new Date();
-            
-            if (type === 'orders') {
-                activityHTML = `
-                    <li class="flex items-start space-x-3 p-3 rounded-lg hover:bg-slate-50">
-                        <div class="activity-icon-container bg-green-100 text-green-600">
-                            <i data-lucide="check-circle-2" class="activity-icon"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm text-slate-700">New order <span class="font-semibold text-sky-600">#ORD-${Math.floor(Math.random() * 10000)}</span> placed.</p>
-                            <p class="text-xs text-slate-400">Just now</p>
-                        </div>
-                    </li>
-                `;
-            } else if (type === 'menuItems') {
-                activityHTML = `
-                    <li class="flex items-start space-x-3 p-3 rounded-lg hover:bg-slate-50">
-                        <div class="activity-icon-container bg-emerald-100 text-emerald-600">
-                            <i data-lucide="plus-circle" class="activity-icon"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm text-slate-700">New menu item added to the menu.</p>
-                            <p class="text-xs text-slate-400">Just now</p>
-                        </div>
-                    </li>
-                `;
-            } else if (type === 'reservations') {
-                activityHTML = `
-                    <li class="flex items-start space-x-3 p-3 rounded-lg hover:bg-slate-50">
-                        <div class="activity-icon-container bg-blue-100 text-blue-600">
-                            <i data-lucide="calendar-check-2" class="activity-icon"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm text-slate-700">New reservation confirmed.</p>
-                            <p class="text-xs text-slate-400">Just now</p>
-                        </div>
-                    </li>
-                `;
-            }
-            
-            // Add new activity at the top
-            activityList.insertAdjacentHTML('afterbegin', activityHTML);
-            
-            // Initialize Lucide icons for the new activity
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons({ nameAttr: 'data-lucide' });
-            }
-        }
+        
+        // Global variables
+        const branches = [
+            'Crispy Chicken Al Regga',
+            'Hamdan St',
+            'Khaldia',
+            'Shabiya 11',
+            'Muroor',
+            'Al Electra',
+            'Al Barsha',
+            'Al Satwa'
+        ];
     </script>
 </body>
 </html>
