@@ -219,6 +219,42 @@
             border-bottom: 2px solid #f59e0b;
             color: #f59e0b;
         }
+        
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -261,6 +297,14 @@
     <div id="appContainer" class="hidden">
         <!-- Toast Container -->
         <div id="toastContainer"></div>
+        
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay hidden">
+            <div class="text-center">
+                <div class="spinner mx-auto mb-4"></div>
+                <p class="text-gray-600">جاري التحميل...</p>
+            </div>
+        </div>
         
         <!-- Header -->
         <header class="bg-white shadow-sm border-b sticky top-0 z-40">
@@ -428,33 +472,8 @@
                                             <th class="text-right p-2">الإجراءات</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr class="border-b">
-                                            <td class="p-2">عرض الاثنين والثلاثاء</td>
-                                            <td class="p-2"><span class="badge-fixed px-2 py-1 rounded text-sm">ثابت</span></td>
-                                            <td class="p-2"><span class="badge-active px-2 py-1 rounded text-sm">نشط</span></td>
-                                            <td class="p-2">
-                                                <button class="text-blue-600 hover:text-blue-800 ml-2" onclick="app.editOffer('OFF001')">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button class="text-green-600 hover:text-green-800" onclick="app.viewAnalytics('OFF001')">
-                                                    <i class="fas fa-chart-bar"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr class="border-b">
-                                            <td class="p-2">خصم 20%</td>
-                                            <td class="p-2"><span class="badge-flash px-2 py-1 rounded text-sm">محدود</span></td>
-                                            <td class="p-2"><span class="badge-active px-2 py-1 rounded text-sm">نشط</span></td>
-                                            <td class="p-2">
-                                                <button class="text-blue-600 hover:text-blue-800 ml-2" onclick="app.editOffer('OFF002')">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button class="text-green-600 hover:text-green-800" onclick="app.viewAnalytics('OFF002')">
-                                                    <i class="fas fa-chart-bar"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
+                                    <tbody id="dashboardOffersTable">
+                                        <!-- Will be populated by JavaScript -->
                                     </tbody>
                                 </table>
                             </div>
@@ -480,23 +499,23 @@
                                 <div class="flex flex-wrap gap-4">
                                     <div>
                                         <label class="block text-sm font-medium mb-1">نوع العرض</label>
-                                        <select class="w-full px-3 py-2 border rounded">
-                                            <option>الكل</option>
-                                            <option>عروض ثابتة</option>
-                                            <option>عروض محدودة</option>
-                                            <option>عروض القيمة المضافة</option>
+                                        <select id="filterType" class="w-full px-3 py-2 border rounded">
+                                            <option value="">الكل</option>
+                                            <option value="fixed">عروض ثابتة</option>
+                                            <option value="flash">عروض محدودة</option>
+                                            <option value="value">عروض القيمة المضافة</option>
                                         </select>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium mb-1">الحالة</label>
-                                        <select class="w-full px-3 py-2 border rounded">
-                                            <option>الكل</option>
-                                            <option>نشط</option>
-                                            <option>منتهي</option>
+                                        <select id="filterStatus" class="w-full px-3 py-2 border rounded">
+                                            <option value="">الكل</option>
+                                            <option value="active">نشط</option>
+                                            <option value="inactive">منتهي</option>
                                         </select>
                                     </div>
                                     <div class="ml-auto">
-                                        <button class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+                                        <button onclick="app.applyFilters()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
                                             <i class="fas fa-filter ml-2"></i>تطبيق الفلاتر
                                         </button>
                                     </div>
@@ -504,82 +523,8 @@
                             </div>
                             
                             <!-- Offers Grid -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <!-- Offer Card 1 -->
-                                <div class="bg-white rounded-lg shadow p-6">
-                                    <div class="flex justify-between mb-4">
-                                        <span class="badge-fixed px-3 py-1 rounded text-sm">عروض ثابتة</span>
-                                        <span class="badge-active px-3 py-1 rounded text-sm">نشط</span>
-                                    </div>
-                                    <h3 class="text-lg font-semibold mb-2">عرض الاثنين والثلاثاء</h3>
-                                    <p class="text-gray-600 mb-4">12 قطع دجاج + 3 ثوم</p>
-                                    <div class="flex justify-between mb-4">
-                                        <div>
-                                            <p class="text-sm text-gray-500">السعر الأصلي</p>
-                                            <p class="text-lg font-bold text-gray-400 line-through">45.00 درهم</p>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm text-gray-500">السعر بعد الخصم</p>
-                                            <p class="text-2xl font-bold text-orange-600">30.00 درهم</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex justify-between text-sm mb-4">
-                                        <div>
-                                            <p class="text-gray-500">المدة: الإثنين والثلاثاء</p>
-                                            <p class="text-gray-500">الاستخدامات: 245</p>
-                                        </div>
-                                        <div>
-                                            <p class="text-green-600 font-medium">نشط</p>
-                                            <p class="text-gray-500">1/1/2023 - 31/12/2023</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex gap-2">
-                                        <button class="flex-1 px-3 py-2 bg-orange-100 text-orange-700 rounded hover:bg-orange-200" onclick="app.editOffer('OFF001')">
-                                            <i class="fas fa-edit ml-1"></i>تعديل
-                                        </button>
-                                        <button class="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200" onclick="app.viewAnalytics('OFF001')">
-                                            <i class="fas fa-chart-bar ml-1"></i>تحليل
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <!-- Offer Card 2 -->
-                                <div class="bg-white rounded-lg shadow p-6">
-                                    <div class="flex justify-between mb-4">
-                                        <span class="badge-flash px-3 py-1 rounded text-sm">عروض محدودة</span>
-                                        <span class="badge-active px-3 py-1 rounded text-sm">نشط</span>
-                                    </div>
-                                    <h3 class="text-lg font-semibold mb-2">عرض سريع 20%</h3>
-                                    <p class="text-gray-600 mb-4">خصم 20% على جميع الطلبات</p>
-                                    <div class="flex justify-between mb-4">
-                                        <div>
-                                            <p class="text-sm text-gray-500">السعر الأصلي</p>
-                                            <p class="text-lg font-bold text-gray-400 line-through">50.00 درهم</p>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm text-gray-500">السعر بعد الخصم</p>
-                                            <p class="text-2xl font-bold text-orange-600">40.00 درهم</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex justify-between text-sm mb-4">
-                                        <div>
-                                            <p class="text-gray-500">المدة: ساعتين فقط</p>
-                                            <p class="text-gray-500">الاستخدامات: 178</p>
-                                        </div>
-                                        <div>
-                                            <p class="text-green-600 font-medium">نشط</p>
-                                            <p class="text-gray-500">1/7/2023 - 31/12/2023</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex gap-2">
-                                        <button class="flex-1 px-3 py-2 bg-orange-100 text-orange-700 rounded hover:bg-orange-200" onclick="app.editOffer('OFF002')">
-                                            <i class="fas fa-edit ml-1"></i>تعديل
-                                        </button>
-                                        <button class="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200" onclick="app.viewAnalytics('OFF002')">
-                                            <i class="fas fa-chart-bar ml-1"></i>تحليل
-                                        </button>
-                                    </div>
-                                </div>
+                            <div id="offersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <!-- Will be populated by JavaScript -->
                             </div>
                         </div>
                         
@@ -588,14 +533,15 @@
                             <div class="bg-white rounded-lg shadow p-6">
                                 <h3 class="text-lg font-semibold mb-4">إنشاء عرض جديد</h3>
                                 <form id="createOfferForm" class="space-y-4">
+                                    <input type="hidden" id="offerId" value="">
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <label class="block text-sm font-medium mb-1">اسم العرض</label>
+                                            <label class="block text-sm font-medium mb-1">اسم العرض *</label>
                                             <input type="text" id="offerName" class="w-full px-3 py-2 border rounded" required>
                                             <div id="offerNameError" class="error-message hidden">يرجى إدخال اسم العرض</div>
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium mb-1">نوع العرض</label>
+                                            <label class="block text-sm font-medium mb-1">نوع العرض *</label>
                                             <select id="offerType" class="w-full px-3 py-2 border rounded" required>
                                                 <option value="">اختر النوع</option>
                                                 <option value="fixed">عروض ثابتة</option>
@@ -605,28 +551,28 @@
                                             <div id="offerTypeError" class="error-message hidden">يرجى اختيار نوع العرض</div>
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium mb-1">تاريخ البدء</label>
+                                            <label class="block text-sm font-medium mb-1">تاريخ البدء *</label>
                                             <input type="text" id="startDate" class="datepicker w-full px-3 py-2 border rounded" required>
                                             <div id="startDateError" class="error-message hidden">يرجى اختيار تاريخ البدء</div>
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium mb-1">تاريخ الانتهاء</label>
+                                            <label class="block text-sm font-medium mb-1">تاريخ الانتهاء *</label>
                                             <input type="text" id="endDate" class="datepicker w-full px-3 py-2 border rounded" required>
                                             <div id="endDateError" class="error-message hidden">يرجى اختيار تاريخ الانتهاء</div>
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium mb-1">السعر الأصلي</label>
-                                            <input type="number" id="originalPrice" step="0.01" class="w-full px-3 py-2 border rounded" required>
+                                            <label class="block text-sm font-medium mb-1">السعر الأصلي *</label>
+                                            <input type="number" id="originalPrice" step="0.01" min="0" class="w-full px-3 py-2 border rounded" required>
                                             <div id="originalPriceError" class="error-message hidden">يرجى إدخال السعر الأصلي</div>
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium mb-1">السعر بعد الخصم</label>
-                                            <input type="number" id="discountPrice" step="0.01" class="w-full px-3 py-2 border rounded" required>
+                                            <label class="block text-sm font-medium mb-1">السعر بعد الخصم *</label>
+                                            <input type="number" id="discountPrice" step="0.01" min="0" class="w-full px-3 py-2 border rounded" required>
                                             <div id="discountPriceError" class="error-message hidden">يرجى إدخال السعر بعد الخصم</div>
                                         </div>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium mb-1">وصف العرض</label>
+                                        <label class="block text-sm font-medium mb-1">وصف العرض *</label>
                                         <textarea id="offerDescription" class="w-full px-3 py-2 border rounded" rows="3" required></textarea>
                                         <div id="offerDescriptionError" class="error-message hidden">يرجى إدخال وصف العرض</div>
                                     </div>
@@ -635,7 +581,7 @@
                                         <label for="isActive" class="text-sm font-medium">تفعيل العرض فوراً</label>
                                     </div>
                                     <div class="flex justify-end gap-3">
-                                        <button type="button" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">إلغاء</button>
+                                        <button type="button" onclick="app.resetOfferForm()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">إلغاء</button>
                                         <button type="submit" class="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600">حفظ العرض</button>
                                     </div>
                                 </form>
@@ -1043,37 +989,8 @@
                                                 <th class="text-right p-2">الحالة</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                            <tr class="border-b">
-                                                <td class="p-2">OFF001</td>
-                                                <td class="p-2">عرض الاثنين والثلاثاء</td>
-                                                <td class="p-2"><span class="badge-fixed px-2 py-1 rounded text-sm">ثابت</span></td>
-                                                <td class="p-2">2023-01-01</td>
-                                                <td class="p-2">2023-12-31</td>
-                                                <td class="p-2">245</td>
-                                                <td class="p-2">$7,350</td>
-                                                <td class="p-2"><span class="badge-active px-2 py-1 rounded text-sm">نشط</span></td>
-                                            </tr>
-                                            <tr class="border-b">
-                                                <td class="p-2">OFF002</td>
-                                                <td class="p-2">عرض سريع 20%</td>
-                                                <td class="p-2"><span class="badge-flash px-2 py-1 rounded text-sm">محدود</span></td>
-                                                <td class="p-2">2023-07-01</td>
-                                                <td class="p-2">2023-12-31</td>
-                                                <td class="p-2">178</td>
-                                                <td class="p-2">$7,120</td>
-                                                <td class="p-2"><span class="badge-active px-2 py-1 rounded text-sm">نشط</span></td>
-                                            </tr>
-                                            <tr class="border-b">
-                                                <td class="p-2">OFF003</td>
-                                                <td class="p-2">وجبة العائلة</td>
-                                                <td class="p-2"><span class="badge-value px-2 py-1 rounded text-sm">قيمة مضافة</span></td>
-                                                <td class="p-2">2023-06-01</td>
-                                                <td class="p-2">2023-08-31</td>
-                                                <td class="p-2">156</td>
-                                                <td class="p-2">$4,680</td>
-                                                <td class="p-2"><span class="badge-inactive px-2 py-1 rounded text-sm">منتهي</span></td>
-                                            </tr>
+                                        <tbody id="offersDataTable">
+                                            <!-- Will be populated by JavaScript -->
                                         </tbody>
                                     </table>
                                 </div>
@@ -1198,6 +1115,19 @@
             </main>
         </div>
     </div>
+    
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal hidden">
+        <div class="modal-content">
+            <h3 class="text-lg font-semibold mb-4">تأكيد الحذف</h3>
+            <p class="text-gray-600 mb-6">هل أنت متأكد من حذف هذا العرض؟ لا يمكن التراجع عن هذا الإجراء.</p>
+            <div class="flex justify-end gap-3">
+                <button onclick="app.closeDeleteModal()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">إلغاء</button>
+                <button onclick="app.confirmDelete()" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">حذف</button>
+            </div>
+        </div>
+    </div>
+    
     <script>
         // Declare app in the global scope
         let app;
@@ -1207,7 +1137,9 @@
                 this.currentSection = 'dashboard';
                 this.charts = {};
                 this.isAuthenticated = false;
-                this.offers = JSON.parse(localStorage.getItem('offers')) || [];
+                this.offers = JSON.parse(localStorage.getItem('offers')) || this.getDefaultOffers();
+                this.currentOfferId = null;
+                this.deleteOfferId = null;
                 this.chartConfigs = {
                     offers: {
                         type: 'doughnut',
@@ -1301,6 +1233,37 @@
                 this.init();
             }
             
+            getDefaultOffers() {
+                return [
+                    {
+                        id: 'OFF001',
+                        name: 'عرض الاثنين والثلاثاء',
+                        type: 'fixed',
+                        description: '12 قطع دجاج + 3 ثوم',
+                        startDate: '2023-01-01',
+                        endDate: '2023-12-31',
+                        originalPrice: 45,
+                        discountPrice: 30,
+                        isActive: true,
+                        usage: 245,
+                        createdAt: '2023-01-01T00:00:00Z'
+                    },
+                    {
+                        id: 'OFF002',
+                        name: 'عرض سريع 20%',
+                        type: 'flash',
+                        description: 'خصم 20% على جميع الطلبات',
+                        startDate: '2023-07-01',
+                        endDate: '2023-12-31',
+                        originalPrice: 50,
+                        discountPrice: 40,
+                        isActive: true,
+                        usage: 178,
+                        createdAt: '2023-07-01T00:00:00Z'
+                    }
+                ];
+            }
+            
             init() {
                 this.checkAuth();
                 this.setupEventListeners();
@@ -1324,7 +1287,6 @@
             }
             
             login(email, password) {
-                // Validate email
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(email)) {
                     document.getElementById('emailError').classList.remove('hidden');
@@ -1335,7 +1297,6 @@
                     document.getElementById('email').classList.remove('input-error');
                 }
                 
-                // Validate password
                 if (password.length < 6) {
                     document.getElementById('passwordError').classList.remove('hidden');
                     document.getElementById('password').classList.add('input-error');
@@ -1345,7 +1306,6 @@
                     document.getElementById('password').classList.remove('input-error');
                 }
                 
-                // Simulate login API call
                 if (email && password) {
                     localStorage.setItem('isLoggedIn', 'true');
                     localStorage.setItem('user', JSON.stringify({ email, name: 'أحمد كناوي' }));
@@ -1403,6 +1363,7 @@
                 document.getElementById('addOfferBtn')?.addEventListener('click', () => {
                     this.showSection('offers');
                     this.showTab('create-offer');
+                    this.resetOfferForm();
                 });
                 
                 // Close menus when clicking outside
@@ -1423,7 +1384,7 @@
                 if (createOfferForm) {
                     createOfferForm.addEventListener('submit', (e) => {
                         e.preventDefault();
-                        this.createOffer(e.target);
+                        this.saveOffer(e.target);
                     });
                 }
                 
@@ -1545,6 +1506,10 @@
                         this.initAnalyticsCharts();
                         this.showToast('تم تحميل بيانات التحليلات', 'info');
                     }, 500);
+                } else if (sectionName === 'offers') {
+                    this.renderOffers();
+                } else if (sectionName === 'sheets') {
+                    this.renderSheetsData();
                 }
             }
             
@@ -1600,86 +1565,370 @@
                 }
             }
             
-            createOffer(form) {
+            saveOffer(form) {
+                this.showLoading(true);
+                
+                // Clear previous errors
+                this.clearFormErrors();
+                
+                // Get form data
                 const formData = new FormData(form);
-                const offerData = Object.fromEntries(formData);
+                const offerData = {
+                    name: formData.get('offerName') || document.getElementById('offerName').value,
+                    type: formData.get('offerType') || document.getElementById('offerType').value,
+                    description: formData.get('offerDescription') || document.getElementById('offerDescription').value,
+                    startDate: formData.get('startDate') || document.getElementById('startDate').value,
+                    endDate: formData.get('endDate') || document.getElementById('endDate').value,
+                    originalPrice: parseFloat(formData.get('originalPrice') || document.getElementById('originalPrice').value),
+                    discountPrice: parseFloat(formData.get('discountPrice') || document.getElementById('discountPrice').value),
+                    isActive: document.getElementById('isActive').checked
+                };
                 
                 // Validate form
-                let isValid = true;
-                
-                if (!offerData.offerName) {
-                    document.getElementById('offerNameError').classList.remove('hidden');
-                    document.getElementById('offerName').classList.add('input-error');
-                    isValid = false;
-                } else {
-                    document.getElementById('offerNameError').classList.add('hidden');
-                    document.getElementById('offerName').classList.remove('input-error');
+                const validation = this.validateOfferForm(offerData);
+                if (!validation.isValid) {
+                    this.showFormErrors(validation.errors);
+                    this.showLoading(false);
+                    return;
                 }
                 
-                if (!offerData.offerType) {
-                    document.getElementById('offerTypeError').classList.remove('hidden');
-                    document.getElementById('offerType').classList.add('input-error');
-                    isValid = false;
-                } else {
-                    document.getElementById('offerTypeError').classList.add('hidden');
-                    document.getElementById('offerType').classList.remove('input-error');
-                }
-                
-                // Add more validation as needed...
-                
-                if (!isValid) return;
-                
-                this.showToast('جاري حفظ العرض...', 'info');
+                // Check if editing or creating
+                const offerId = document.getElementById('offerId').value;
                 
                 setTimeout(() => {
-                    const newOffer = {
-                        id: 'OFF' + String(this.offers.length + 1).padStart(3, '0'),
-                        ...offerData,
-                        createdAt: new Date().toISOString()
-                    };
+                    if (offerId) {
+                        // Update existing offer
+                        const index = this.offers.findIndex(o => o.id === offerId);
+                        if (index !== -1) {
+                            this.offers[index] = { ...this.offers[index], ...offerData };
+                            this.showToast('تم تحديث العرض بنجاح', 'success');
+                        }
+                    } else {
+                        // Create new offer
+                        const newOffer = {
+                            id: 'OFF' + String(this.offers.length + 1).padStart(3, '0'),
+                            ...offerData,
+                            usage: 0,
+                            createdAt: new Date().toISOString()
+                        };
+                        this.offers.push(newOffer);
+                        this.showToast('تم إنشاء العرض بنجاح', 'success');
+                    }
                     
-                    this.offers.push(newOffer);
+                    // Save to localStorage
                     localStorage.setItem('offers', JSON.stringify(this.offers));
                     
-                    this.showToast('تم حفظ العرض بنجاح', 'success');
-                    form.reset();
-                    
+                    // Reset form and switch to list
+                    this.resetOfferForm();
                     this.showTab('offers-list');
-                    this.loadOffers();
-                }, 1500);
+                    this.renderOffers();
+                    this.updateDashboardOffers();
+                    this.showLoading(false);
+                }, 1000);
+            }
+            
+            validateOfferForm(data) {
+                const errors = {};
+                let isValid = true;
+                
+                if (!data.name || data.name.trim() === '') {
+                    errors.name = 'يرجى إدخال اسم العرض';
+                    isValid = false;
+                }
+                
+                if (!data.type) {
+                    errors.type = 'يرجى اختيار نوع العرض';
+                    isValid = false;
+                }
+                
+                if (!data.description || data.description.trim() === '') {
+                    errors.description = 'يرجى إدخال وصف العرض';
+                    isValid = false;
+                }
+                
+                if (!data.startDate) {
+                    errors.startDate = 'يرجى اختيار تاريخ البدء';
+                    isValid = false;
+                }
+                
+                if (!data.endDate) {
+                    errors.endDate = 'يرجى اختيار تاريخ الانتهاء';
+                    isValid = false;
+                }
+                
+                if (!data.originalPrice || data.originalPrice <= 0) {
+                    errors.originalPrice = 'يرجى إدخال سعر أصلي صحيح';
+                    isValid = false;
+                }
+                
+                if (!data.discountPrice || data.discountPrice <= 0) {
+                    errors.discountPrice = 'يرجى إدخال سعر الخصم صحيح';
+                    isValid = false;
+                }
+                
+                if (data.originalPrice && data.discountPrice && data.discountPrice >= data.originalPrice) {
+                    errors.discountPrice = 'سعر الخصم يجب أن يكون أقل من السعر الأصلي';
+                    isValid = false;
+                }
+                
+                return { isValid, errors };
+            }
+            
+            showFormErrors(errors) {
+                Object.keys(errors).forEach(field => {
+                    const errorElement = document.getElementById(field + 'Error');
+                    const inputElement = document.getElementById(field);
+                    
+                    if (errorElement) {
+                        errorElement.textContent = errors[field];
+                        errorElement.classList.remove('hidden');
+                    }
+                    
+                    if (inputElement) {
+                        inputElement.classList.add('input-error');
+                    }
+                });
+            }
+            
+            clearFormErrors() {
+                const errorElements = document.querySelectorAll('.error-message');
+                const inputElements = document.querySelectorAll('.input-error');
+                
+                errorElements.forEach(el => {
+                    el.classList.add('hidden');
+                    el.textContent = '';
+                });
+                
+                inputElements.forEach(el => {
+                    el.classList.remove('input-error');
+                });
+            }
+            
+            resetOfferForm() {
+                document.getElementById('createOfferForm').reset();
+                document.getElementById('offerId').value = '';
+                document.getElementById('isActive').checked = true;
+                this.clearFormErrors();
+            }
+            
+            editOffer(offerId) {
+                const offer = this.offers.find(o => o.id === offerId);
+                if (offer) {
+                    this.showSection('offers');
+                    this.showTab('create-offer');
+                    
+                    // Populate form
+                    document.getElementById('offerId').value = offer.id;
+                    document.getElementById('offerName').value = offer.name;
+                    document.getElementById('offerType').value = offer.type;
+                    document.getElementById('offerDescription').value = offer.description;
+                    document.getElementById('startDate').value = offer.startDate;
+                    document.getElementById('endDate').value = offer.endDate;
+                    document.getElementById('originalPrice').value = offer.originalPrice;
+                    document.getElementById('discountPrice').value = offer.discountPrice;
+                    document.getElementById('isActive').checked = offer.isActive;
+                    
+                    // Re-initialize datepickers
+                    this.initDatePickers();
+                    
+                    this.showToast('جاري تحرير العرض', 'info');
+                }
+            }
+            
+            deleteOffer(offerId) {
+                this.deleteOfferId = offerId;
+                document.getElementById('deleteModal').classList.remove('hidden');
+            }
+            
+            closeDeleteModal() {
+                document.getElementById('deleteModal').classList.add('hidden');
+                this.deleteOfferId = null;
+            }
+            
+            confirmDelete() {
+                if (this.deleteOfferId) {
+                    this.showLoading(true);
+                    
+                    setTimeout(() => {
+                        this.offers = this.offers.filter(o => o.id !== this.deleteOfferId);
+                        localStorage.setItem('offers', JSON.stringify(this.offers));
+                        
+                        this.renderOffers();
+                        this.updateDashboardOffers();
+                        this.closeDeleteModal();
+                        this.showLoading(false);
+                        this.showToast('تم حذف العرض بنجاح', 'success');
+                    }, 1000);
+                }
             }
             
             createCampaign(form) {
-                const formData = new FormData(form);
-                const campaignData = Object.fromEntries(formData);
-                
                 this.showToast('جاري حفظ الحملة...', 'info');
                 
                 setTimeout(() => {
                     this.showToast('تم حفظ الحملة بنجاح', 'success');
                     form.reset();
-                    
                     this.showTab('campaigns-list');
                 }, 1500);
             }
             
             loadOffers() {
-                // In a real app, this would load offers from the server
-                // For now, we'll just use the data from localStorage
-                console.log('Loaded offers:', this.offers);
+                this.renderOffers();
+                this.updateDashboardOffers();
             }
             
-            editOffer(offerId) {
-                this.showToast(`جاري تحرير العرض: ${offerId}`, 'info');
-                this.showSection('offers');
-                this.showTab('create-offer');
+            renderOffers() {
+                const grid = document.getElementById('offersGrid');
+                if (!grid) return;
                 
-                // In a real app, you would load the offer data into the form
+                const filteredOffers = this.getFilteredOffers();
+                
+                grid.innerHTML = filteredOffers.map(offer => `
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex justify-between mb-4">
+                            <span class="badge-${offer.type} px-3 py-1 rounded text-sm">${this.getTypeLabel(offer.type)}</span>
+                            <span class="badge-${offer.isActive ? 'active' : 'inactive'} px-3 py-1 rounded text-sm">${offer.isActive ? 'نشط' : 'منتهي'}</span>
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">${offer.name}</h3>
+                        <p class="text-gray-600 mb-4">${offer.description}</p>
+                        <div class="flex justify-between mb-4">
+                            <div>
+                                <p class="text-sm text-gray-500">السعر الأصلي</p>
+                                <p class="text-lg font-bold text-gray-400 line-through">${offer.originalPrice.toFixed(2)} درهم</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">السعر بعد الخصم</p>
+                                <p class="text-2xl font-bold text-orange-600">${offer.discountPrice.toFixed(2)} درهم</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between text-sm mb-4">
+                            <div>
+                                <p class="text-gray-500">المدة: ${this.formatDateRange(offer.startDate, offer.endDate)}</p>
+                                <p class="text-gray-500">الاستخدامات: ${offer.usage}</p>
+                            </div>
+                            <div>
+                                <p class="${offer.isActive ? 'text-green-600' : 'text-red-600'} font-medium">${offer.isActive ? 'نشط' : 'منتهي'}</p>
+                                <p class="text-gray-500">${offer.startDate} - ${offer.endDate}</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="app.editOffer('${offer.id}')" class="flex-1 px-3 py-2 bg-orange-100 text-orange-700 rounded hover:bg-orange-200">
+                                <i class="fas fa-edit ml-1"></i>تعديل
+                            </button>
+                            <button onclick="app.viewAnalytics('${offer.id}')" class="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">
+                                <i class="fas fa-chart-bar ml-1"></i>تحليل
+                            </button>
+                            <button onclick="app.deleteOffer('${offer.id}')" class="px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            getFilteredOffers() {
+                const typeFilter = document.getElementById('filterType')?.value || '';
+                const statusFilter = document.getElementById('filterStatus')?.value || '';
+                
+                return this.offers.filter(offer => {
+                    const typeMatch = !typeFilter || offer.type === typeFilter;
+                    const statusMatch = !statusFilter || 
+                        (statusFilter === 'active' && offer.isActive) ||
+                        (statusFilter === 'inactive' && !offer.isActive);
+                    
+                    return typeMatch && statusMatch;
+                });
+            }
+            
+            applyFilters() {
+                this.renderOffers();
+                this.showToast('تم تطبيق الفلاتر', 'info');
+            }
+            
+            updateDashboardOffers() {
+                const tbody = document.getElementById('dashboardOffersTable');
+                if (!tbody) return;
+                
+                const activeOffers = this.offers.filter(o => o.isActive);
+                
+                tbody.innerHTML = activeOffers.slice(0, 5).map(offer => `
+                    <tr class="border-b">
+                        <td class="p-2">${offer.name}</td>
+                        <td class="p-2"><span class="badge-${offer.type} px-2 py-1 rounded text-sm">${this.getTypeLabel(offer.type)}</span></td>
+                        <td class="p-2"><span class="badge-active px-2 py-1 rounded text-sm">نشط</span></td>
+                        <td class="p-2">
+                            <button class="text-blue-600 hover:text-blue-800 ml-2" onclick="app.editOffer('${offer.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-green-600 hover:text-green-800" onclick="app.viewAnalytics('${offer.id}')">
+                                <i class="fas fa-chart-bar"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+            
+            renderSheetsData() {
+                const tbody = document.getElementById('offersDataTable');
+                if (!tbody) return;
+                
+                tbody.innerHTML = this.offers.map(offer => `
+                    <tr class="border-b">
+                        <td class="p-2">${offer.id}</td>
+                        <td class="p-2">${offer.name}</td>
+                        <td class="p-2"><span class="badge-${offer.type} px-2 py-1 rounded text-sm">${this.getTypeLabel(offer.type)}</span></td>
+                        <td class="p-2">${offer.startDate}</td>
+                        <td class="p-2">${offer.endDate}</td>
+                        <td class="p-2">${offer.usage}</td>
+                        <td class="p-2">$${(offer.usage * offer.discountPrice).toFixed(2)}</td>
+                        <td class="p-2"><span class="badge-${offer.isActive ? 'active' : 'inactive'} px-2 py-1 rounded text-sm">${offer.isActive ? 'نشط' : 'منتهي'}</span></td>
+                    </tr>
+                `).join('');
+            }
+            
+            getTypeLabel(type) {
+                const labels = {
+                    fixed: 'ثابت',
+                    flash: 'محدود',
+                    value: 'قيمة مضافة'
+                };
+                return labels[type] || type;
+            }
+            
+            formatDateRange(start, end) {
+                const startDate = new Date(start);
+                const endDate = new Date(end);
+                
+                if (startDate.toDateString() === endDate.toDateString()) {
+                    return 'يوم واحد';
+                }
+                
+                const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+                if (days <= 7) {
+                    return `${days} أيام`;
+                }
+                
+                const weeks = Math.ceil(days / 7);
+                if (weeks <= 4) {
+                    return `${weeks} أسابيع`;
+                }
+                
+                const months = Math.ceil(days / 30);
+                return `${months} أشهر`;
             }
             
             viewAnalytics(offerId) {
                 this.showToast(`عرض تحليلات العرض: ${offerId}`, 'info');
                 this.showSection('analytics');
+            }
+            
+            showLoading(show) {
+                const overlay = document.getElementById('loadingOverlay');
+                if (show) {
+                    overlay.classList.remove('hidden');
+                } else {
+                    overlay.classList.add('hidden');
+                }
             }
             
             showToast(message, type = 'info') {
