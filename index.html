@@ -1,2756 +1,411 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام متابعة الأوامر الملغية 2029</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        /* Futuristic 2029 Theme */
-        :root {
-            --primary-color: #00ffff;
-            --secondary-color: #ff00ff;
-            --accent-color: #ffff00;
-            --danger-color: #ff0040;
-            --success-color: #00ff88;
-            --warning-color: #ffaa00;
-            --dark-bg: #0a0a0a;
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --neon-glow: 0 0 15px currentColor;
-            --text-primary: #ffffff;
-            --text-secondary: #cccccc;
-        }
-        
-        body {
-            background: linear-gradient(135deg, var(--dark-bg) 0%, #1a1a2e 50%, #0f0f1e 100%);
-            color: var(--text-primary);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
-            position: relative;
-            overflow-x: hidden;
-        }
-        
-        /* Animated background */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 20%, rgba(255, 255, 0, 0.05) 0%, transparent 50%);
-            z-index: -1;
-            animation: bgMove 20s ease-in-out infinite;
-        }
-        
-        @keyframes bgMove {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            25% { transform: translate(-10px, -10px) rotate(1deg); }
-            50% { transform: translate(10px, -5px) rotate(-1deg); }
-            75% { transform: translate(-5px, 10px) rotate(1deg); }
-        }
-        
-        /* Header with neon effect */
-        .dashboard-header {
-            background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(255, 0, 255, 0.2));
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 255, 255, 0.3);
-            border-bottom: 2px solid var(--primary-color);
-            color: white;
-            padding: 2rem 0;
-            margin-bottom: 2rem;
-            border-radius: 0 0 20px 20px;
-            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .dashboard-header::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(0, 255, 255, 0.2) 0%, transparent 70%);
-            animation: rotate 20s linear infinite;
-        }
-        
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Glassmorphism cards */
-        .glass-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .glass-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 255, 255, 0.3);
-            border-color: rgba(0, 255, 255, 0.5);
-        }
-        
-        /* Neon text effects */
-        .neon-text {
-            color: var(--primary-color);
-            text-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);
-            font-weight: bold;
-        }
-        
-        .neon-border {
-            border: 2px solid var(--primary-color);
-            box-shadow: 0 0 15px var(--primary-color), inset 0 0 15px rgba(0, 255, 255, 0.2);
-            border-radius: 10px;
-        }
-        
-        /* Stat cards with neon effects */
-        .stat-card {
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-            height: 100%;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(255, 0, 255, 0.1));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .stat-card:hover::before {
-            opacity: 1;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 10px 25px rgba(0, 255, 255, 0.4);
-        }
-        
-        .stat-icon {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            filter: drop-shadow(0 0 8px currentColor);
-        }
-        
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-        }
-        
-        .stat-label {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-        
-        /* Table with futuristic styling */
-        .table-container {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        }
-        
-        .table {
-            color: var(--text-primary);
-        }
-        
-        .table th {
-            background: linear-gradient(90deg, rgba(0, 255, 255, 0.3), rgba(255, 0, 255, 0.3));
-            border: 1px solid rgba(0, 255, 255, 0.5);
-            color: white;
-            font-weight: bold;
-            text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
-        }
-        
-        .table td {
-            border-color: rgba(255, 255, 255, 0.1);
-        }
-        
-        .table tbody tr:hover {
-            background: rgba(0, 255, 255, 0.1);
-            transform: scale(1.01);
-            transition: all 0.2s ease;
-        }
-        
-        /* Buttons with neon effects */
-        .btn-primary {
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            border: none;
-            border-radius: 30px;
-            padding: 0.75rem 2rem;
-            font-weight: 600;
-            color: white;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.5s ease;
-        }
-        
-        .btn-primary:hover::before {
-            left: 100%;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 255, 255, 0.5);
-        }
-        
-        /* Service cards with neon effects */
-        .delivery-service-card {
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-            height: 100%;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .delivery-service-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .delivery-service-card:hover::before {
-            opacity: 1;
-        }
-        
-        .delivery-service-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.4);
-        }
-        
-        .service-header {
-            padding: 1rem;
-            color: white;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .service-header::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: rgba(255, 255, 255, 0.5);
-        }
-        
-        .service-logo {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            margin-left: 10px;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
-        }
-        
-        /* Chart containers */
-        .chart-container {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 1.5rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            margin-bottom: 2rem;
-            height: 350px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .chart-container::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(0, 255, 255, 0.1) 0%, transparent 70%);
-            animation: rotate 30s linear infinite;
-            z-index: -1;
-        }
-        
-        /* Form styling */
-        .form-control, .form-select {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            border-radius: 10px;
-            padding: 0.75rem;
-            transition: all 0.3s ease;
-        }
-        
-        .form-control:focus, .form-select:focus {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(0, 255, 255, 0.25);
-            color: white;
-        }
-        
-        .form-label {
-            color: var(--text-secondary);
-            font-weight: 600;
-        }
-        
-        /* Section titles */
-        .section-title {
-            font-size: 1.8rem;
-            font-weight: bold;
-            margin-bottom: 1.5rem;
-            color: var(--text-primary);
-            position: relative;
-            padding-bottom: 0.5rem;
-        }
-        
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 80px;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-            box-shadow: 0 0 10px var(--primary-color);
-        }
-        
-        /* Badge styling */
-        .badge {
-            font-size: 0.85rem;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-        }
-        
-        /* Toast notifications */
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1050;
-        }
-        
-        .custom-toast {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            padding: 1rem;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            min-width: 300px;
-            animation: slideIn 0.3s ease;
-        }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateX(-100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        
-        .toast-icon {
-            font-size: 1.5rem;
-            margin-left: 1rem;
-            filter: drop-shadow(0 0 8px currentColor);
-        }
-        
-        .toast-success .toast-icon {
-            color: var(--success-color);
-        }
-        
-        .toast-error .toast-icon {
-            color: var(--danger-color);
-        }
-        
-        /* Manual entry section */
-        .manual-entry-section {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        }
-        
-        /* Filter section */
-        .filter-section {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        }
-        
-        /* Archive section */
-        .archive-section {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        }
-        
-        .archive-tab {
-            padding: 0.75rem 1.5rem;
-            margin-left: 0.5rem;
-            border-radius: 10px 10px 0 0;
-            background: rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .archive-tab.active {
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.5);
-        }
-        
-        /* Notification items */
-        .notification-item {
-            display: flex;
-            align-items: center;
-            padding: 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-            position: relative;
-        }
-        
-        .notification-item::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 3px;
-            background: var(--primary-color);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .notification-item:hover::before {
-            opacity: 1;
-        }
-        
-        .notification-item:hover {
-            background: rgba(0, 255, 255, 0.1);
-            transform: translateX(5px);
-        }
-        
-        /* Modal styling */
-        .modal-content {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-        }
-        
-        .modal-header {
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            border-radius: 15px 15px 0 0;
-            border: none;
-        }
-        
-        .modal-header .btn-close {
-            filter: brightness(0) invert(1);
-        }
-        
-        /* Action buttons */
-        .action-btn {
-            margin: 0 3px;
-            border-radius: 8px;
-            padding: 0.4rem 0.8rem;
-            transition: all 0.3s ease;
-        }
-        
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        }
-        
-        /* Report preview */
-        .report-preview {
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin-top: 1rem;
-            border-right: 4px solid var(--primary-color);
-            font-family: 'Courier New', monospace;
-            white-space: pre-wrap;
-            color: #00ff88;
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .report-preview::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent);
-            animation: scanline 3s linear infinite;
-        }
-        
-        @keyframes scanline {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100%); }
-        }
-        
-        /* WhatsApp button */
-        .whatsapp-btn {
-            background: linear-gradient(45deg, #25D366, #128C7E);
-            border: none;
-            border-radius: 30px;
-            padding: 0.75rem 2rem;
-            color: white;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
-        }
-        
-        .whatsapp-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(37, 211, 102, 0.5);
-        }
-        
-        /* AI Insights section */
-        .ai-insights {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        }
-        
-        .insight-item {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-left: 3px solid var(--accent-color);
-            transition: all 0.3s ease;
-        }
-        
-        .insight-item:hover {
-            transform: translateX(5px);
-            background: rgba(255, 255, 255, 0.1);
-        }
-        
-        .insight-icon {
-            font-size: 2rem;
-            margin-right: 1rem;
-            filter: drop-shadow(0 0 8px currentColor);
-        }
-        
-        /* Risk meter */
-        .risk-meter {
-            height: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            margin-top: 0.5rem;
-            overflow: hidden;
-        }
-        
-        .risk-bar {
-            height: 100%;
-            background: linear-gradient(90deg, var(--success-color), var(--warning-color), var(--danger-color));
-            border-radius: 4px;
-            box-shadow: 0 0 10px currentColor;
-            transition: width 1s ease;
-        }
-        
-        /* Loading animation */
-        .loading-spinner {
-            width: 3rem;
-            height: 3rem;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            border-top-color: var(--primary-color);
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .dashboard-header {
-                padding: 1rem 0;
-            }
-            
-            .stat-card {
-                margin-bottom: 1rem;
-            }
-            
-            .chart-container {
-                height: 250px;
-            }
-        }
-    </style>
+    <title>Restaurant OS - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-    <!-- Header -->
-    <div class="dashboard-header">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1 class="mb-0"><i class="bi bi-graph-up-arrow me-3 neon-text"></i>نظام متابعة الأوامر الملغية 2029</h1>
-                    <p class="mb-0 mt-2">لوحة تحكم متقدمة بالذكاء الاصطناعي</p>
+<body class="bg-slate-100 text-slate-800">
+    <div class="flex h-screen overflow-hidden">
+        <aside id="sidebar" class="w-64 bg-slate-900 text-slate-100 flex flex-col fixed inset-y-0 left-0 z-30 lg:translate-x-0 transform -translate-x-full">
+            <div class="flex items-center justify-between h-20 px-4 border-b border-slate-700">
+                <a href="#" class="flex items-center space-x-2">
+                    <i data-lucide="chef-hat" class="h-8 w-8 text-sky-500"></i>
+                    <span id="sidebarLogoText" class="text-xl font-semibold">RestaurantOS</span>
+                </a>
+            </div>
+            <nav class="flex-1 py-6 space-y-1 overflow-y-auto sidebar-nav-items">
+                <a href="#" class="flex items-center space-x-3 py-3 px-4 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors duration-150">
+                    <i data-lucide="layout-dashboard" class="menu-item-icon"></i>
+                    <span class="text-sm font-medium menu-text">Dashboard</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 py-3 px-4 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors duration-150">
+                    <i data-lucide="shopping-cart" class="menu-item-icon"></i>
+                    <span class="text-sm font-medium menu-text">Orders</span>
+                </a>
+                 <a href="#" class="flex items-center space-x-3 py-3 px-4 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors duration-150">
+                    <i data-lucide="bar-chart-3" class="menu-item-icon"></i>
+                    <span class="text-sm font-medium menu-text">Reports</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 py-3 px-4 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors duration-150">
+                    <i data-lucide="book-open" class="menu-item-icon"></i>
+                    <span class="text-sm font-medium menu-text">Menu</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 py-3 px-4 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors duration-150">
+                    <i data-lucide="calendar-check" class="menu-item-icon"></i>
+                    <span class="text-sm font-medium menu-text">Reservations</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 py-3 px-4 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors duration-150">
+                    <i data-lucide="users" class="menu-item-icon"></i>
+                    <span class="text-sm font-medium menu-text">Customers</span>
+                </a>
+                 <a href="#" class="flex items-center space-x-3 py-3 px-4 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors duration-150">
+                    <i data-lucide="truck" class="menu-item-icon"></i>
+                    <span class="text-sm font-medium menu-text">Delivery</span>
+                </a>
+                 <a href="#" class="flex items-center space-x-3 py-3 px-4 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors duration-150">
+                    <i data-lucide="credit-card" class="menu-item-icon"></i>
+                    <span class="text-sm font-medium menu-text">Billing</span>
+                </a>
+            </nav>
+            <div class="px-4 py-4 border-t border-slate-700">
+                <a href="#" class="flex items-center space-x-3 py-3 px-4 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors duration-150">
+                    <i data-lucide="settings" class="menu-item-icon"></i>
+                    <span class="text-sm font-medium menu-text">Settings</span>
+                </a>
+                 <button id="sidebarToggle" class="w-full flex items-center justify-center space-x-3 py-3 px-4 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-sky-400 transition-colors duration-150 focus:outline-none hidden lg:flex">
+                    <i id="toggleIconOpen" data-lucide="chevrons-left" class="menu-item-icon"></i>
+                    <i id="toggleIconClosed" data-lucide="chevrons-right" class="menu-item-icon hidden"></i>
+                    <span class="text-sm font-medium menu-text">Collapse</span>
+                </button>
+            </div>
+        </aside>
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden lg:hidden" aria-hidden="true"></div>
+
+        <div id="mainContent" class="flex-1 flex flex-col overflow-hidden lg:ml-64">
+            <header class="bg-white shadow-md h-20 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-20"> 
+                <button id="mobileMenuButton" class="text-slate-600 hover:text-sky-500 lg:hidden">
+                    <i data-lucide="menu" class="h-7 w-7"></i>
+                </button>
+                <div class="relative hidden sm:block">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                        <i data-lucide="search" class="h-5 w-5 text-slate-400"></i>
+                    </span>
+                    <input type="text" placeholder="Search..." class="w-full max-w-xs py-2.5 pl-10 pr-4 border border-slate-300 rounded-full text-sm text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all duration-150">
                 </div>
-                <div class="col-md-4 text-md-start mt-3 mt-md-0">
-                    <div class="d-flex justify-content-md-end">
-                        <button class="btn btn-light me-2 neon-border" onclick="refreshData()">
-                            <i class="bi bi-arrow-clockwise me-1"></i> تحديث البيانات
+                <div class="flex items-center space-x-3 sm:space-x-4">
+                    <div class="hidden sm:flex items-center space-x-1 text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                        <i data-lucide="circle" class="h-2 w-2 fill-current"></i>
+                        <span>System Online</span>
+                    </div>
+                    <button class="text-slate-500 hover:text-sky-500 relative">
+                        <i data-lucide="bell" class="h-6 w-6"></i>
+                        <span class="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full border-2 border-white text-xs"></span>
+                    </button>
+                    <div class="relative">
+                        <button id="profileButton" class="flex items-center space-x-2 focus:outline-none">
+                            <img src="https://placehold.co/40x40/E2E8F0/475569?text=JD" alt="User Avatar" class="h-10 w-10 rounded-full border-2 border-transparent hover:border-sky-500 transition-colors">
+                            <span class="hidden md:inline text-sm font-medium text-slate-700">John Doe</span>
+                            <i data-lucide="chevron-down" class="h-4 w-4 text-slate-400 hidden md:inline"></i>
                         </button>
-                        <button class="btn btn-warning" onclick="exportData()">
-                            <i class="bi bi-download me-1"></i> تصدير Excel
-                        </button>
+                        <div id="profileDropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-1 origin-top-right opacity-0 transform scale-95 -translate-y-2 pointer-events-none z-30">  
+                            <a href="#" class="flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-sky-600">
+                                <i data-lucide="user-circle" class="w-4 h-4 mr-2"></i>Your Profile
+                            </a>
+                            <a href="#" class="flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-sky-600">
+                                <i data-lucide="settings-2" class="w-4 h-4 mr-2"></i>Settings
+                            </a>
+                            <hr class="my-1 border-slate-200">
+                            <a href="#" id="logoutButton" class="flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-red-50 hover:text-red-600">
+                                <i data-lucide="log-out" class="w-4 h-4 mr-2"></i>Logout
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </header>
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100 p-4 sm:p-6">
+                <h1 class="text-2xl sm:text-3xl font-semibold text-slate-800 mb-6">Dashboard</h1>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
+                    <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex items-center space-x-3 sm:space-x-4">
+                        <div class="stat-card-icon-container bg-sky-100 text-sky-600">
+                            <i data-lucide="shopping-bag" class="stat-card-icon"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs sm:text-sm text-slate-500">Today's Orders</p>
+                            <p class="text-xl sm:text-2xl font-semibold text-slate-800">156</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex items-center space-x-3 sm:space-x-4">
+                        <div class="stat-card-icon-container bg-emerald-100 text-emerald-600">
+                            <i data-lucide="dollar-sign" class="stat-card-icon"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs sm:text-sm text-slate-500">Today's Revenue</p>
+                            <p class="text-xl sm:text-2xl font-semibold text-slate-800">$8,750</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex items-center space-x-3 sm:space-x-4">
+                        <div class="stat-card-icon-container bg-amber-100 text-amber-600">
+                           <i data-lucide="layout-list" class="stat-card-icon"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs sm:text-sm text-slate-500">Active Tables</p>
+                            <p class="text-xl sm:text-2xl font-semibold text-slate-800">23 / 40</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex items-center space-x-3 sm:space-x-4">
+                        <div class="stat-card-icon-container bg-indigo-100 text-indigo-600">
+                            <i data-lucide="calendar-days" class="stat-card-icon"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs sm:text-sm text-slate-500">Upcoming Res.</p>
+                            <p class="text-xl sm:text-2xl font-semibold text-slate-800">12</p>
+                        </div>
+                    </div>
+                     <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex items-center space-x-3 sm:space-x-4">
+                        <div class="stat-card-icon-container bg-pink-100 text-pink-600">
+                           <i data-lucide="user-plus" class="stat-card-icon"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs sm:text-sm text-slate-500">New Customers</p>
+                            <p class="text-xl sm:text-2xl font-semibold text-slate-800">8</p>
+                        </div>
+                    </div>
+                     <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex items-center space-x-3 sm:space-x-4">
+                        <div class="stat-card-icon-container bg-teal-100 text-teal-600">
+                            <i data-lucide="package-check" class="stat-card-icon"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs sm:text-sm text-slate-500">Pending Delivery</p>
+                            <p class="text-xl sm:text-2xl font-semibold text-slate-800">5</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex items-center space-x-3 sm:space-x-4">
+                        <div class="stat-card-icon-container bg-orange-100 text-orange-600">
+                            <i data-lucide="book-marked" class="stat-card-icon"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs sm:text-sm text-slate-500">Total Menu Items</p>
+                            <p class="text-xl sm:text-2xl font-semibold text-slate-800">78</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex items-center space-x-3 sm:space-x-4">
+                        <div class="stat-card-icon-container bg-purple-100 text-purple-600">
+                            <i data-lucide="calendar-clock" class="stat-card-icon"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs sm:text-sm text-slate-500">Total Reservations</p>
+                            <p class="text-xl sm:text-2xl font-semibold text-slate-800">35</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="lg:col-span-1 bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                        <h3 class="text-lg sm:text-xl font-semibold text-slate-700 mb-4">Quick Actions</h3>
+                        <div class="space-y-3">
+                            <button id="openNewOrderModal" class="w-full flex items-center justify-center text-sm bg-sky-500 hover:bg-sky-600 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-150">
+                                <i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> New Order
+                            </button>
+                            <button id="openAddMenuItemModal" class="w-full flex items-center justify-center text-sm bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-150">
+                                <i data-lucide="utensils-crossed" class="w-4 h-4 mr-2"></i> Add Menu Item
+                            </button>
+                            <button id="openNewReservationModal" class="w-full flex items-center justify-center text-sm bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-150">
+                                <i data-lucide="calendar-plus" class="w-4 h-4 mr-2"></i> New Reservation
+                            </button>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2 bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                        <h3 class="text-lg sm:text-xl font-semibold text-slate-700 mb-4">Recent Order Summary</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left text-slate-500">
+                                <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3">Order ID</th>
+                                        <th scope="col" class="px-4 py-3">Customer</th>
+                                        <th scope="col" class="px-4 py-3">Status</th>
+                                        <th scope="col" class="px-4 py-3">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="bg-white border-b hover:bg-slate-50">
+                                        <td class="px-4 py-3 font-medium text-slate-900">#ORD-1235</td>
+                                        <td class="px-4 py-3">John K.</td>
+                                        <td class="px-4 py-3"><span class="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700">Completed</span></td>
+                                        <td class="px-4 py-3">$45.00</td>
+                                    </tr>
+                                    <tr class="bg-white border-b hover:bg-slate-50">
+                                        <td class="px-4 py-3 font-medium text-slate-900">#ORD-1234</td>
+                                        <td class="px-4 py-3">Sarah L.</td>
+                                        <td class="px-4 py-3"><span class="px-2 py-0.5 text-xs font-medium rounded-full bg-yellow-100 text-yellow-700">Pending</span></td>
+                                        <td class="px-4 py-3">$22.50</td>
+                                    </tr>
+                                    <tr class="bg-white hover:bg-slate-50">
+                                        <td class="px-4 py-3 font-medium text-slate-900">#ORD-1233</td>
+                                        <td class="px-4 py-3">Mike P.</td>
+                                        <td class="px-4 py-3"><span class="px-2 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-700">Cancelled</span></td>
+                                        <td class="px-4 py-3">$10.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                        <h3 class="text-lg sm:text-xl font-semibold text-slate-700 mb-4">Sales Overview (Weekly)</h3>
+                        <div class="h-80 md:h-96">
+                            <canvas id="salesChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                        <h3 class="text-lg sm:text-xl font-semibold text-slate-700 mb-4">Popular Dishes</h3>
+                        <div class="h-80 md:h-96 flex items-center justify-center">
+                             <canvas id="popularDishesChart" class="max-h-full max-w-full"></canvas>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-3 bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                        <h3 class="text-lg sm:text-xl font-semibold text-slate-700 mb-4">Recent Activity</h3>
+                        <ul class="space-y-4 max-h-96 overflow-y-auto" id="activityFeed">
+                            <li class="flex items-start space-x-3 p-3 rounded-lg hover:bg-slate-50">
+                                <div class="activity-icon-container bg-green-100 text-green-600">
+                                    <i data-lucide="check-circle-2" class="activity-icon"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-slate-700">New order <span class="font-semibold text-sky-600">#ORD-1235</span> placed by John K.</p>
+                                    <p class="text-xs text-slate-400">2 minutes ago</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start space-x-3 p-3 rounded-lg hover:bg-slate-50">
+                                <div class="activity-icon-container bg-blue-100 text-blue-600">
+                                    <i data-lucide="calendar-check-2" class="activity-icon"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-slate-700">Table 5 reservation confirmed for Sarah L. at 7:00 PM.</p>
+                                    <p class="text-xs text-slate-400">15 minutes ago</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start space-x-3 p-3 rounded-lg hover:bg-slate-50">
+                                <div class="activity-icon-container bg-yellow-100 text-yellow-600">
+                                     <i data-lucide="alert-triangle" class="activity-icon"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-slate-700">Low stock warning: Tomatoes (5 units left).</p>
+                                    <p class="text-xs text-slate-400">1 hour ago</p>
+                                </div>
+                            </li>
+                             <li class="flex items-start space-x-3 p-3 rounded-lg hover:bg-slate-50">
+                                <div class="activity-icon-container bg-purple-100 text-purple-600">
+                                     <i data-lucide="edit-3" class="activity-icon"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-slate-700">Chef Michael updated the "Pasta Carbonara" recipe.</p>
+                                    <p class="text-xs text-slate-400">3 hours ago</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </main>
         </div>
     </div>
-    
-    <div class="container">
-        <!-- AI Insights Section -->
-        <div class="ai-insights">
-            <h3 class="section-title">رؤى الذكاء الاصطناعي</h3>
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="insight-item">
-                        <div class="d-flex align-items-center">
-                            <div class="insight-icon">🤖</div>
-                            <div>
-                                <div class="insight-title">نمط جديد تم اكتشافه</div>
-                                <div class="insight-desc">زيادة 23% في الإلغاءات من خدمة Talabat</div>
-                                <button class="btn btn-sm btn-primary mt-2">تحليل تفصيلي</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="insight-item">
-                        <div class="d-flex align-items-center">
-                            <div class="insight-icon">⚠️</div>
-                            <div>
-                                <div class="insight-title">تحذير عالي المخاطرة</div>
-                                <div class="insight-desc">5 طلبات متوقعة للإلغاء خلال الساعة القادمة</div>
-                                <button class="btn btn-sm btn-warning mt-2">اتخاذ إجراء</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="insight-item">
-                        <div class="d-flex align-items-center">
-                            <div class="insight-icon">💡</div>
-                            <div>
-                                <div class="insight-title">توصية تحسينية</div>
-                                <div class="insight-desc">تحسين إعداد الطلبات في فرع Hamdan St</div>
-                                <button class="btn btn-sm btn-success mt-2">تطبيق التوصية</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <div id="newOrderModal" class="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50 modal-backdrop hidden opacity-0">
+        <div class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-11/12 max-w-lg modal-content transform scale-95 opacity-0">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-slate-800 flex items-center">
+                    <i data-lucide="plus-circle" class="modal-icon mr-2 text-sky-600"></i>Create New Order
+                </h2>
+                <button id="closeNewOrderModal" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
             </div>
-        </div>
-        
-        <!-- Manual Entry Section -->
-        <div class="manual-entry-section">
-            <h3 class="section-title">إدخال يدوي للأوامر</h3>
-            <form id="manualEntryForm" onsubmit="handleManualSubmit(event)">
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">رقم المرجع</label>
-                        <input type="text" class="form-control" id="manualRefId" required>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">التاريخ</label>
-                        <input type="date" class="form-control" id="manualDate" required>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">الفرع</label>
-                        <select class="form-select" id="manualLocation" required>
-                            <option value="">اختر الفرع</option>
-                            <option value="Hamdan St">Hamdan St</option>
-                            <option value="Khaldia">Khaldia</option>
-                            <option value="Shabiya 11">Shabiya 11</option>
-                            <option value="Muroor">Muroor</option>
-                            <option value="Al Electra">Al Electra</option>
-                            <option value="Al Barsha">Al Barsha</option>
-                            <option value="Al Satwa">Al Satwa</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">خدمة التوصيل</label>
-                        <select class="form-select" id="manualService" required>
-                            <option value="">اختر الخدمة</option>
-                            <option value="talabat">Talabat</option>
-                            <option value="careem">Careem Now</option>
-                            <option value="deliveroo">Deliveroo</option>
-                            <option value="noon">Noon Food</option>
-                            <option value="smiles">Smiles</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">القيمة (AED)</label>
-                        <input type="number" class="form-control" id="manualAmount" min="0" step="0.01" required>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">الحالة</label>
-                        <select class="form-select" id="manualStatus" required>
-                            <option value="">اختر الحالة</option>
-                            <option value="cancelled">ملغي</option>
-                            <option value="refunded">مسترد</option>
-                            <option value="unanswered">دون رد</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">السبب</label>
-                        <select class="form-select" id="manualReason" required>
-                            <option value="">اختر السبب</option>
-                            <option value="restaurant">من المطعم</option>
-                            <option value="delivery">من التوصيل</option>
-                            <option value="customer">من العميل</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">ملاحظات</label>
-                        <input type="text" class="form-control" id="manualNotes">
-                    </div>
+            <form id="newOrderForm" class="space-y-4">
+                <div>
+                    <label for="orderCustomerName" class="block text-sm font-medium text-slate-700 mb-1">Customer Name</label>
+                    <input type="text" id="orderCustomerName" name="orderCustomerName" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="e.g., John Doe">
                 </div>
-                <div class="text-center">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-plus-circle me-1"></i> إضافة الأمر
-                    </button>
+                <div>
+                    <label for="orderTableNumber" class="block text-sm font-medium text-slate-700 mb-1">Table Number</label>
+                    <input type="text" id="orderTableNumber" name="orderTableNumber" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="e.g., T5 or Delivery">
+                </div>
+                <div>
+                    <label for="orderItems" class="block text-sm font-medium text-slate-700 mb-1">Items (comma separated)</label>
+                    <textarea id="orderItems" name="orderItems" rows="3" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="e.g., Pizza, Coke, Salad"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" id="cancelNewOrder" class="px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-slate-200 text-slate-700 hover:bg-slate-300 focus:ring-slate-400">Cancel</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-sky-600 text-white hover:bg-sky-700 focus:ring-sky-500">Save Order</button>
                 </div>
             </form>
         </div>
-        
-        <!-- General Statistics Cards -->
-        <div class="row mb-4">
-            <div class="col-md-3 mb-3">
-                <div class="card stat-card">
-                    <div class="card-body text-center">
-                        <div class="stat-icon text-primary">
-                            <i class="bi bi-cart-x"></i>
-                        </div>
-                        <div class="stat-number" id="totalCancelled">0</div>
-                        <div class="stat-label">إجمالي الملغيات اليوم</div>
-                        <div class="risk-meter">
-                            <div class="risk-bar" style="width: 65%"></div>
-                        </div>
-                    </div>
-                </div>
+    </div>
+    <div id="addMenuItemModal" class="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50 modal-backdrop hidden opacity-0">
+        <div class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-11/12 max-w-lg modal-content transform scale-95 opacity-0">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-slate-800 flex items-center">
+                    <i data-lucide="utensils-crossed" class="modal-icon mr-2 text-emerald-600"></i>Add New Menu Item
+                </h2>
+                <button id="closeAddMenuItemModal" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
             </div>
-            <div class="col-md-3 mb-3">
-                <div class="card stat-card">
-                    <div class="card-body text-center">
-                        <div class="stat-icon text-danger">
-                            <i class="bi bi-shop"></i>
-                        </div>
-                        <div class="stat-number" id="restaurantCancelled">0</div>
-                        <div class="stat-label">إلغاء من المطعم</div>
-                        <div class="risk-meter">
-                            <div class="risk-bar" style="width: 45%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card stat-card">
-                    <div class="card-body text-center">
-                        <div class="stat-icon text-warning">
-                            <i class="bi bi-truck"></i>
-                        </div>
-                        <div class="stat-number" id="deliveryCancelled">0</div>
-                        <div class="stat-label">إلغاء من التوصيل</div>
-                        <div class="risk-meter">
-                            <div class="risk-bar" style="width: 75%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card stat-card">
-                    <div class="card-body text-center">
-                        <div class="stat-icon text-info">
-                            <i class="bi bi-person-x"></i>
-                        </div>
-                        <div class="stat-number" id="customerCancelled">0</div>
-                        <div class="stat-label">إلغاء من العميل</div>
-                        <div class="risk-meter">
-                            <div class="risk-bar" style="width: 30%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Delivery Services Section -->
-        <div class="mb-4">
-            <h3 class="section-title">لوحة بيانات خدمات التوصيل</h3>
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <div class="card delivery-service-card">
-                        <div class="service-header talabat-bg">
-                            <img src="https://picsum.photos/seed/talabat/40/40.jpg" alt="Talabat" class="service-logo">
-                            Talabat
-                        </div>
-                        <div class="service-body">
-                            <div class="service-stat">
-                                <span class="service-stat-label">الطلبات الملغاة</span>
-                                <span class="service-stat-value" id="talabat-cancelled">0</span>
-                            </div>
-                            <div class="service-stat">
-                                <span class="service-stat-label">الطلبات المستردة</span>
-                                <span class="service-stat-value" id="talabat-refunded">0</span>
-                            </div>
-                            <div class="service-stat">
-                                <span class="service-stat-label">الطلبات دون رد</span>
-                                <span class="service-stat-value" id="talabat-unanswered">0</span>
-                            </div>
-                            <div class="service-stat">
-                                <span class="service-stat-label">مستوى المخاطرة</span>
-                                <div class="risk-meter">
-                                    <div class="risk-bar" style="width: 80%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <div class="card delivery-service-card">
-                        <div class="service-header careem-bg">
-                            <img src="https://picsum.photos/seed/careem/40/40.jpg" alt="Careem Now" class="service-logo">
-                            Careem Now
-                        </div>
-                        <div class="service-body">
-                            <div class="service-stat">
-                                <span class="service-stat-label">الطلبات الملغاة</span>
-                                <span class="service-stat-value" id="careem-cancelled">0</span>
-                            </div>
-                            <div class="service-stat">
-                                <span class="service-stat-label">الطلبات المستردة</span>
-                                <span class="service-stat-value" id="careem-refunded">0</span>
-                            </div>
-                            <div class="service-stat">
-                                <span class="service-stat-label">الطلبات دون رد</span>
-                                <span class="service-stat-value" id="careem-unanswered">0</span>
-                            </div>
-                            <div class="service-stat">
-                                <span class="service-stat-label">مستوى المخاطرة</span>
-                                <div class="risk-meter">
-                                    <div class="risk-bar" style="width: 45%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <div class="card delivery-service-card">
-                        <div class="service-header deliveroo-bg">
-                            <img src="https://picsum.photos/seed/deliveroo/40/40.jpg" alt="Deliveroo" class="service-logo">
-                            Deliveroo
-                        </div>
-                        <div class="service-body">
-                            <div class="service-stat">
-                                <span class="service-stat-label">الطلبات الملغاة</span>
-                                <span class="service-stat-value" id="deliveroo-cancelled">0</span>
-                            </div>
-                            <div class="service-stat">
-                                <span class="service-stat-label">الطلبات المستردة</span>
-                                <span class="service-stat-value" id="deliveroo-refunded">0</span>
-                            </div>
-                            <div class="service-stat">
-                                <span class="service-stat-label">الطلبات دون رد</span>
-                                <span class="service-stat-value" id="deliveroo-unanswered">0</span>
-                            </div>
-                            <div class="service-stat">
-                                <span class="service-stat-label">مستوى المخاطرة</span>
-                                <div class="risk-meter">
-                                    <div class="risk-bar" style="width: 60%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <div class="card delivery-service-card">
-                        <div class="service-header noon-bg">
-                            <img src="https://picsum.photos/seed/noon/40/40.jpg" alt="Noon Food" class="service-logo">
-                            Noon Food
-                        </div>
-                        <div class="service-body">
-                            <div class="service-stat">
-                                <span class="service-stat-label">الطلبات الملغاة</span>
-                                <span class="service-stat-value" id="noon-cancelled">0</span>
-                            </div>
-                            <div class="service-stat">
-                                <span class="service-stat-label">الطلبات المستردة</span>
-                                <span class="service-stat-value" id="noon-refunded">0</span>
-                            </div>
-                            <div class="service-stat">
-                                <span class="service-stat-label">الطلبات دون رد</span>
-                                <span class="service-stat-value" id="noon-unanswered">0</span>
-                            </div>
-                            <div class="service-stat">
-                                <span class="service-stat-label">مستوى المخاطرة</span>
-                                <div class="risk-meter">
-                                    <div class="risk-bar" style="width: 35%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <div class="card delivery-service-card">
-                        <div class="service-header smiles-bg">
-                            <img src="https://picsum.photos/seed/smiles/40/40.jpg" alt="Smiles" class="service-logo">
-                            Smiles
-                        </div>
-                        <div class="service-body">
-                            <div class="service-stat">
-                                <span class="service-stat-label">الطلبات الملغاة</span>
-                                <span class="service-stat-value" id="smiles-cancelled">0</span>
-                            </div>
-                            <div class="service-stat">
-                                <span class="service-stat-label">الطلبات المستردة</span>
-                                <span class="service-stat-value" id="smiles-refunded">0</span>
-                            </div>
-                            <div class="service-stat">
-                                <span class="service-stat-label">الطلبات دون رد</span>
-                                <span class="service-stat-value" id="smiles-unanswered">0</span>
-                            </div>
-                            <div class="service-stat">
-                                <span class="service-stat-label">مستوى المخاطرة</span>
-                                <div class="risk-meter">
-                                    <div class="risk-bar" style="width: 25%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Filters -->
-        <div class="filter-section">
-            <div class="row align-items-center">
-                <div class="col-md-2">
-                    <label class="form-label">فلترة حسب السبب</label>
-                    <select class="form-select" id="reasonFilter" onchange="filterTable()">
-                        <option value="">جميع الأسباب</option>
-                        <option value="restaurant">من المطعم</option>
-                        <option value="delivery">من التوصيل</option>
-                        <option value="customer">من العميل</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">فلترة حسب الفرع</label>
-                    <select class="form-select" id="locationFilter" onchange="filterTable()">
-                        <option value="">جميع الفروع</option>
-                        <option value="Hamdan St">Hamdan St</option>
-                        <option value="Khaldia">Khaldia</option>
-                        <option value="Shabiya 11">Shabiya 11</option>
-                        <option value="Muroor">Muroor</option>
-                        <option value="Al Electra">Al Electra</option>
-                        <option value="Al Barsha">Al Barsha</option>
-                        <option value="Al Satwa">Al Satwa</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">فلترة حسب الخدمة</label>
-                    <select class="form-select" id="serviceFilter" onchange="filterTable()">
-                        <option value="">جميع الخدمات</option>
-                        <option value="talabat">Talabat</option>
-                        <option value="careem">Careem Now</option>
-                        <option value="deliveroo">Deliveroo</option>
-                        <option value="noon">Noon Food</option>
-                        <option value="smiles">Smiles</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">فلترة حسب الحالة</label>
-                    <select class="form-select" id="statusFilter" onchange="filterTable()">
-                        <option value="">جميع الحالات</option>
-                        <option value="cancelled">ملغي</option>
-                        <option value="refunded">مسترد</option>
-                        <option value="unanswered">دون رد</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">من التاريخ</label>
-                    <input type="date" class="form-control" id="dateFrom" onchange="filterTable()">
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">إلى التاريخ</label>
-                    <input type="date" class="form-control" id="dateTo" onchange="filterTable()">
-                </div>
-            </div>
-        </div>
-        
-        <!-- Charts -->
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="chart-container">
-                    <h5 class="mb-3">توزيع أسباب الإلغاء</h5>
-                    <canvas id="reasonChart"></canvas>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="chart-container">
-                    <h5 class="mb-3">الفروع الأكثر إلغاءً</h5>
-                    <canvas id="locationChart"></canvas>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Orders Table -->
-        <div class="table-container">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 class="mb-0">الأوامر الملغاة</h4>
+            <form id="addMenuItemForm" class="space-y-4">
                 <div>
-                    <button class="btn btn-primary me-2" onclick="sendDailyReport()">
-                        <i class="bi bi-send me-1"></i> إرسال التقرير اليومي
-                    </button>
-                    <button class="btn whatsapp-btn me-2" onclick="sendDailyReportToWhatsApp()">
-                        <i class="bi bi-whatsapp me-1"></i> إرسال لـ WhatsApp
-                    </button>
-                    <button class="btn btn-success" onclick="sendAllReports()">
-                        <i class="bi bi-send-fill me-1"></i> إرسال جميع التقارير
-                    </button>
+                    <label for="menuItemName" class="block text-sm font-medium text-slate-700 mb-1">Item Name</label>
+                    <input type="text" id="menuItemName" name="menuItemName" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="e.g., Margherita Pizza">
                 </div>
-            </div>
-            
-            <div class="table-responsive">
-                <table class="table table-hover" id="ordersTable">
-                    <thead>
-                        <tr>
-                            <th>رقم المرجع</th>
-                            <th>التاريخ</th>
-                            <th>الفرع</th>
-                            <th>خدمة التوصيل</th>
-                            <th>القيمة</th>
-                            <th>الحالة</th>
-                            <th>السبب</th>
-                            <th>مستوى المخاطرة</th>
-                            <th>الإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ordersTableBody">
-                        <!-- Table rows will be generated by JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <!-- Archive Section -->
-        <div class="archive-section">
-            <h3 class="section-title">الأرشيف والإشعارات</h3>
-            <div class="archive-tabs">
-                <div class="d-flex">
-                    <div class="archive-tab active" onclick="switchArchiveTab('notifications')">الإشعارات الحديثة</div>
-                    <div class="archive-tab" onclick="switchArchiveTab('reports')">التقارير السابقة</div>
-                    <div class="archive-tab" onclick="switchArchiveTab('history')">سجل المعالجة</div>
+                <div>
+                    <label for="menuItemDescription" class="block text-sm font-medium text-slate-700 mb-1">Description</label>
+                    <textarea id="menuItemDescription" name="menuItemDescription" rows="3" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="e.g., Classic pizza with tomato, mozzarella, and basil"></textarea>
                 </div>
-            </div>
-            <div class="archive-content" id="archiveContent">
-                <!-- Notifications Tab Content -->
-                <div id="notificationsTab">
-                    <div class="notification-item notification-new">
-                        <div class="notification-icon text-primary">
-                            <i class="bi bi-bell"></i>
-                        </div>
-                        <div class="notification-content">
-                            <div>تمت إضافة أمر جديد يدوياً</div>
-                            <div class="notification-time">منذ 10 دقائق</div>
-                        </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="menuItemPrice" class="block text-sm font-medium text-slate-700 mb-1">Price ($)</label>
+                        <input type="number" id="menuItemPrice" name="menuItemPrice" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="e.g., 12.99" step="0.01">
                     </div>
-                    <div class="notification-item">
-                        <div class="notification-icon text-success">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
-                        <div class="notification-content">
-                            <div>تم إرسال التقرير اليومي بنجاح</div>
-                            <div class="notification-time">منذ ساعة</div>
-                        </div>
-                    </div>
-                    <div class="notification-item">
-                        <div class="notification-icon text-warning">
-                            <i class="bi bi-exclamation-triangle"></i>
-                        </div>
-                        <div class="notification-content">
-                            <div>زيادة في عدد الإلغاءات من فرع Hamdan St</div>
-                            <div class="notification-time">منذ 3 ساعات</div>
-                        </div>
+                    <div>
+                        <label for="menuItemCategory" class="block text-sm font-medium text-slate-700 mb-1">Category</label>
+                        <select id="menuItemCategory" name="menuItemCategory" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
+                            <option value="">Select Category</option>
+                            <option value="appetizer">Appetizer</option>
+                            <option value="main_course">Main Course</option>
+                            <option value="dessert">Dessert</option>
+                            <option value="drink">Drink</option>
+                        </select>
                     </div>
                 </div>
-            </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" id="cancelAddMenuItem" class="px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-slate-200 text-slate-700 hover:bg-slate-300 focus:ring-slate-400">Cancel</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-sky-600 text-white hover:bg-sky-700 focus:ring-sky-500">Add Item</button>
+                </div>
+            </form>
         </div>
     </div>
-    
-    <!-- Edit Order Modal -->
-    <div class="modal fade" id="editOrderModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">تعديل الأمر</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editOrderForm" onsubmit="handleEditSubmit(event)">
-                        <input type="hidden" id="editOrderId">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">رقم المرجع</label>
-                                <input type="text" class="form-control" id="editRefId" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">التاريخ</label>
-                                <input type="date" class="form-control" id="editDate" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">الفرع</label>
-                                <select class="form-select" id="editLocation" required>
-                                    <option value="">اختر الفرع</option>
-                                    <option value="Hamdan St">Hamdan St</option>
-                                    <option value="Khaldia">Khaldia</option>
-                                    <option value="Shabiya 11">Shabiya 11</option>
-                                    <option value="Muroor">Muroor</option>
-                                    <option value="Al Electra">Al Electra</option>
-                                    <option value="Al Barsha">Al Barsha</option>
-                                    <option value="Al Satwa">Al Satwa</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">خدمة التوصيل</label>
-                                <select class="form-select" id="editService" required>
-                                    <option value="">اختر الخدمة</option>
-                                    <option value="talabat">Talabat</option>
-                                    <option value="careem">Careem Now</option>
-                                    <option value="deliveroo">Deliveroo</option>
-                                    <option value="noon">Noon Food</option>
-                                    <option value="smiles">Smiles</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">القيمة (AED)</label>
-                                <input type="number" class="form-control" id="editAmount" min="0" step="0.01" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">الحالة</label>
-                                <select class="form-select" id="editStatus" required>
-                                    <option value="">اختر الحالة</option>
-                                    <option value="cancelled">ملغي</option>
-                                    <option value="refunded">مسترد</option>
-                                    <option value="unanswered">دون رد</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">السبب</label>
-                                <select class="form-select" id="editReason" required>
-                                    <option value="">اختر السبب</option>
-                                    <option value="restaurant">من المطعم</option>
-                                    <option value="delivery">من التوصيل</option>
-                                    <option value="customer">من العميل</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">ملاحظات</label>
-                                <input type="text" class="form-control" id="editNotes">
-                            </div>
-                        </div>
-                        <div class="text-center">
-                            <button type="submit" class="btn btn-primary me-2">
-                                <i class="bi bi-check-circle me-1"></i> حفظ التغييرات
-                            </button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                        </div>
-                    </form>
-                </div>
+    <div id="newReservationModal" class="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50 modal-backdrop hidden opacity-0">
+        <div class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-11/12 max-w-lg modal-content transform scale-95 opacity-0">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-slate-800 flex items-center">
+                    <i data-lucide="calendar-plus" class="modal-icon mr-2 text-indigo-600"></i>Create New Reservation
+                </h2>
+                <button id="closeNewReservationModal" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
             </div>
+            <form id="newReservationForm" class="space-y-4">
+                <div>
+                    <label for="reservationCustomerName" class="block text-sm font-medium text-slate-700 mb-1">Customer Name</label>
+                    <input type="text" id="reservationCustomerName" name="reservationCustomerName" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="e.g., Alice Wonderland">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="reservationDate" class="block text-sm font-medium text-slate-700 mb-1">Date</label>
+                        <input type="date" id="reservationDate" name="reservationDate" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="reservationTime" class="block text-sm font-medium text-slate-700 mb-1">Time</label>
+                        <input type="time" id="reservationTime" name="reservationTime" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label for="reservationPartySize" class="block text-sm font-medium text-slate-700 mb-1">Party Size</label>
+                    <input type="number" id="reservationPartySize" name="reservationPartySize" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="e.g., 4" min="1">
+                </div>
+                <div>
+                    <label for="reservationNotes" class="block text-sm font-medium text-slate-700 mb-1">Special Requests (Optional)</label>
+                    <textarea id="reservationNotes" name="reservationNotes" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="e.g., Window seat, high chair"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" id="cancelNewReservation" class="px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-slate-200 text-slate-700 hover:bg-slate-300 focus:ring-slate-400">Cancel</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-sky-600 text-white hover:bg-sky-700 focus:ring-sky-500">Create Reservation</button>
+                </div>
+            </form>
         </div>
     </div>
-    
-    <!-- Report Preview Modal -->
-    <div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">معاينة التقرير</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="report-preview" id="reportPreview"></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
-                    <button type="button" class="btn btn-primary" onclick="sendReport()">
-                        <i class="bi bi-send me-1"></i> إرسال التقرير
-                    </button>
-                    <button type="button" class="btn whatsapp-btn" onclick="sendReportToWhatsApp()">
-                        <i class="bi bi-whatsapp me-1"></i> إرسال لـ WhatsApp
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        // AI-Powered Cancellation Risk Predictor
-        class AIPredictor {
-            constructor() {
-                this.model = this.loadModel();
-            }
-            
-            loadModel() {
-                // Simulated AI model
-                return {
-                    predict: (order) => {
-                        const riskFactors = {
-                            timeOfDay: this.analyzeTime(order.date),
-                            serviceHistory: this.getServiceHistory(order.service),
-                            locationPattern: this.getLocationPattern(order.location),
-                            weather: this.getWeatherData(order.date)
-                        };
-                        
-                        return this.calculateRisk(riskFactors);
-                    },
-                    
-                    analyzeTime: (date) => {
-                        const hour = new Date(date).getHours();
-                        return hour > 18 || hour < 8 ? 0.7 : 0.3;
-                    },
-                    
-                    getServiceHistory: (service) => {
-                        const history = {
-                            'talabat': 0.8,
-                            'careem': 0.4,
-                            'deliveroo': 0.5,
-                            'noon': 0.3,
-                            'smiles': 0.2
-                        };
-                        return history[service] || 0.5;
-                    },
-                    
-                    getLocationPattern: (location) => {
-                        const patterns = {
-                            'Hamdan St': 0.7,
-                            'Khaldia': 0.5,
-                            'Shabiya 11': 0.6,
-                            'Muroor': 0.4,
-                            'Al Electra': 0.3,
-                            'Al Barsha': 0.5,
-                            'Al Satwa': 0.6
-                        };
-                        return patterns[location] || 0.5;
-                    },
-                    
-                    getWeatherData: (date) => {
-                        // Simulated weather data
-                        return Math.random() > 0.7 ? 0.6 : 0.3;
-                    },
-                    
-                    calculateRisk: (factors) => {
-                        const weights = {
-                            timeOfDay: 0.3,
-                            serviceHistory: 0.25,
-                            locationPattern: 0.25,
-                            weather: 0.2
-                        };
-                        
-                        let risk = 0;
-                        for (let factor in factors) {
-                            risk += factors[factor] * weights[factor];
-                        }
-                        
-                        return Math.min(1, risk);
-                    },
-                    
-                    suggestPreventiveActions: (riskLevel) => {
-                        const actions = {
-                            low: ["مراقبة عادية"],
-                            medium: ["تنبيه للمدير", "مراجعة الإجراءات"],
-                            high: ["تفعيل وضع الطوارئ", "إشعار فوري للفرع"]
-                        };
-                        
-                        if (riskLevel < 0.3) return actions.low;
-                        if (riskLevel < 0.7) return actions.medium;
-                        return actions.high;
-                    }
-                };
-            }
-            
-            predictCancellationRisk(order) {
-                return this.model.predict(order);
-            }
-            
-            getPreventiveActions(order) {
-                const risk = this.predictCancellationRisk(order);
-                return this.model.suggestPreventiveActions(risk);
-            }
-        }
-        
-        // Advanced Notification System
-        class AdvancedNotificationSystem {
-            constructor() {
-                this.notificationTypes = {
-                    urgent: { color: '#ff00ff', sound: 'alert', vibration: true },
-                    warning: { color: '#ffff00', sound: 'warning', vibration: false },
-                    info: { color: '#00ffff', sound: 'info', vibration: false }
-                };
-            }
-            
-            sendSmartNotification(message, type, target) {
-                const notification = {
-                    id: Date.now(),
-                    message,
-                    type: type || 'info',
-                    timestamp: new Date(),
-                    target,
-                    read: false
-                };
-                
-                // Display notification
-                this.displayNotification(notification);
-                
-                // Play sound if needed
-                if (this.notificationTypes[type].sound) {
-                    this.playSound(this.notificationTypes[type].sound);
-                }
-                
-                // Vibrate if needed
-                if (this.notificationTypes[type].vibration && 'vibrate' in navigator) {
-                    navigator.vibrate(200);
-                }
-                
-                // Send to other channels
-                this.sendToSlack(notification);
-                this.sendToTeams(notification);
-            }
-            
-            displayNotification(notification) {
-                const toastContainer = document.getElementById('toastContainer');
-                const toast = document.createElement('div');
-                toast.className = `custom-toast toast-${notification.type}`;
-                toast.id = `toast-${notification.id}`;
-                
-                const icon = notification.type === 'success' ? 'bi-check-circle-fill' : 
-                            notification.type === 'error' ? 'bi-x-circle-fill' : 
-                            notification.type === 'warning' ? 'bi-exclamation-triangle-fill' : 
-                            'bi-info-circle-fill';
-                
-                toast.innerHTML = `
-                    <div class="toast-icon">
-                        <i class="bi ${icon}"></i>
-                    </div>
-                    <div>${notification.message}</div>
-                `;
-                
-                toastContainer.appendChild(toast);
-                
-                setTimeout(() => {
-                    toast.style.opacity = '0';
-                    setTimeout(() => {
-                        toastContainer.removeChild(toast);
-                    }, 300);
-                }, 5000);
-            }
-            
-            playSound(type) {
-                // Implementation for playing notification sounds
-                console.log(`Playing sound: ${type}`);
-            }
-            
-            sendToSlack(notification) {
-                // Implementation for sending to Slack
-                console.log('Sending to Slack:', notification);
-            }
-            
-            sendToTeams(notification) {
-                // Implementation for sending to Teams
-                console.log('Sending to Teams:', notification);
-            }
-        }
-        
-        // Advanced Report System
-        class AdvancedReportSystem {
-            constructor() {
-                this.reportTypes = {
-                    predictive: { name: "تقرير تنبؤي", icon: "bi-graph-up" },
-                    comparative: { name: "تقرير مقارن", icon: "bi-bar-chart" },
-                    anomaly: { name: "كشف الشذوذ", icon: "bi-exclamation-triangle" },
-                    optimization: { name: "تحسين العمليات", icon: "bi-gear" }
-                };
-            }
-            
-            generateAdvancedReport(type, data) {
-                const report = {
-                    id: `RPT-${Date.now()}`,
-                    type,
-                    generatedAt: new Date(),
-                    data: this.analyzeData(type, data),
-                    recommendations: this.generateRecommendations(type, data),
-                    visualization: this.createVisualization(type, data)
-                };
-                
-                return this.exportReport(report);
-            }
-            
-            analyzeData(type, data) {
-                switch(type) {
-                    case 'predictive':
-                        return this.analyzePredictiveData(data);
-                    case 'anomaly':
-                        return this.analyzeAnomalyData(data);
-                    default:
-                        return this.analyzeStandardData(data);
-                }
-            }
-            
-            analyzePredictiveData(data) {
-                const predictions = data.map(order => ({
-                    id: order.id,
-                    risk: this.calculateRiskScore(order),
-                    factors: this.identifyRiskFactors(order)
-                }));
-                
-                return {
-                    totalOrders: data.length,
-                    highRiskOrders: predictions.filter(p => p.risk > 0.7).length,
-                    mediumRiskOrders: predictions.filter(p => p.risk > 0.4 && p.risk <= 0.7).length,
-                    lowRiskOrders: predictions.filter(p => p.risk <= 0.4).length,
-                    predictions
-                };
-            }
-            
-            analyzeAnomalyData(data) {
-                const anomalies = this.detectAnomalies(data);
-                return {
-                    totalAnomalies: anomalies.length,
-                    anomalyTypes: this.categorizeAnomalies(anomalies),
-                    impact: this.calculateAnomalyImpact(anomalies)
-                };
-            }
-            
-            analyzeStandardData(data) {
-                return {
-                    totalOrders: data.length,
-                    cancellations: data.filter(o => o.status === 'cancelled').length,
-                    refunds: data.filter(o => o.status === 'refunded').length,
-                    unresolved: data.filter(o => o.status === 'unanswered').length
-                };
-            }
-            
-            calculateRiskScore(order) {
-                const aiPredictor = new AIPredictor();
-                return aiPredictor.predictCancellationRisk(order);
-            }
-            
-            identifyRiskFactors(order) {
-                const factors = [];
-                
-                // Time-based factors
-                const hour = new Date(order.date).getHours();
-                if (hour > 18 || hour < 8) factors.push('وقت غير مناسب');
-                
-                // Service-based factors
-                const highRiskServices = ['talabat'];
-                if (highRiskServices.includes(order.service)) factors.push('خدمة عالية المخاطرة');
-                
-                // Location-based factors
-                const highRiskLocations = ['Hamdan St'];
-                if (highRiskLocations.includes(order.location)) factors.push('فرع عالي المخاطرة');
-                
-                return factors;
-            }
-            
-            detectAnomalies(data) {
-                // Simple anomaly detection based on statistical deviation
-                const amounts = data.map(o => o.amount);
-                const mean = amounts.reduce((a, b) => a + b, 0) / amounts.length;
-                const stdDev = Math.sqrt(amounts.map(a => Math.pow(a - mean, 2)).reduce((a, b) => a + b) / amounts.length);
-                
-                return data.filter(order => Math.abs(order.amount - mean) > 2 * stdDev);
-            }
-            
-            categorizeAnomalies(anomalies) {
-                return {
-                    highValue: anomalies.filter(a => a.amount > mean + 2 * stdDev).length,
-                    lowValue: anomalies.filter(a => a.amount < mean - 2 * stdDev).length,
-                    unusualService: anomalies.filter(a => !['talabat', 'careem', 'deliveroo'].includes(a.service)).length
-                };
-            }
-            
-            calculateAnomalyImpact(anomalies) {
-                return anomalies.reduce((sum, a) => sum + a.amount, 0);
-            }
-            
-            generateRecommendations(type, data) {
-                switch(type) {
-                    case 'predictive':
-                        return [
-                            "زيادة عدد الموظفين خلال ساعات الذروة",
-                            "تحسين التواصل مع خدمات التوصيل",
-                            "تدريب الموظفين على التعامل مع الطلبات عالية المخاطرة"
-                        ];
-                    case 'anomaly':
-                        return [
-                            "مراجعة إجراءات المطابخ في الفروع المتضررة",
-                            "تحسين نظام التنبؤ بالطلب",
-                            "زيادة التدريب على التعامل مع الطلبات غير المعتادة"
-                        ];
-                    default:
-                        return [
-                            "تحسين عمليات الفرع",
-                            "زيادة التواصل مع العملاء",
-                            "مراجعة سياسات الإلغاء"
-                        ];
-                }
-            }
-            
-            createVisualization(type, data) {
-                // This would create appropriate charts based on report type
-                return {
-                    type: 'chart',
-                    config: this.getChartConfig(type, data)
-                };
-            }
-            
-            getChartConfig(type, data) {
-                switch(type) {
-                    case 'predictive':
-                        return {
-                            type: 'doughnut',
-                            data: {
-                                labels: ['عالي المخاطرة', 'متوسط المخاطرة', 'منخفض المخاطرة'],
-                                datasets: [{
-                                    data: [
-                                        data.highRiskOrders,
-                                        data.mediumRiskOrders,
-                                        data.lowRiskOrders
-                                    ],
-                                    backgroundColor: ['#ff0040', '#ffaa00', '#00ff88']
-                                }]
-                            }
-                        };
-                    case 'anomaly':
-                        return {
-                            type: 'bar',
-                            data: {
-                                labels: ['قيمة عالية', 'قيمة منخفضة', 'خدمة غير معتادة'],
-                                datasets: [{
-                                    label: 'عدد الشذوذ',
-                                    data: [
-                                        data.anomalyTypes.highValue,
-                                        data.anomalyTypes.lowValue,
-                                        data.anomalyTypes.unusualService
-                                    ],
-                                    backgroundColor: ['#ff0040', '#00ff88', '#ffaa00']
-                                }]
-                            }
-                        };
-                    default:
-                        return {
-                            type: 'pie',
-                            data: {
-                                labels: ['ملغي', 'مسترد', 'دون رد'],
-                                datasets: [{
-                                    data: [
-                                        data.cancellations,
-                                        data.refunds,
-                                        data.unresolved
-                                    ],
-                                    backgroundColor: ['#ff0040', '#00ff88', '#ffaa00']
-                                }]
-                            }
-                        };
-                }
-            }
-            
-            exportReport(report) {
-                // Implementation for exporting report
-                console.log('Exporting report:', report);
-                return report;
-            }
-        }
-        
-        // Initialize advanced systems
-        const aiPredictor = new AIPredictor();
-        const notificationSystem = new AdvancedNotificationSystem();
-        const reportSystem = new AdvancedReportSystem();
-        
-        // Initialize data from localStorage or use default data
-        let ordersData = [];
-        let existingOrderIds = [];
-        
-        // Load data from localStorage on page load
-        function loadDataFromLocalStorage() {
-            const savedData = localStorage.getItem('ordersData');
-            if (savedData) {
-                ordersData = JSON.parse(savedData);
-                existingOrderIds = ordersData.map(order => order.id);
-            } else {
-                // Use default sample data if no saved data
-                ordersData = [
-                    {
-                        id: "127405608",
-                        date: "2025-08-29",
-                        location: "Hamdan St",
-                        service: "talabat",
-                        amount: 30,
-                        status: "cancelled",
-                        reason: "delivery",
-                        reasonText: "Cancelled by others (Talabat)",
-                        action: "Follow-up with Talabat support to confirm reason & avoid repetition."
-                    },
-                    {
-                        id: "127378417",
-                        date: "2025-08-29",
-                        location: "Khaldia",
-                        service: "careem",
-                        amount: 40,
-                        status: "cancelled",
-                        reason: "restaurant",
-                        reasonText: "Cancelled by merchant (Our restaurant)",
-                        action: "Internal check with branch staff – identify cause (late prep / stock out)."
-                    },
-                    {
-                        id: "127390123",
-                        date: "2025-08-28",
-                        location: "Shabiya 11",
-                        service: "deliveroo",
-                        amount: 55,
-                        status: "refunded",
-                        reason: "customer",
-                        reasonText: "Refunded by customer",
-                        action: "No action required."
-                    },
-                    {
-                        id: "127405609",
-                        date: "2025-08-29",
-                        location: "Muroor",
-                        service: "noon",
-                        amount: 75,
-                        status: "cancelled",
-                        reason: "delivery",
-                        reasonText: "Cancelled by others (Noon)",
-                        action: "Follow-up with Noon support to confirm reason & avoid repetition."
-                    },
-                    {
-                        id: "127378418",
-                        date: "2025-08-29",
-                        location: "Al Electra",
-                        service: "smiles",
-                        amount: 35,
-                        status: "unanswered",
-                        reason: "restaurant",
-                        reasonText: "Unresolved issue",
-                        action: "Internal check with branch staff – identify cause."
-                    }
-                ];
-                existingOrderIds = ordersData.map(order => order.id);
-                saveDataToLocalStorage();
-            }
-        }
-        
-        // Save data to localStorage
-        function saveDataToLocalStorage() {
-            localStorage.setItem('ordersData', JSON.stringify(ordersData));
-        }
-        
-        let currentReport = null;
-        let reasonChart = null;
-        let locationChart = null;
-        
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', function() {
-            loadDataFromLocalStorage();
-            updateStatistics();
-            updateDeliveryServicesStats();
-            renderTable();
-            initCharts();
-            
-            // Set default dates
-            document.getElementById('dateFrom').value = '2025-08-01';
-            document.getElementById('dateTo').value = '2025-08-31';
-            
-            // Set today's date as default for manual entry
-            document.getElementById('manualDate').value = new Date().toISOString().split('T')[0];
-            
-            // Start periodic updates
-            setInterval(() => {
-                updatePredictions();
-                checkAnomalies();
-            }, 60000); // Every minute
-        });
-        
-        // Handle manual entry form submission
-        function handleManualSubmit(event) {
-            event.preventDefault();
-            
-            const formData = {
-                id: document.getElementById('manualRefId').value,
-                date: document.getElementById('manualDate').value,
-                location: document.getElementById('manualLocation').value,
-                service: document.getElementById('manualService').value,
-                amount: parseFloat(document.getElementById('manualAmount').value),
-                status: document.getElementById('manualStatus').value,
-                reason: document.getElementById('manualReason').value,
-                notes: document.getElementById('manualNotes').value || ''
-            };
-            
-            // Check if order ID already exists
-            if (existingOrderIds.includes(formData.id)) {
-                showToast('رقم المرجع موجود بالفعل', 'error');
-                return;
-            }
-            
-            // Generate reason text and action based on reason
-            formData.reasonText = generateReasonText(formData.reason, formData.notes);
-            formData.action = generateAction(formData.reason, formData.service);
-            
-            // Calculate risk level
-            formData.riskLevel = aiPredictor.predictCancellationRisk(formData);
-            formData.preventiveActions = aiPredictor.getPreventiveActions(formData);
-            
-            // Add to data
-            ordersData.push(formData);
-            existingOrderIds.push(formData.id);
-            
-            // Save to localStorage
-            saveDataToLocalStorage();
-            
-            // Update UI
-            updateStatistics();
-            updateDeliveryServicesStats();
-            renderTable();
-            updateCharts();
-            
-            // Reset form
-            document.getElementById('manualEntryForm').reset();
-            document.getElementById('manualDate').value = new Date().toISOString().split('T')[0];
-            
-            // Show success message
-            showToast('تمت إضافة الأمر بنجاح', 'success');
-            
-            // Add notification
-            addNotification(`تمت إضافة أمر جديد: ${formData.id}`, 'success');
-            
-            // Generate report for new order
-            generateReportForNewOrder(formData);
-            
-            // Check for high risk
-            if (formData.riskLevel > 0.7) {
-                notificationSystem.sendSmartNotification(
-                    `تحذير عالي المخاطرة: طلب ${formData.id} من ${formData.location}`,
-                    'urgent',
-                    'manager'
-                );
-            }
-        }
-        
-        // Generate reason text based on reason and notes
-        function generateReasonText(reason, notes) {
-            if (notes) {
-                return notes;
-            }
-            
-            const reasonTexts = {
-                'restaurant': 'Cancelled by merchant (Our restaurant)',
-                'delivery': 'Cancelled by others',
-                'customer': 'Cancelled by customer'
-            };
-            
-            return reasonTexts[reason] || 'Unknown reason';
-        }
-        
-        // Generate action based on reason and service
-        function generateAction(reason, service) {
-            if (reason === 'restaurant') {
-                return 'Internal check with branch staff – identify cause (late prep / stock out).';
-            }
-            if (reason === 'customer') {
-                return 'No action required.';
-            }
-            
-            const serviceNames = {
-                'talabat': 'Talabat',
-                'careem': 'Careem',
-                'deliveroo': 'Deliveroo',
-                'noon': 'Noon',
-                'smiles': 'Smiles'
-            };
-            
-            const serviceName = serviceNames[service] || 'the delivery company';
-            return `Follow-up with ${serviceName} support to confirm reason & avoid repetition.`;
-        }
-        
-        // Edit order
-        function editOrder(orderId) {
-            const order = ordersData.find(o => o.id === orderId);
-            if (!order) return;
-            
-            // Fill the edit form
-            document.getElementById('editOrderId').value = order.id;
-            document.getElementById('editRefId').value = order.id;
-            document.getElementById('editDate').value = order.date;
-            document.getElementById('editLocation').value = order.location;
-            document.getElementById('editService').value = order.service;
-            document.getElementById('editAmount').value = order.amount;
-            document.getElementById('editStatus').value = order.status;
-            document.getElementById('editReason').value = order.reason;
-            document.getElementById('editNotes').value = order.notes || '';
-            
-            // Show the modal
-            const modal = new bootstrap.Modal(document.getElementById('editOrderModal'));
-            modal.show();
-        }
-        
-        // Handle edit form submission
-        function handleEditSubmit(event) {
-            event.preventDefault();
-            
-            const orderId = document.getElementById('editOrderId').value;
-            const orderIndex = ordersData.findIndex(o => o.id === orderId);
-            
-            if (orderIndex === -1) return;
-            
-            // Get form data
-            const formData = {
-                id: document.getElementById('editRefId').value,
-                date: document.getElementById('editDate').value,
-                location: document.getElementById('editLocation').value,
-                service: document.getElementById('editService').value,
-                amount: parseFloat(document.getElementById('editAmount').value),
-                status: document.getElementById('editStatus').value,
-                reason: document.getElementById('editReason').value,
-                notes: document.getElementById('editNotes').value || ''
-            };
-            
-            // Check if new ID conflicts with existing orders (excluding current order)
-            if (formData.id !== orderId && existingOrderIds.includes(formData.id)) {
-                showToast('رقم المرجع موجود بالفعل', 'error');
-                return;
-            }
-            
-            // Update reason text and action
-            formData.reasonText = generateReasonText(formData.reason, formData.notes);
-            formData.action = generateAction(formData.reason, formData.service);
-            
-            // Calculate risk level
-            formData.riskLevel = aiPredictor.predictCancellationRisk(formData);
-            formData.preventiveActions = aiPredictor.getPreventiveActions(formData);
-            
-            // Update order in array
-            ordersData[orderIndex] = formData;
-            
-            // Update existing IDs if ID changed
-            if (formData.id !== orderId) {
-                existingOrderIds = existingOrderIds.map(id => id === orderId ? formData.id : id);
-            }
-            
-            // Save to localStorage
-            saveDataToLocalStorage();
-            
-            // Update UI
-            updateStatistics();
-            updateDeliveryServicesStats();
-            renderTable();
-            updateCharts();
-            
-            // Close modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('editOrderModal'));
-            modal.hide();
-            
-            // Show success message
-            showToast('تم تحديث الأمر بنجاح', 'success');
-            
-            // Add notification
-            addNotification(`تم تعديل الأمر: ${formData.id}`, 'warning');
-        }
-        
-        // Delete order
-        function deleteOrder(orderId) {
-            if (!confirm('هل أنت متأكد من حذف هذا الأمر؟')) return;
-            
-            // Remove from data
-            ordersData = ordersData.filter(o => o.id !== orderId);
-            existingOrderIds = existingOrderIds.filter(id => id !== orderId);
-            
-            // Save to localStorage
-            saveDataToLocalStorage();
-            
-            // Update UI
-            updateStatistics();
-            updateDeliveryServicesStats();
-            renderTable();
-            updateCharts();
-            
-            // Show success message
-            showToast('تم حذف الأمر بنجاح', 'success');
-            
-            // Add notification
-            addNotification(`تم حذف الأمر: ${orderId}`, 'error');
-        }
-        
-        // Add notification
-        function addNotification(message, type = 'info') {
-            const notificationsTab = document.getElementById('notificationsTab');
-            const now = new Date();
-            const timeString = now.toLocaleString('ar-SA', { 
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            
-            const notificationItem = document.createElement('div');
-            notificationItem.className = 'notification-item notification-new';
-            
-            let iconClass = 'bi-info-circle';
-            let iconColor = 'text-info';
-            
-            if (type === 'success') {
-                iconClass = 'bi-check-circle';
-                iconColor = 'text-success';
-            } else if (type === 'warning') {
-                iconClass = 'bi-exclamation-triangle';
-                iconColor = 'text-warning';
-            } else if (type === 'error') {
-                iconClass = 'bi-x-circle';
-                iconColor = 'text-danger';
-            }
-            
-            notificationItem.innerHTML = `
-                <div class="notification-icon ${iconColor}">
-                    <i class="bi ${iconClass}"></i>
-                </div>
-                <div class="notification-content">
-                    <div>${message}</div>
-                    <div class="notification-time">الآن</div>
-                </div>
-            `;
-            
-            // Add to the top of the notifications list
-            notificationsTab.insertBefore(notificationItem, notificationsTab.firstChild);
-            
-            // Keep only the last 10 notifications
-            while (notificationsTab.children.length > 10) {
-                notificationsTab.removeChild(notificationsTab.lastChild);
-            }
-        }
-        
-        // Switch archive tab
-        function switchArchiveTab(tabName) {
-            // Update active tab
-            const tabs = document.querySelectorAll('.archive-tab');
-            tabs.forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            // Update content
-            const archiveContent = document.getElementById('archiveContent');
-            
-            if (tabName === 'notifications') {
-                archiveContent.innerHTML = document.getElementById('notificationsTab').outerHTML;
-            } else if (tabName === 'reports') {
-                archiveContent.innerHTML = `
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>التاريخ</th>
-                                    <th>نوع التقرير</th>
-                                    <th>عدد الأوامر</th>
-                                    <th>الحالة</th>
-                                    <th>الإجراءات</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>2025-08-29</td>
-                                    <td>تقرير تنبؤي</td>
-                                    <td>12</td>
-                                    <td><span class="badge bg-success">تم الإرسال</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline-primary">عرض</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>2025-08-28</td>
-                                    <td>تقرير مقارن</td>
-                                    <td>8</td>
-                                    <td><span class="badge bg-success">تم الإرسال</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline-primary">عرض</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>2025-08-27</td>
-                                    <td>كشف شذوذ</td>
-                                    <td>15</td>
-                                    <td><span class="badge bg-warning">تحت المراجعة</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline-primary">عرض</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-            } else if (tabName === 'history') {
-                archiveContent.innerHTML = `
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>التاريخ والوقت</th>
-                                    <th>الإجراء</th>
-                                    <th>التفاصيل</th>
-                                    <th>الحالة</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>2025-08-29 09:35</td>
-                                    <td>إضافة أمر جديد</td>
-                                    <td>إدخال يدوي مع تحليل المخاطرة</td>
-                                    <td><span class="badge bg-success">تمت الإضافة</span></td>
-                                </tr>
-                                <tr>
-                                    <td>2025-08-29 10:00</td>
-                                    <td>إرسال تقرير تنبؤي</td>
-                                    <td>تقرير شامل مع توصيات</td>
-                                    <td><span class="badge bg-success">تم الإرسال</span></td>
-                                </tr>
-                                <tr>
-                                    <td>2025-08-29 11:15</td>
-                                    <td>تعديل أمر</td>
-                                    <td>تحديث بيانات الطلب</td>
-                                    <td><span class="badge bg-success">تم التعديل</span></td>
-                                </tr>
-                                <tr>
-                                    <td>2025-08-28 09:15</td>
-                                    <td>تصدير بيانات متقدمة</td>
-                                    <td>ملف Excel مع تحليل المخاطرة</td>
-                                    <td><span class="badge bg-success">تم التصدير</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-            }
-        }
-        
-        // Update statistics cards
-        function updateStatistics() {
-            const totalCancelled = ordersData.length;
-            const restaurantCancelled = ordersData.filter(o => o.reason === 'restaurant').length;
-            const deliveryCancelled = ordersData.filter(o => o.reason === 'delivery').length;
-            const customerCancelled = ordersData.filter(o => o.reason === 'customer').length;
-            document.getElementById('totalCancelled').textContent = totalCancelled;
-            document.getElementById('restaurantCancelled').textContent = restaurantCancelled;
-            document.getElementById('deliveryCancelled').textContent = deliveryCancelled;
-            document.getElementById('customerCancelled').textContent = customerCancelled;
-        }
-        
-        // Update delivery services statistics
-        function updateDeliveryServicesStats() {
-            const services = ['talabat', 'careem', 'deliveroo', 'noon', 'smiles'];
-            
-            services.forEach(service => {
-                const serviceOrders = ordersData.filter(o => o.service === service);
-                const cancelled = serviceOrders.filter(o => o.status === 'cancelled').length;
-                const refunded = serviceOrders.filter(o => o.status === 'refunded').length;
-                const unanswered = serviceOrders.filter(o => o.status === 'unanswered').length;
-                
-                document.getElementById(`${service}-cancelled`).textContent = cancelled;
-                document.getElementById(`${service}-refunded`).textContent = refunded;
-                document.getElementById(`${service}-unanswered`).textContent = unanswered;
-            });
-        }
-        
-        // Render the orders table
-        function renderTable() {
-            const tableBody = document.getElementById('ordersTableBody');
-            tableBody.innerHTML = '';
-            const filteredData = getFilteredData();
-            
-            filteredData.forEach(order => {
-                const row = document.createElement('tr');
-                
-                // Calculate risk level
-                const riskLevel = aiPredictor.predictCancellationRisk(order);
-                let riskBadge = '';
-                if (riskLevel > 0.7) {
-                    riskBadge = '<span class="badge bg-danger">عالي المخاطرة</span>';
-                } else if (riskLevel > 0.4) {
-                    riskBadge = '<span class="badge bg-warning">متوسط المخاطرة</span>';
-                } else {
-                    riskBadge = '<span class="badge bg-success">منخفض المخاطرة</span>';
-                }
-                
-                let reasonBadge = '';
-                if (order.reason === 'restaurant') {
-                    reasonBadge = '<span class="badge bg-danger">من المطعم</span>';
-                } else if (order.reason === 'delivery') {
-                    reasonBadge = '<span class="badge bg-warning">من التوصيل</span>';
-                } else {
-                    reasonBadge = '<span class="badge bg-info">من العميل</span>';
-                }
-                
-                let statusBadge = '';
-                if (order.status === 'cancelled') {
-                    statusBadge = '<span class="badge bg-danger">ملغي</span>';
-                } else if (order.status === 'refunded') {
-                    statusBadge = '<span class="badge bg-success">مسترد</span>';
-                } else {
-                    statusBadge = '<span class="badge bg-secondary">دون رد</span>';
-                }
-                
-                let serviceBadge = '';
-                const serviceColors = {
-                    'talabat': '#e4002b',
-                    'careem': '#10dc60',
-                    'deliveroo': '#00ccbc',
-                    'noon': '#fecb2f',
-                    'smiles': '#ff6900'
-                };
-                serviceBadge = `<span class="badge" style="background-color: #${serviceColors[order.service]}">${getServiceName(order.service)}</span>`;
-                
-                row.innerHTML = `
-                    <td>${order.id}</td>
-                    <td>${order.date}</td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <img src="https://picsum.photos/seed/${order.location}/30/30.jpg" alt="${order.location}" class="branch-logo">
-                            ${order.location}
-                        </div>
-                    </td>
-                    <td>${serviceBadge}</td>
-                    <td>${order.amount} AED</td>
-                    <td>${statusBadge}</td>
-                    <td>${reasonBadge}</td>
-                    <td>${riskBadge}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary action-btn" onclick="viewReport('${order.id}')">
-                            <i class="bi bi-eye"></i> عرض
-                        </button>
-                        <button class="btn btn-sm btn-warning action-btn" onclick="editOrder('${order.id}')">
-                            <i class="bi bi-pencil"></i> تعديل
-                        </button>
-                        <button class="btn btn-sm btn-danger action-btn" onclick="deleteOrder('${order.id}')">
-                            <i class="bi bi-trash"></i> حذف
-                        </button>
-                    </td>
-                `;
-                
-                tableBody.appendChild(row);
-            });
-        }
-        
-        // Get service name in Arabic
-        function getServiceName(service) {
-            const names = {
-                'talabat': 'Talabat',
-                'careem': 'Careem Now',
-                'deliveroo': 'Deliveroo',
-                'noon': 'Noon Food',
-                'smiles': 'Smiles'
-            };
-            return names[service] || service;
-        }
-        
-        // Get filtered data based on filters
-        function getFilteredData() {
-            let filtered = [...ordersData];
-            
-            const reasonFilter = document.getElementById('reasonFilter').value;
-            const locationFilter = document.getElementById('locationFilter').value;
-            const serviceFilter = document.getElementById('serviceFilter').value;
-            const statusFilter = document.getElementById('statusFilter').value;
-            const dateFrom = document.getElementById('dateFrom').value;
-            const dateTo = document.getElementById('dateTo').value;
-            
-            if (reasonFilter) {
-                filtered = filtered.filter(order => order.reason === reasonFilter);
-            }
-            if (locationFilter) {
-                filtered = filtered.filter(order => order.location === locationFilter);
-            }
-            if (serviceFilter) {
-                filtered = filtered.filter(order => order.service === serviceFilter);
-            }
-            if (statusFilter) {
-                filtered = filtered.filter(order => order.status === statusFilter);
-            }
-            if (dateFrom) {
-                filtered = filtered.filter(order => order.date >= dateFrom);
-            }
-            if (dateTo) {
-                filtered = filtered.filter(order => order.date <= dateTo);
-            }
-            
-            return filtered;
-        }
-        
-        // Filter table when filters change
-        function filterTable() {
-            renderTable();
-            updateCharts();
-        }
-        
-        // Initialize charts
-        function initCharts() {
-            // Reason distribution chart
-            const reasonCtx = document.getElementById('reasonChart').getContext('2d');
-            reasonChart = new Chart(reasonCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['من المطعم', 'من التوصيل', 'من العميل'],
-                    datasets: [{
-                        data: [
-                            ordersData.filter(o => o.reason === 'restaurant').length,
-                            ordersData.filter(o => o.reason === 'delivery').length,
-                            ordersData.filter(o => o.reason === 'customer').length
-                        ],
-                        backgroundColor: [
-                            '#ff0040',
-                            '#ffaa00',
-                            '#00ff88'
-                        ],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: '#ffffff',
-                                font: {
-                                    size: 14
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // Location chart
-            const locationCtx = document.getElementById('locationChart').getContext('2d');
-            const locationCounts = {};
-            ordersData.forEach(order => {
-                locationCounts[order.location] = (locationCounts[order.location] || 0) + 1;
-            });
-            
-            locationChart = new Chart(locationCtx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(locationCounts),
-                    datasets: [{
-                        label: 'عدد الإلغاءات',
-                        data: Object.values(locationCounts),
-                        backgroundColor: '#00ffff',
-                        borderColor: '#00ffff',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1,
-                                color: '#ffffff'
-                            },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                maxRotation: 45,
-                                minRotation: 45,
-                                color: '#ffffff'
-                            },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#ffffff'
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        // Update charts with filtered data
-        function updateCharts() {
-            const filteredData = getFilteredData();
-            
-            // Update reason chart
-            reasonChart.data.datasets[0].data = [
-                filteredData.filter(o => o.reason === 'restaurant').length,
-                filteredData.filter(o => o.reason === 'delivery').length,
-                filteredData.filter(o => o.reason === 'customer').length
-            ];
-            reasonChart.update();
-            
-            // Update location chart
-            const locationCounts = {};
-            filteredData.forEach(order => {
-                locationCounts[order.location] = (locationCounts[order.location] || 0) + 1;
-            });
-            
-            locationChart.data.labels = Object.keys(locationCounts);
-            locationChart.data.datasets[0].data = Object.values(locationCounts);
-            locationChart.update();
-        }
-        
-        // Export data to Excel
-        function exportData() {
-            showToast('جاري تصدير البيانات...', 'success');
-            
-            // Prepare data for export
-            const exportData = ordersData.map(order => ({
-                'رقم المرجع': order.id,
-                'التاريخ': order.date,
-                'الفرع': order.location,
-                'خدمة التوصيل': getServiceName(order.service),
-                'القيمة': order.amount,
-                'الحالة': order.status,
-                'السبب': order.reason,
-                'نص السبب': order.reasonText,
-                'الإجراء': order.action,
-                'مستوى المخاطرة': order.riskLevel ? `${Math.round(order.riskLevel * 100)}%` : 'N/A',
-                'إجراءات وقائية': order.preventiveActions ? order.preventiveActions.join(', ') : 'N/A',
-                'ملاحظات': order.notes || ''
-            }));
-            
-            // Create workbook
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.json_to_sheet(exportData);
-            
-            // Add worksheet to workbook
-            XLSX.utils.book_append_sheet(wb, ws, "الأوامر الملغية");
-            
-            // Generate filename with current date
-            const today = new Date();
-            const filename = `orders_report_${today.getFullYear()}${(today.getMonth()+1).toString().padStart(2,'0')}${today.getDate().toString().padStart(2,'0')}.xlsx`;
-            
-            // Save file
-            XLSX.writeFile(wb, filename);
-            
-            showToast('تم تصدير البيانات بنجاح', 'success');
-            
-            // Add notification
-            addNotification('تم تصدير البيانات إلى ملف Excel', 'success');
-        }
-        
-        // View report for a specific order
-        function viewReport(orderId) {
-            const order = ordersData.find(o => o.id === orderId);
-            if (!order) return;
-            
-            // Generate advanced report
-            const report = reportSystem.generateAdvancedReport('predictive', [order]);
-            currentReport = report;
-            
-            // Format report for display
-            const reportText = `📌 Reference ID: ${order.id}
-📅 Date: ${order.date}
-📍 Location: ${order.location}
-🚚 Delivery Service: ${getServiceName(order.service)}
-💰 Order Amount: ${order.amount} AED
-⚠️ Status: ${order.status}
-🔎 Reason: ${order.reasonText}
-📝 Action: ${order.action}
-🤖 Risk Level: ${Math.round(order.riskLevel * 100)}%
-🛡️ Preventive Actions: ${order.preventiveActions.join(', ')}`;
-            
-            document.getElementById('reportPreview').textContent = reportText;
-            
-            const modal = new bootstrap.Modal(document.getElementById('reportModal'));
-            modal.show();
-        }
-        
-        // Generate report for a specific order
-        function generateOrderReport(order) {
-            return `📌 Reference ID: ${order.id}
-📅 Date: ${order.date}
-📍 Location: ${order.location}
-🚚 Delivery Service: ${getServiceName(order.service)}
-💰 Order Amount: ${order.amount} AED
-⚠️ Status: ${order.status}
-🔎 Reason: ${order.reasonText}
-📝 Action: ${order.action}`;
-        }
-        
-        // Send report for a specific order
-        function sendOrderReport(orderId) {
-            const order = ordersData.find(o => o.id === orderId);
-            if (!order) return;
-            const report = generateOrderReport(order);
-            
-            // Simulate sending report
-            showToast(`تم إرسال تقرير الطلب ${order.id} بنجاح`, 'success');
-            console.log('Sending report:', report);
-            
-            // Add notification
-            addNotification(`تم إرسال تقرير للطلب: ${order.id}`, 'success');
-        }
-        
-        // Send daily report
-        function sendDailyReport() {
-            const today = new Date().toISOString().split('T')[0];
-            const todayOrders = ordersData.filter(o => o.date === today);
-            
-            if (todayOrders.length === 0) {
-                showToast('لا توجد أوامر ملغية اليوم', 'error');
-                return;
-            }
-            
-            // Generate advanced report
-            const report = reportSystem.generateAdvancedReport('predictive', todayOrders);
-            currentReport = report;
-            
-            // Format report for display
-            const totalOrders = todayOrders.length;
-            const highRisk = todayOrders.filter(o => o.riskLevel > 0.7).length;
-            const mediumRisk = todayOrders.filter(o => o.riskLevel > 0.4 && o.riskLevel <= 0.7).length;
-            const lowRisk = todayOrders.filter(o => o.riskLevel <= 0.4).length;
-            
-            const reportText = `📊 Daily Cancellation Report - ${today}
-📈 Total Orders: ${totalOrders}
-🔴 High Risk Orders: ${highRisk}
-🟡 Medium Risk Orders: ${mediumRisk}
-🟢 Low Risk Orders: ${lowRisk}
-❌ Cancelled Orders: ${todayOrders.filter(o => o.status === 'cancelled').length}
-🔄 Refunded Orders: ${todayOrders.filter(o => o.status === 'refunded').length}
-⏳ Unresolved Orders: ${todayOrders.filter(o => o.status === 'unanswered').length}
-🔍 Top Cancellation Reasons:
-   - Restaurant Issues: ${todayOrders.filter(o => o.reason === 'restaurant').length}
-   - Delivery Company: ${todayOrders.filter(o => o.reason === 'delivery').length}
-   - Customer: ${todayOrders.filter(o => o.reason === 'customer').length}
-📍 Top Risk Locations: ${getTopLocations(todayOrders)}
-🚚 Top Risk Services: ${getTopServices(todayOrders)}
-💡 AI Recommendations:
-${getRecommendations(todayOrders)}`;
-            
-            document.getElementById('reportPreview').textContent = reportText;
-            
-            const modal = new bootstrap.Modal(document.getElementById('reportModal'));
-            modal.show();
-        }
-        
-        // Send daily report to WhatsApp
-        function sendDailyReportToWhatsApp() {
-            const today = new Date().toISOString().split('T')[0];
-            const todayOrders = ordersData.filter(o => o.date === today);
-            
-            if (todayOrders.length === 0) {
-                showToast('لا توجد أوامر ملغية اليوم', 'error');
-                return;
-            }
-            
-            // Generate advanced report
-            const report = reportSystem.generateAdvancedReport('predictive', todayOrders);
-            
-            // Format report for WhatsApp
-            const totalOrders = todayOrders.length;
-            const highRisk = todayOrders.filter(o => o.riskLevel > 0.7).length;
-            const mediumRisk = todayOrders.filter(o => o.riskLevel > 0.4 && o.riskLevel <= 0.7).length;
-            const lowRisk = todayOrders.filter(o => o.riskLevel <= 0.4).length;
-            
-            const reportText = `📊 Daily Cancellation Report - ${today}
-
-📈 Total Orders: ${totalOrders}
-🔴 High Risk Orders: ${highRisk}
-🟡 Medium Risk Orders: ${mediumRisk}
-🟢 Low Risk Orders: ${lowRisk}
-
-❌ Cancelled: ${todayOrders.filter(o => o.status === 'cancelled').length}
-🔄 Refunded: ${todayOrders.filter(o => o.status === 'refunded').length}
-⏳ Unresolved: ${todayOrders.filter(o => o.status === 'unanswered').length}
-
-🔍 Top Reasons:
-   - Restaurant: ${todayOrders.filter(o => o.reason === 'restaurant').length}
-   - Delivery: ${todayOrders.filter(o => o.reason === 'delivery').length}
-   - Customer: ${todayOrders.filter(o => o.reason === 'customer').length}
-
-📍 Top Locations: ${getTopLocations(todayOrders)}
-🚚 Top Services: ${getTopServices(todayOrders)}
-
-💡 AI Recommendations:
-${getRecommendations(todayOrders)}`;
-            
-            const phoneNumber = '00971509021993';
-            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(reportText)}`;
-            
-            // Open WhatsApp
-            window.open(whatsappUrl, '_blank');
-            
-            showToast('تم فتح WhatsApp لإرسال التقرير', 'success');
-            
-            // Add notification
-            addNotification('تم إرسال التقرير اليومي إلى WhatsApp', 'success');
-        }
-        
-        // Helper functions for reports
-        function getTopLocations(orders) {
-            const locationCounts = {};
-            orders.forEach(order => {
-                locationCounts[order.location] = (locationCounts[order.location] || 0) + 1;
-            });
-            
-            return Object.entries(locationCounts)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 3)
-                .map(([location, count]) => `${location} (${count})`)
-                .join(', ');
-        }
-        
-        function getTopServices(orders) {
-            const serviceCounts = {};
-            orders.forEach(order => {
-                serviceCounts[order.service] = (serviceCounts[order.service] || 0) + 1;
-            });
-            
-            return Object.entries(serviceCounts)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 3)
-                .map(([service, count]) => `${getServiceName(service)} (${count})`)
-                .join(', ');
-        }
-        
-        function getRecommendations(orders) {
-            const recommendations = [];
-            
-            if (orders.some(o => o.riskLevel > 0.7)) {
-                recommendations.push("🔴 تفعيل وضع الطوارئ للطلبات عالية المخاطرة");
-            }
-            
-            if (orders.filter(o => o.reason === 'restaurant').length > 0) {
-                recommendations.push("🍳 مراجعة إجراءات المطابخ في الفروع المتضررة");
-            }
-            
-            if (orders.filter(o => o.service === 'talabat').length > 0) {
-                recommendations.push("🚴 تحسين التواصل مع Talabat");
-            }
-            
-            return recommendations.join('\n');
-        }
-        
-        // Send all reports
-        function sendAllReports() {
-            ordersData.forEach(order => {
-                setTimeout(() => {
-                    sendOrderReport(order.id);
-                }, 500);
-            });
-            
-            showToast('جاري إرسال جميع التقارير...', 'success');
-        }
-        
-        // Send report from modal
-        function sendReport() {
-            if (!currentReport) return;
-            
-            // Simulate sending report
-            showToast('تم إرسال التقرير بنجاح', 'success');
-            console.log('Sending report:', currentReport);
-            
-            // Add notification
-            addNotification('تم إرسال التقرير اليومي بنجاح', 'success');
-            
-            const modal = bootstrap.Modal.getInstance(document.getElementById('reportModal'));
-            modal.hide();
-        }
-        
-        // Send report from modal to WhatsApp
-        function sendReportToWhatsApp() {
-            if (!currentReport) return;
-            
-            const phoneNumber = '00971509021993';
-            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(currentReport.data)}`;
-            
-            // Open WhatsApp
-            window.open(whatsappUrl, '_blank');
-            
-            showToast('تم فتح WhatsApp لإرسال التقرير', 'success');
-            
-            // Add notification
-            addNotification('تم إرسال التقرير إلى WhatsApp', 'success');
-            
-            const modal = bootstrap.Modal.getInstance(document.getElementById('reportModal'));
-            modal.hide();
-        }
-        
-        // Generate report for a single new order
-        function generateReportForNewOrder(order) {
-            // In a real application, this would send an email or WhatsApp message
-            console.log('Generating report for new order:', order);
-            
-            // Add notification
-            addNotification(`تم إنشاء تقرير للطلب الجديد: ${order.id}`, 'info');
-        }
-        
-        // Show toast notification
-        function showToast(message, type = 'success') {
-            const toastContainer = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `custom-toast toast-${type}`;
-            
-            const icon = type === 'success' ? 'bi-check-circle-fill' : 
-                        type === 'error' ? 'bi-x-circle-fill' : 
-                        type === 'warning' ? 'bi-exclamation-triangle-fill' : 
-                        'bi-info-circle-fill';
-            
-            toast.innerHTML = `
-                <div class="toast-icon">
-                    <i class="bi ${icon}"></i>
-                </div>
-                <div>${message}</div>
-            `;
-            
-            toastContainer.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => {
-                    toastContainer.removeChild(toast);
-                }, 300);
-            }, 3000);
-        }
-        
-        // Refresh data (simulate)
-        function refreshData() {
-            showToast('جاري تحديث البيانات...', 'success');
-            setTimeout(() => {
-                updateStatistics();
-                updateDeliveryServicesStats();
-                renderTable();
-                updateCharts();
-                showToast('تم تحديث البيانات بنجاح', 'success');
-            }, 1000);
-        }
-        
-        // Update predictions periodically
-        function updatePredictions() {
-            // Simulate AI prediction updates
-            ordersData.forEach(order => {
-                // Update risk level with some randomness
-                order.riskLevel = Math.min(1, order.riskLevel + (Math.random() - 0.5) * 0.1);
-                order.preventiveActions = aiPredictor.getPreventiveActions(order);
-            });
-            
-            // Save updated data
-            saveDataToLocalStorage();
-            
-            // Update UI if needed
-            renderTable();
-        }
-        
-        // Check for anomalies
-        function checkAnomalies() {
-            // Simple anomaly detection
-            const anomalies = ordersData.filter(order => {
-                return order.amount > 100 || order.status === 'unanswered';
-            });
-            
-            if (anomalies.length > 0) {
-                notificationSystem.sendSmartNotification(
-                    `اكتشاف ${anomalies.length} شذوذ في البيانات`,
-                    'warning',
-                    'analyst'
-                );
-            }
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
