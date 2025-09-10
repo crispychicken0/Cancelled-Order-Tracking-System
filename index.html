@@ -8,7 +8,264 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Custom styles for Restaurant OS */
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            /* Prevent horizontal scrollbar if modals cause overflow during transition */
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        /* Sidebar transitions */
+        #sidebar {
+            transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        
+        #mainContent {
+            transition: margin-left 0.3s ease-in-out;
+        }
+        
+        .sidebar-nav-items::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .sidebar-nav-items {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Profile dropdown */
+        #profileDropdown {
+            transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+        }
+        
+        /* Icon styling */
+        .menu-item-icon,
+        .modal-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            stroke-width: 1.5;
+        }
+        
+        .stat-card-icon-container {
+            padding: 0.75rem;
+            border-radius: 9999px;
+        }
+        
+        .stat-card-icon {
+            width: 1.75rem;
+            height: 1.75rem;
+        }
+        
+        .activity-icon-container {
+            padding: 0.5rem;
+            border-radius: 9999px;
+        }
+        
+        .activity-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+        
+        /* Modal Styling */
+        .modal-backdrop {
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        .modal-content {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        
+        /* Additional improvements */
+        .sidebar-collapsed .menu-text {
+            display: none;
+        }
+        
+        .sidebar-collapsed #sidebarLogoText {
+            display: none;
+        }
+        
+        .sidebar-collapsed #toggleIconOpen {
+            display: none;
+        }
+        
+        .sidebar-collapsed #toggleIconClosed {
+            display: block;
+        }
+        
+        /* Table hover effects */
+        table tr {
+            transition: background-color 0.2s ease;
+        }
+        
+        /* Status badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid #3498db;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 50;
+        }
+        
+        .toast {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            min-width: 300px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast-success {
+            border-left: 4px solid #10b981;
+        }
+        
+        .toast-error {
+            border-left: 4px solid #ef4444;
+        }
+        
+        .toast-info {
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .toast-icon {
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+        
+        .toast-close {
+            margin-right: 0.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .stat-card-icon-container {
+                width: 2.5rem;
+                height: 2.5rem;
+                padding: 0.5rem;
+            }
+            
+            .stat-card-icon {
+                width: 1.25rem;
+                height: 1.25rem;
+            }
+            
+            .activity-icon-container {
+                width: 2rem;
+                height: 2rem;
+                padding: 0.375rem;
+            }
+            
+            .activity-icon {
+                width: 1rem;
+                height: 1rem;
+            }
+            
+            .menu-item-icon,
+            .modal-icon {
+                width: 1.25rem;
+                height: 1.25rem;
+            }
+        }
+        
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            ::-webkit-scrollbar-track {
+                background: #1e293b;
+            }
+            
+            ::-webkit-scrollbar-thumb {
+                background: #475569;
+            }
+            
+            ::-webkit-scrollbar-thumb:hover {
+                background: #64748b;
+            }
+        }
+        
+        /* Focus styles for accessibility */
+        button:focus,
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+        
+        /* Print styles */
+        @media print {
+            #sidebar,
+            #mobileMenuButton,
+            .toast-container,
+            .modal-backdrop {
+                display: none !important;
+            }
+            
+            #mainContent {
+                margin-left: 0 !important;
+            }
+            
+            .stat-card-icon-container,
+            .activity-icon-container {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+    </style>
 </head>
 <body class="bg-slate-100 text-slate-800">
     <div class="flex h-screen overflow-hidden">
@@ -406,6 +663,609 @@
             </form>
         </div>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        // Initialize Lucide icons
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+            
+            // Initialize charts
+            initializeCharts();
+            
+            // Initialize event listeners
+            initializeEventListeners();
+            
+            // Initialize sidebar toggle
+            initializeSidebarToggle();
+            
+            // Initialize modals
+            initializeModals();
+            
+            // Initialize profile dropdown
+            initializeProfileDropdown();
+            
+            // Initialize mobile menu
+            initializeMobileMenu();
+            
+            // Check for system status
+            checkSystemStatus();
+        });
+
+        // Initialize Charts
+        function initializeCharts() {
+            // Sales Chart
+            const salesCtx = document.getElementById('salesChart');
+            if (salesCtx) {
+                const salesChart = new Chart(salesCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'Sales ($)',
+                            data: [3200, 4500, 3800, 5200, 6100, 7500, 8750],
+                            backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                            borderColor: 'rgba(14, 165, 233, 1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: 'rgba(14, 165, 233, 1)',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                                titleFont: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                bodyFont: {
+                                    size: 13
+                                },
+                                padding: 12,
+                                cornerRadius: 8,
+                                displayColors: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Sales: $${context.parsed.y}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(203, 213, 225, 0.2)'
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value;
+                                    }
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Popular Dishes Chart
+            const dishesCtx = document.getElementById('popularDishesChart');
+            if (dishesCtx) {
+                const dishesChart = new Chart(dishesCtx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Margherita Pizza', 'Caesar Salad', 'Grilled Salmon', 'Chocolate Cake', 'Beef Burger'],
+                        datasets: [{
+                            data: [30, 20, 15, 10, 25],
+                            backgroundColor: [
+                                'rgba(14, 165, 233, 0.8)',
+                                'rgba(16, 185, 129, 0.8)',
+                                'rgba(245, 158, 11, 0.8)',
+                                'rgba(139, 92, 246, 0.8)',
+                                'rgba(236, 72, 153, 0.8)'
+                            ],
+                            borderColor: [
+                                'rgba(14, 165, 233, 1)',
+                                'rgba(16, 185, 129, 1)',
+                                'rgba(245, 158, 11, 1)',
+                                'rgba(139, 92, 246, 1)',
+                                'rgba(236, 72, 153, 1)'
+                            ],
+                            borderWidth: 1,
+                            hoverOffset: 10
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    font: {
+                                        size: 12
+                                    },
+                                    padding: 15
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                                titleFont: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                bodyFont: {
+                                    size: 13
+                                },
+                                padding: 12,
+                                cornerRadius: 8,
+                                displayColors: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.label}: ${context.parsed}%`;
+                                    }
+                                }
+                            }
+                        },
+                        cutout: '60%'
+                    }
+                });
+            }
+        }
+
+        // Initialize Event Listeners
+        function initializeEventListeners() {
+            // New Order Form
+            const newOrderForm = document.getElementById('newOrderForm');
+            if (newOrderForm) {
+                newOrderForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const customerName = document.getElementById('orderCustomerName').value;
+                    const tableNumber = document.getElementById('orderTableNumber').value;
+                    const items = document.getElementById('orderItems').value;
+                    
+                    if (!customerName || !tableNumber || !items) {
+                        showToast('Please fill in all required fields', 'error');
+                        return;
+                    }
+                    
+                    // Simulate saving order
+                    setTimeout(() => {
+                        closeModal('newOrderModal');
+                        newOrderForm.reset();
+                        showToast('Order created successfully', 'success');
+                        
+                        // Update stats
+                        updateStats('orders');
+                    }, 1000);
+                });
+            }
+            
+            // Add Menu Item Form
+            const addMenuItemForm = document.getElementById('addMenuItemForm');
+            if (addMenuItemForm) {
+                addMenuItemForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const itemName = document.getElementById('menuItemName').value;
+                    const itemDescription = document.getElementById('menuItemDescription').value;
+                    const itemPrice = document.getElementById('menuItemPrice').value;
+                    const itemCategory = document.getElementById('menuItemCategory').value;
+                    
+                    if (!itemName || !itemDescription || !itemPrice || !itemCategory) {
+                        showToast('Please fill in all required fields', 'error');
+                        return;
+                    }
+                    
+                    // Simulate saving menu item
+                    setTimeout(() => {
+                        closeModal('addMenuItemModal');
+                        addMenuItemForm.reset();
+                        showToast('Menu item added successfully', 'success');
+                        
+                        // Update stats
+                        updateStats('menuItems');
+                    }, 1000);
+                });
+            }
+            
+            // New Reservation Form
+            const newReservationForm = document.getElementById('newReservationForm');
+            if (newReservationForm) {
+                newReservationForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const customerName = document.getElementById('reservationCustomerName').value;
+                    const reservationDate = document.getElementById('reservationDate').value;
+                    const reservationTime = document.getElementById('reservationTime').value;
+                    const partySize = document.getElementById('reservationPartySize').value;
+                    
+                    if (!customerName || !reservationDate || !reservationTime || !partySize) {
+                        showToast('Please fill in all required fields', 'error');
+                        return;
+                    }
+                    
+                    // Simulate saving reservation
+                    setTimeout(() => {
+                        closeModal('newReservationModal');
+                        newReservationForm.reset();
+                        showToast('Reservation created successfully', 'success');
+                        
+                        // Update stats
+                        updateStats('reservations');
+                    }, 1000);
+                });
+            }
+        }
+
+        // Initialize Sidebar Toggle
+        function initializeSidebarToggle() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            if (sidebarToggle && sidebar && mainContent) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('sidebar-collapsed');
+                    
+                    if (sidebar.classList.contains('sidebar-collapsed')) {
+                        mainContent.classList.remove('lg:ml-64');
+                        mainContent.classList.add('lg:ml-16');
+                    } else {
+                        mainContent.classList.remove('lg:ml-16');
+                        mainContent.classList.add('lg:ml-64');
+                    }
+                });
+            }
+        }
+
+        // Initialize Modals
+        function initializeModals() {
+            // New Order Modal
+            const openNewOrderModal = document.getElementById('openNewOrderModal');
+            const closeNewOrderModal = document.getElementById('closeNewOrderModal');
+            const cancelNewOrder = document.getElementById('cancelNewOrder');
+            
+            if (openNewOrderModal) {
+                openNewOrderModal.addEventListener('click', function() {
+                    openModal('newOrderModal');
+                });
+            }
+            
+            if (closeNewOrderModal) {
+                closeNewOrderModal.addEventListener('click', function() {
+                    closeModal('newOrderModal');
+                });
+            }
+            
+            if (cancelNewOrder) {
+                cancelNewOrder.addEventListener('click', function() {
+                    closeModal('newOrderModal');
+                });
+            }
+            
+            // Add Menu Item Modal
+            const openAddMenuItemModal = document.getElementById('openAddMenuItemModal');
+            const closeAddMenuItemModal = document.getElementById('closeAddMenuItemModal');
+            const cancelAddMenuItem = document.getElementById('cancelAddMenuItem');
+            
+            if (openAddMenuItemModal) {
+                openAddMenuItemModal.addEventListener('click', function() {
+                    openModal('addMenuItemModal');
+                });
+            }
+            
+            if (closeAddMenuItemModal) {
+                closeAddMenuItemModal.addEventListener('click', function() {
+                    closeModal('addMenuItemModal');
+                });
+            }
+            
+            if (cancelAddMenuItem) {
+                cancelAddMenuItem.addEventListener('click', function() {
+                    closeModal('addMenuItemModal');
+                });
+            }
+            
+            // New Reservation Modal
+            const openNewReservationModal = document.getElementById('openNewReservationModal');
+            const closeNewReservationModal = document.getElementById('closeNewReservationModal');
+            const cancelNewReservation = document.getElementById('cancelNewReservation');
+            
+            if (openNewReservationModal) {
+                openNewReservationModal.addEventListener('click', function() {
+                    openModal('newReservationModal');
+                });
+            }
+            
+            if (closeNewReservationModal) {
+                closeNewReservationModal.addEventListener('click', function() {
+                    closeModal('newReservationModal');
+                });
+            }
+            
+            if (cancelNewReservation) {
+                cancelNewReservation.addEventListener('click', function() {
+                    closeModal('newReservationModal');
+                });
+            }
+            
+            // Close modal when clicking outside
+            document.querySelectorAll('.modal-backdrop').forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        closeModal(modal.id);
+                    }
+                });
+            });
+        }
+
+        // Initialize Profile Dropdown
+        function initializeProfileDropdown() {
+            const profileButton = document.getElementById('profileButton');
+            const profileDropdown = document.getElementById('profileDropdown');
+            const logoutButton = document.getElementById('logoutButton');
+            
+            if (profileButton && profileDropdown) {
+                profileButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    profileDropdown.classList.toggle('opacity-0');
+                    profileDropdown.classList.toggle('scale-95');
+                    profileDropdown.classList.toggle('-translate-y-2');
+                    profileDropdown.classList.toggle('pointer-events-none');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function() {
+                    profileDropdown.classList.add('opacity-0', 'scale-95', '-translate-y-2', 'pointer-events-none');
+                });
+                
+                // Prevent dropdown from closing when clicking inside
+                profileDropdown.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+            
+            if (logoutButton) {
+                logoutButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showToast('Logging out...', 'info');
+                    
+                    // Simulate logout process
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1500);
+                });
+            }
+        }
+
+        // Initialize Mobile Menu
+        function initializeMobileMenu() {
+            const mobileMenuButton = document.getElementById('mobileMenuButton');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            if (mobileMenuButton && sidebar && sidebarOverlay) {
+                mobileMenuButton.addEventListener('click', function() {
+                    sidebar.classList.remove('-translate-x-full');
+                    sidebarOverlay.classList.remove('hidden');
+                });
+                
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.add('-translate-x-full');
+                    sidebarOverlay.classList.add('hidden');
+                });
+            }
+        }
+
+        // Check System Status
+        function checkSystemStatus() {
+            // Simulate checking system status
+            setTimeout(() => {
+                const statusIndicator = document.querySelector('.bg-green-100');
+                if (statusIndicator) {
+                    statusIndicator.classList.remove('bg-green-100', 'text-green-600');
+                    statusIndicator.classList.add('bg-yellow-100', 'text-yellow-600');
+                    statusIndicator.querySelector('span').textContent = 'System Syncing...';
+                    
+                    // After another delay, show online status
+                    setTimeout(() => {
+                        statusIndicator.classList.remove('bg-yellow-100', 'text-yellow-600');
+                        statusIndicator.classList.add('bg-green-100', 'text-green-600');
+                        statusIndicator.querySelector('span').textContent = 'System Online';
+                    }, 2000);
+                }
+            }, 5000);
+        }
+
+        // Open Modal
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.add('opacity-100');
+                    modal.querySelector('.modal-content').classList.add('show');
+                }, 10);
+            }
+        }
+
+        // Close Modal
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('opacity-100');
+                modal.querySelector('.modal-content').classList.remove('show');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+        }
+
+        // Show Toast Notification
+        function showToast(message, type = 'info') {
+            // Create toast container if it doesn't exist
+            let toastContainer = document.querySelector('.toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.className = 'toast-container';
+                document.body.appendChild(toastContainer);
+            }
+            
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            // Set icon based on type
+            let icon = '';
+            if (type === 'success') {
+                icon = '<i data-lucide="check-circle" class="toast-icon text-green-500"></i>';
+            } else if (type === 'error') {
+                icon = '<i data-lucide="x-circle" class="toast-icon text-red-500"></i>';
+            } else {
+                icon = '<i data-lucide="info" class="toast-icon text-blue-500"></i>';
+            }
+            
+            toast.innerHTML = `
+                ${icon}
+                <div class="toast-message">${message}</div>
+                <i data-lucide="x" class="toast-close"></i>
+            `;
+            
+            // Add toast to container
+            toastContainer.appendChild(toast);
+            
+            // Initialize Lucide icons for the new toast
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons({ nameAttr: 'data-lucide' });
+            }
+            
+            // Add event listener to close button
+            const closeButton = toast.querySelector('.toast-close');
+            if (closeButton) {
+                closeButton.addEventListener('click', function() {
+                    toast.classList.remove('show');
+                    setTimeout(() => {
+                        if (toastContainer.contains(toast)) {
+                            toastContainer.removeChild(toast);
+                        }
+                    }, 300);
+                });
+            }
+            
+            // Show toast
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            // Auto remove toast after 5 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toastContainer.contains(toast)) {
+                        toastContainer.removeChild(toast);
+                    }
+                }, 300);
+            }, 5000);
+        }
+
+        // Update Stats
+        function updateStats(type) {
+            // Simulate updating stats based on type
+            if (type === 'orders') {
+                const ordersStat = document.querySelector('.stat-card-icon-container.bg-sky-100').parentElement;
+                const ordersValue = ordersStat.querySelector('p:last-child');
+                const currentValue = parseInt(ordersValue.textContent);
+                ordersValue.textContent = currentValue + 1;
+            } else if (type === 'menuItems') {
+                const menuItemsStat = document.querySelector('.stat-card-icon-container.bg-orange-100').parentElement;
+                const menuItemsValue = menuItemsStat.querySelector('p:last-child');
+                const currentValue = parseInt(menuItemsValue.textContent);
+                menuItemsValue.textContent = currentValue + 1;
+            } else if (type === 'reservations') {
+                const reservationsStat = document.querySelector('.stat-card-icon-container.bg-indigo-100').parentElement;
+                const reservationsValue = reservationsStat.querySelector('p:last-child');
+                const currentValue = parseInt(reservationsValue.textContent);
+                reservationsValue.textContent = currentValue + 1;
+            }
+            
+            // Add new activity to the activity feed
+            addActivity(type);
+        }
+
+        // Add Activity
+        function addActivity(type) {
+            const activityList = document.getElementById('activityFeed');
+            if (!activityList) return;
+            
+            let activityHTML = '';
+            const now = new Date();
+            
+            if (type === 'orders') {
+                activityHTML = `
+                    <li class="flex items-start space-x-3 p-3 rounded-lg hover:bg-slate-50">
+                        <div class="activity-icon-container bg-green-100 text-green-600">
+                            <i data-lucide="check-circle-2" class="activity-icon"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-slate-700">New order <span class="font-semibold text-sky-600">#ORD-${Math.floor(Math.random() * 10000)}</span> placed.</p>
+                            <p class="text-xs text-slate-400">Just now</p>
+                        </div>
+                    </li>
+                `;
+            } else if (type === 'menuItems') {
+                activityHTML = `
+                    <li class="flex items-start space-x-3 p-3 rounded-lg hover:bg-slate-50">
+                        <div class="activity-icon-container bg-emerald-100 text-emerald-600">
+                            <i data-lucide="plus-circle" class="activity-icon"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-slate-700">New menu item added to the menu.</p>
+                            <p class="text-xs text-slate-400">Just now</p>
+                        </div>
+                    </li>
+                `;
+            } else if (type === 'reservations') {
+                activityHTML = `
+                    <li class="flex items-start space-x-3 p-3 rounded-lg hover:bg-slate-50">
+                        <div class="activity-icon-container bg-blue-100 text-blue-600">
+                            <i data-lucide="calendar-check-2" class="activity-icon"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-slate-700">New reservation confirmed.</p>
+                            <p class="text-xs text-slate-400">Just now</p>
+                        </div>
+                    </li>
+                `;
+            }
+            
+            // Add new activity at the top
+            activityList.insertAdjacentHTML('afterbegin', activityHTML);
+            
+            // Initialize Lucide icons for the new activity
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons({ nameAttr: 'data-lucide' });
+            }
+        }
+    </script>
 </body>
 </html>
