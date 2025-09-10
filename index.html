@@ -255,6 +255,45 @@
             justify-content: center;
             z-index: 2000;
         }
+        
+        /* Performance input styles */
+        .performance-input {
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .performance-input h4 {
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Weekly comparison */
+        .week-comparison {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .week-comparison .week-label {
+            font-weight: 600;
+            color: #92400e;
+        }
+        
+        .week-comparison .comparison-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        
+        .week-comparison .positive {
+            color: #059669;
+        }
+        
+        .week-comparison .negative {
+            color: #dc2626;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -366,6 +405,10 @@
                         <i class="fas fa-table"></i>
                         <span>الجداول</span>
                     </a>
+                    <a href="#" data-section="data-entry" class="nav-item flex items-center gap-3 p-3 rounded hover:bg-gray-800 mb-2">
+                        <i class="fas fa-keyboard"></i>
+                        <span>إدخال البيانات</span>
+                    </a>
                 </nav>
             </aside>
             
@@ -439,6 +482,28 @@
                                 </div>
                                 <h3 class="text-2xl font-bold">4.8</h3>
                                 <p class="text-gray-600">متوسط التقييم</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Weekly Performance Summary -->
+                        <div class="bg-white rounded-lg shadow p-6 mb-8">
+                            <h3 class="text-lg font-semibold mb-4">ملخص الأداء الأسبوعي</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="week-comparison">
+                                    <div class="week-label">الأسبوع الحالي</div>
+                                    <div class="comparison-value">156 طلب</div>
+                                    <div class="text-sm positive">+12% عن الأسبوع الماضي</div>
+                                </div>
+                                <div class="week-comparison">
+                                    <div class="week-label">الأسبوع الماضي</div>
+                                    <div class="comparison-value">139 طلب</div>
+                                    <div class="text-sm negative">-5% عن أسبوعين</div>
+                                </div>
+                                <div class="week-comparison">
+                                    <div class="week-label">متوسط الشهر</div>
+                                    <div class="comparison-value">142 طلب</div>
+                                    <div class="text-sm positive">+8% عن الشهر الماضي</div>
+                                </div>
                             </div>
                         </div>
                         
@@ -576,6 +641,32 @@
                                         <textarea id="offerDescription" class="w-full px-3 py-2 border rounded" rows="3" required></textarea>
                                         <div id="offerDescriptionError" class="error-message hidden">يرجى إدخال وصف العرض</div>
                                     </div>
+                                    
+                                    <!-- Performance Data Section -->
+                                    <div class="performance-input">
+                                        <h4><i class="fas fa-chart-line ml-2"></i>بيانات الأداء (للتحليل)</h4>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                            <div>
+                                                <label class="block text-sm font-medium mb-1">عدد الطلبات *</label>
+                                                <input type="number" id="orderCount" min="0" class="w-full px-3 py-2 border rounded" required>
+                                                <div id="orderCountError" class="error-message hidden">يرجى إدخال عدد الطلبات</div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium mb-1">إجمالي الإيرادات *</label>
+                                                <input type="number" id="totalRevenue" step="0.01" min="0" class="w-full px-3 py-2 border rounded" required>
+                                                <div id="totalRevenueError" class="error-message hidden">يرجى إدخال الإيرادات</div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium mb-1">متوسط وقت الانتظار (دقائق)</label>
+                                                <input type="number" id="avgWaitTime" step="0.1" min="0" class="w-full px-3 py-2 border rounded">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium mb-1">معدل الرضا (%)</label>
+                                                <input type="number" id="satisfactionRate" min="0" max="100" class="w-full px-3 py-2 border rounded">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <div class="flex items-center">
                                         <input type="checkbox" id="isActive" class="ml-2" checked>
                                         <label for="isActive" class="text-sm font-medium">تفعيل العرض فوراً</label>
@@ -606,134 +697,120 @@
                             <div class="flex flex-wrap gap-4">
                                 <div>
                                     <label class="block text-sm font-medium mb-1">الفترة</label>
-                                    <select class="w-full px-3 py-2 border rounded">
-                                        <option>آخر 7 أيام</option>
-                                        <option>آخر 30 يوم</option>
-                                        <option>آخر 3 أشهر</option>
-                                        <option>آخر سنة</option>
+                                    <select id="analyticsPeriod" class="w-full px-3 py-2 border rounded">
+                                        <option value="week">أسبوعي</option>
+                                        <option value="month">شهري</option>
+                                        <option value="quarter">ربع سنوي</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium mb-1">نوع العرض</label>
-                                    <select class="w-full px-3 py-2 border rounded">
-                                        <option>الكل</option>
-                                        <option>عروض ثابتة</option>
-                                        <option>عروض محدودة</option>
-                                        <option>عروض القيمة المضافة</option>
+                                    <select id="analyticsOfferType" class="w-full px-3 py-2 border rounded">
+                                        <option value="">الكل</option>
+                                        <option value="fixed">عروض ثابتة</option>
+                                        <option value="flash">عروض محدودة</option>
+                                        <option value="value">عروض القيمة المضافة</option>
                                     </select>
                                 </div>
                                 <div class="ml-auto">
-                                    <button class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
-                                        <i class="fas fa-filter ml-2"></i>تطبيق الفلاتر
+                                    <button onclick="app.updateAnalytics()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+                                        <i class="fas fa-filter ml-2"></i>تحديث التحليل
                                     </button>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Analytics Cards -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <!-- Weekly Comparison Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                             <div class="bg-white p-6 rounded-lg shadow">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="bg-blue-100 p-3 rounded-lg">
-                                        <i class="fas fa-eye text-blue-600 text-xl"></i>
+                                <h3 class="text-lg font-semibold mb-4">مقارنة الأسبوع الحالي</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between">
+                                        <span>عدد الطلبات</span>
+                                        <span class="font-bold">156</span>
                                     </div>
-                                    <span class="text-green-600">+18.2%</span>
+                                    <div class="flex justify-between">
+                                        <span>مقارنة بالأسبوع الماضي</span>
+                                        <span class="text-green-600">+12%</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>مقارنة بمتوسط الشهر</span>
+                                        <span class="text-green-600">+9.8%</span>
+                                    </div>
                                 </div>
-                                <h3 class="text-2xl font-bold">24,568</h3>
-                                <p class="text-gray-600">مشاهدات العروض</p>
                             </div>
                             
                             <div class="bg-white p-6 rounded-lg shadow">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="bg-green-100 p-3 rounded-lg">
-                                        <i class="fas fa-mouse-pointer text-green-600 text-xl"></i>
+                                <h3 class="text-lg font-semibold mb-4">أفضل أداء أسبوعي</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between">
+                                        <span>الأسبوع</span>
+                                        <span class="font-bold">الأسبوع 2</span>
                                     </div>
-                                    <span class="text-green-600">+12.5%</span>
+                                    <div class="flex justify-between">
+                                        <span>عدد الطلبات</span>
+                                        <span class="font-bold">189</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>الإيرادات</span>
+                                        <span class="font-bold">$4,725</span>
+                                    </div>
                                 </div>
-                                <h3 class="text-2xl font-bold">8,432</h3>
-                                <p class="text-gray-600">نقرات على العروض</p>
                             </div>
                             
                             <div class="bg-white p-6 rounded-lg shadow">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="bg-purple-100 p-3 rounded-lg">
-                                        <i class="fas fa-percentage text-purple-600 text-xl"></i>
+                                <h3 class="text-lg font-semibold mb-4">توقعات الأسبوع القادم</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between">
+                                        <span>عدد الطلبات المتوقع</span>
+                                        <span class="font-bold">165</span>
                                     </div>
-                                    <span class="text-red-600">-3.1%</span>
-                                </div>
-                                <h3 class="text-2xl font-bold">34.3%</h3>
-                                <p class="text-gray-600">معدل التحويل</p>
-                            </div>
-                            
-                            <div class="bg-white p-6 rounded-lg shadow">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="bg-yellow-100 p-3 rounded-lg">
-                                        <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                                    <div class="flex justify-between">
+                                        <span>نمو متوقع</span>
+                                        <span class="text-green-600">+5.8%</span>
                                     </div>
-                                    <span class="text-green-600">+5.7%</span>
+                                    <div class="flex justify-between">
+                                        <span>العروض المخططة</span>
+                                        <span class="font-bold">3 عروض</span>
+                                    </div>
                                 </div>
-                                <h3 class="text-2xl font-bold">2:45</h3>
-                                <p class="text-gray-600">متوسط الوقت في الصفحة</p>
                             </div>
                         </div>
                         
                         <!-- Analytics Charts -->
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                             <div class="bg-white p-6 rounded-lg shadow">
-                                <h3 class="text-lg font-semibold mb-4">أداء العروض</h3>
+                                <h3 class="text-lg font-semibold mb-4">مقارنة الأداء الأسبوعي</h3>
                                 <div class="chart-container">
-                                    <canvas id="performanceChart"></canvas>
+                                    <canvas id="weeklyPerformanceChart"></canvas>
                                 </div>
                             </div>
                             
                             <div class="bg-white p-6 rounded-lg shadow">
-                                <h3 class="text-lg font-semibold mb-4">معدل التحويل حسب النوع</h3>
+                                <h3 class="text-lg font-semibold mb-4">توزيع العروض حسب الأسبوع</h3>
                                 <div class="chart-container">
-                                    <canvas id="conversionChart"></canvas>
+                                    <canvas id="weeklyOffersChart"></canvas>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Top Offers Table -->
+                        <!-- Detailed Weekly Table -->
                         <div class="bg-white rounded-lg shadow p-6">
-                            <h3 class="text-lg font-semibold mb-4">أفضل العروض أداءً</h3>
+                            <h3 class="text-lg font-semibold mb-4">تفاصيل الأداء الأسبوعي</h3>
                             <div class="data-table">
                                 <table class="w-full">
                                     <thead>
                                         <tr class="border-b">
-                                            <th class="text-right p-2">اسم العرض</th>
-                                            <th class="text-right p-2">النوع</th>
-                                            <th class="text-right p-2">المشاهدات</th>
-                                            <th class="text-right p-2">النقرات</th>
-                                            <th class="text-right p-2">معدل التحويل</th>
+                                            <th class="text-right p-2">الأسبوع</th>
+                                            <th class="text-right p-2">العرض</th>
+                                            <th class="text-right p-2">عدد الطلبات</th>
                                             <th class="text-right p-2">الإيرادات</th>
+                                            <th class="text-right p-2">مقارنة بالأسبوع السابق</th>
+                                            <th class="text-right p-2">ملاحظات</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr class="border-b">
-                                            <td class="p-2">عرض الاثنين والثلاثاء</td>
-                                            <td class="p-2"><span class="badge-fixed px-2 py-1 rounded text-sm">ثابت</span></td>
-                                            <td class="p-2">8,456</td>
-                                            <td class="p-2">2,345</td>
-                                            <td class="p-2">27.7%</td>
-                                            <td class="p-2">$12,450</td>
-                                        </tr>
-                                        <tr class="border-b">
-                                            <td class="p-2">عرض سريع 20%</td>
-                                            <td class="p-2"><span class="badge-flash px-2 py-1 rounded text-sm">محدود</span></td>
-                                            <td class="p-2">6,234</td>
-                                            <td class="p-2">1,876</td>
-                                            <td class="p-2">30.1%</td>
-                                            <td class="p-2">$9,870</td>
-                                        </tr>
-                                        <tr class="border-b">
-                                            <td class="p-2">وجبة العائلة</td>
-                                            <td class="p-2"><span class="badge-value px-2 py-1 rounded text-sm">قيمة مضافة</span></td>
-                                            <td class="p-2">5,432</td>
-                                            <td class="p-2">1,234</td>
-                                            <td class="p-2">22.7%</td>
-                                            <td class="p-2">$7,650</td>
-                                        </tr>
+                                    <tbody id="weeklyPerformanceTable">
+                                        <!-- Will be populated by JavaScript -->
                                     </tbody>
                                 </table>
                             </div>
@@ -749,7 +826,7 @@
                             <div class="flex border-b">
                                 <button class="tab px-4 py-2 font-medium active" data-tab="campaigns-list">الحملات التسويقية</button>
                                 <button class="tab px-4 py-2 font-medium" data-tab="create-campaign">إنشاء حملة جديدة</button>
-                                <button class="tab px-4 py-2 font-medium" data-tab="email-marketing">التسويق عبر البريد</button>
+                                <button class="tab px-4 py-2 font-medium" data-tab="campaign-analytics">تحليل الحملات</button>
                             </div>
                         </div>
                         
@@ -921,6 +998,30 @@
                                             <option value="OFF002">عرض سريع 20%</option>
                                         </select>
                                     </div>
+                                    
+                                    <!-- Campaign Performance Data -->
+                                    <div class="performance-input">
+                                        <h4><i class="fas fa-chart-line ml-2"></i>بيانات أداء الحملة</h4>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                            <div>
+                                                <label class="block text-sm font-medium mb-1">الوصول المتوقع</label>
+                                                <input type="number" min="0" class="w-full px-3 py-2 border rounded">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium mb-1">معدل التفاعل المتوقع (%)</label>
+                                                <input type="number" min="0" max="100" class="w-full px-3 py-2 border rounded">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium mb-1">التحويلات المتوقعة</label>
+                                                <input type="number" min="0" class="w-full px-3 py-2 border rounded">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium mb-1">التكلفة لكل تحويل</label>
+                                                <input type="number" step="0.01" min="0" class="w-full px-3 py-2 border rounded">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <div class="flex items-center">
                                         <input type="checkbox" id="campaignActive" class="ml-2" checked>
                                         <label for="campaignActive" class="text-sm font-medium">تفعيل الحملة فوراً</label>
@@ -933,16 +1034,17 @@
                             </div>
                         </div>
                         
-                        <!-- Email Marketing Tab -->
-                        <div id="email-marketing" class="tab-content hidden">
+                        <!-- Campaign Analytics Tab -->
+                        <div id="campaign-analytics" class="tab-content hidden">
                             <div class="bg-white rounded-lg shadow p-6">
-                                <h3 class="text-lg font-semibold mb-4">التسويق عبر البريد الإلكتروني</h3>
-                                <div class="text-center py-12">
-                                    <i class="fas fa-envelope-open-text text-5xl text-gray-300 mb-4"></i>
-                                    <p class="text-gray-500 mb-4">قم بإنشاء حملات بريد إلكتروني فعالة للوصول إلى عملائك</p>
-                                    <button class="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600">
-                                        <i class="fas fa-plus ml-2"></i>إنشاء حملة بريدية
-                                    </button>
+                                <h3 class="text-lg font-semibold mb-4">تحليل أداء الحملات</h3>
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <div class="chart-container">
+                                        <canvas id="campaignPerformanceChart"></canvas>
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="campaignROIChart"></canvas>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -956,8 +1058,8 @@
                         <div class="bg-white rounded-lg shadow-sm mb-6">
                             <div class="flex border-b">
                                 <button class="tab px-4 py-2 font-medium active" data-tab="offers-data">بيانات العروض</button>
-                                <button class="tab px-4 py-2 font-medium" data-tab="revenue-data">بيانات الإيرادات</button>
-                                <button class="tab px-4 py-2 font-medium" data-tab="customer-data">بيانات العملاء</button>
+                                <button class="tab px-4 py-2 font-medium" data-tab="weekly-data">البيانات الأسبوعية</button>
+                                <button class="tab px-4 py-2 font-medium" data-tab="campaign-data">بيانات الحملات</button>
                             </div>
                         </div>
                         
@@ -982,10 +1084,10 @@
                                                 <th class="text-right p-2">كود العرض</th>
                                                 <th class="text-right p-2">اسم العرض</th>
                                                 <th class="text-right p-2">النوع</th>
-                                                <th class="text-right p-2">تاريخ البدء</th>
-                                                <th class="text-right p-2">تاريخ الانتهاء</th>
-                                                <th class="text-right p-2">الاستخدامات</th>
+                                                <th class="text-right p-2">عدد الطلبات</th>
                                                 <th class="text-right p-2">الإيرادات</th>
+                                                <th class="text-right p-2">متوسط الانتظار</th>
+                                                <th class="text-right p-2">معدل الرضا</th>
                                                 <th class="text-right p-2">الحالة</th>
                                             </tr>
                                         </thead>
@@ -997,11 +1099,11 @@
                             </div>
                         </div>
                         
-                        <!-- Revenue Data Tab -->
-                        <div id="revenue-data" class="tab-content hidden">
+                        <!-- Weekly Data Tab -->
+                        <div id="weekly-data" class="tab-content hidden">
                             <div class="bg-white rounded-lg shadow p-6">
                                 <div class="flex justify-between items-center mb-4">
-                                    <h3 class="text-lg font-semibold">بيانات الإيرادات</h3>
+                                    <h3 class="text-lg font-semibold">البيانات الأسبوعية</h3>
                                     <div class="flex gap-2">
                                         <button class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
                                             <i class="fas fa-filter ml-1"></i>فلترة
@@ -1015,50 +1117,27 @@
                                     <table class="w-full">
                                         <thead>
                                             <tr class="border-b">
-                                                <th class="text-right p-2">الشهر</th>
-                                                <th class="text-right p-2">إجمالي الإيرادات</th>
-                                                <th class="text-right p-2">إيرادات العروض</th>
-                                                <th class="text-right p-2">نسبة العروض</th>
-                                                <th class="text-right p-2">عدد العروض</th>
-                                                <th class="text-right p-2">متوسط الإيراد للعرض</th>
+                                                <th class="text-right p-2">الأسبوع</th>
+                                                <th class="text-right p-2">العرض</th>
+                                                <th class="text-right p-2">عدد الطلبات</th>
+                                                <th class="text-right p-2">الإيرادات</th>
+                                                <th class="text-right p-2">مقارنة بالأسبوع السابق</th>
+                                                <th class="text-right p-2">ملاحظات</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                            <tr class="border-b">
-                                                <td class="p-2">يناير</td>
-                                                <td class="p-2">$45,230</td>
-                                                <td class="p-2">$12,450</td>
-                                                <td class="p-2">27.5%</td>
-                                                <td class="p-2">3</td>
-                                                <td class="p-2">$4,150</td>
-                                            </tr>
-                                            <tr class="border-b">
-                                                <td class="p-2">فبراير</td>
-                                                <td class="p-2">$52,180</td>
-                                                <td class="p-2">$15,230</td>
-                                                <td class="p-2">29.2%</td>
-                                                <td class="p-2">4</td>
-                                                <td class="p-2">$3,808</td>
-                                            </tr>
-                                            <tr class="border-b">
-                                                <td class="p-2">مارس</td>
-                                                <td class="p-2">$48,960</td>
-                                                <td class="p-2">$13,870</td>
-                                                <td class="p-2">28.3%</td>
-                                                <td class="p-2">3</td>
-                                                <td class="p-2">$4,623</td>
-                                            </tr>
+                                        <tbody id="weeklyDataTable">
+                                            <!-- Will be populated by JavaScript -->
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Customer Data Tab -->
-                        <div id="customer-data" class="tab-content hidden">
+                        <!-- Campaign Data Tab -->
+                        <div id="campaign-data" class="tab-content hidden">
                             <div class="bg-white rounded-lg shadow p-6">
                                 <div class="flex justify-between items-center mb-4">
-                                    <h3 class="text-lg font-semibold">بيانات العملاء</h3>
+                                    <h3 class="text-lg font-semibold">بيانات الحملات</h3>
                                     <div class="flex gap-2">
                                         <button class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
                                             <i class="fas fa-filter ml-1"></i>فلترة
@@ -1072,42 +1151,210 @@
                                     <table class="w-full">
                                         <thead>
                                             <tr class="border-b">
-                                                <th class="text-right p-2">العميل</th>
-                                                <th class="text-right p-2">البريد الإلكتروني</th>
-                                                <th class="text-right p-2">عدد الطلبات</th>
-                                                <th class="text-right p-2">إجمالي الإنفاق</th>
-                                                <th class="text-right p-2">آخر طلب</th>
+                                                <th class="text-right p-2">الحملة</th>
+                                                <th class="text-right p-2">النوع</th>
+                                                <th class="text-right p-2">الوصول</th>
+                                                <th class="text-right p-2">التحويلات</th>
+                                                <th class="text-right p-2">التكلفة</th>
+                                                <th class="text-right p-2">العائد على الاستثمار</th>
                                                 <th class="text-right p-2">الحالة</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                            <tr class="border-b">
-                                                <td class="p-2">أحمد محمد</td>
-                                                <td class="p-2">ahmed@example.com</td>
-                                                <td class="p-2">24</td>
-                                                <td class="p-2">$1,245</td>
-                                                <td class="p-2">2023-09-15</td>
-                                                <td class="p-2"><span class="badge-active px-2 py-1 rounded text-sm">نشط</span></td>
-                                            </tr>
-                                            <tr class="border-b">
-                                                <td class="p-2">فاطمة علي</td>
-                                                <td class="p-2">fatima@example.com</td>
-                                                <td class="p-2">18</td>
-                                                <td class="p-2">$980</td>
-                                                <td class="p-2">2023-09-10</td>
-                                                <td class="p-2"><span class="badge-active px-2 py-1 rounded text-sm">نشط</span></td>
-                                            </tr>
-                                            <tr class="border-b">
-                                                <td class="p-2">محمد خالد</td>
-                                                <td class="p-2">mohammed@example.com</td>
-                                                <td class="p-2">12</td>
-                                                <td class="p-2">$650</td>
-                                                <td class="p-2">2023-08-28</td>
-                                                <td class="p-2"><span class="badge-inactive px-2 py-1 rounded text-sm">غير نشط</span></td>
-                                            </tr>
+                                        <tbody id="campaignDataTable">
+                                            <!-- Will be populated by JavaScript -->
                                         </tbody>
                                     </table>
                                 </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <!-- Data Entry Section -->
+                    <section id="dataEntrySection" class="section hidden">
+                        <h2 class="text-2xl font-bold mb-6">إدخال البيانات</h2>
+                        
+                        <!-- Data Entry Tabs -->
+                        <div class="bg-white rounded-lg shadow-sm mb-6">
+                            <div class="flex border-b">
+                                <button class="tab px-4 py-2 font-medium active" data-tab="weekly-performance">الأداء الأسبوعي</button>
+                                <button class="tab px-4 py-2 font-medium" data-tab="marketing-data">بيانات التسويق</button>
+                                <button class="tab px-4 py-2 font-medium" data-tab="customer-feedback">ملاحظات العملاء</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Weekly Performance Tab -->
+                        <div id="weekly-performance" class="tab-content">
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <h3 class="text-lg font-semibold mb-4">إدخال بيانات الأداء الأسبوعي</h3>
+                                <form id="weeklyPerformanceForm" class="space-y-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">الأسبوع</label>
+                                            <select id="weekNumber" class="w-full px-3 py-2 border rounded" required>
+                                                <option value="">اختر الأسبوع</option>
+                                                <option value="1">الأسبوع 1</option>
+                                                <option value="2">الأسبوع 2</option>
+                                                <option value="3">الأسبوع 3</option>
+                                                <option value="4">الأسبوع 4</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">الشهر</label>
+                                            <select id="monthNumber" class="w-full px-3 py-2 border rounded" required>
+                                                <option value="">اختر الشهر</option>
+                                                <option value="1">يناير 2025</option>
+                                                <option value="2">فبراير 2025</option>
+                                                <option value="3">مارس 2025</option>
+                                                <option value="4">أبريل 2025</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">العرض الرئيسي</label>
+                                            <select id="mainOffer" class="w-full px-3 py-2 border rounded" required>
+                                                <option value="">اختر العرض</option>
+                                                <option value="12-piece">12 قطعة</option>
+                                                <option value="8-piece">8 قطع</option>
+                                                <option value="family">وجبة عائلية</option>
+                                                <option value="none">لا يوجد عرض</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">عدد الطلبات *</label>
+                                            <input type="number" id="weeklyOrders" min="0" class="w-full px-3 py-2 border rounded" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">إجمالي الإيرادات *</label>
+                                            <input type="number" id="weeklyRevenue" step="0.01" min="0" class="w-full px-3 py-2 border rounded" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">متوسط وقت الانتظار (دقائق)</label>
+                                            <input type="number" id="weeklyWaitTime" step="0.1" min="0" class="w-full px-3 py-2 border rounded">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">معدل الرضا (%)</label>
+                                            <input type="number" id="weeklySatisfaction" min="0" max="100" class="w-full px-3 py-2 border rounded">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">عدد الشكاوى</label>
+                                            <input type="number" id="weeklyComplaints" min="0" class="w-full px-3 py-2 border rounded">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">ملاحظات الأسبوع</label>
+                                        <textarea id="weeklyNotes" class="w-full px-3 py-2 border rounded" rows="3"></textarea>
+                                    </div>
+                                    <div class="flex justify-end gap-3">
+                                        <button type="button" onclick="app.resetWeeklyForm()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">إلغاء</button>
+                                        <button type="submit" class="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600">حفظ البيانات</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Marketing Data Tab -->
+                        <div id="marketing-data" class="tab-content hidden">
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <h3 class="text-lg font-semibold mb-4">إدخال بيانات التسويق</h3>
+                                <form id="marketingDataForm" class="space-y-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">الحملة</label>
+                                            <select id="marketingCampaign" class="w-full px-3 py-2 border rounded" required>
+                                                <option value="">اختر الحملة</option>
+                                                <option value="social">وسائل التواصل</option>
+                                                <option value="email">بريد إلكتروني</option>
+                                                <option value="sms">رسائل نصية</option>
+                                                <option value="ads">إعلانات</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">التاريخ</label>
+                                            <input type="text" id="marketingDate" class="datepicker w-full px-3 py-2 border rounded" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">الوصول *</label>
+                                            <input type="number" id="marketingReach" min="0" class="w-full px-3 py-2 border rounded" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">التفاعل *</label>
+                                            <input type="number" id="marketingEngagement" min="0" class="w-full px-3 py-2 border rounded" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">التحويلات *</label>
+                                            <input type="number" id="marketingConversions" min="0" class="w-full px-3 py-2 border rounded" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">التكلفة *</label>
+                                            <input type="number" id="marketingCost" step="0.01" min="0" class="w-full px-3 py-2 border rounded" required>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">ملاحظات الحملة</label>
+                                        <textarea id="marketingNotes" class="w-full px-3 py-2 border rounded" rows="3"></textarea>
+                                    </div>
+                                    <div class="flex justify-end gap-3">
+                                        <button type="button" onclick="app.resetMarketingForm()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">إلغاء</button>
+                                        <button type="submit" class="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600">حفظ البيانات</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Customer Feedback Tab -->
+                        <div id="customer-feedback" class="tab-content hidden">
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <h3 class="text-lg font-semibold mb-4">إدخال ملاحظات العملاء</h3>
+                                <form id="customerFeedbackForm" class="space-y-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">التاريخ</label>
+                                            <input type="text" id="feedbackDate" class="datepicker w-full px-3 py-2 border rounded" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">نوع الملاحظة</label>
+                                            <select id="feedbackType" class="w-full px-3 py-2 border rounded" required>
+                                                <option value="">اختر النوع</option>
+                                                <option value="complaint">شكوى</option>
+                                                <option value="suggestion">اقتراح</option>
+                                                <option value="compliment">إشادة</option>
+                                                <option value="inquiry">استفسار</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">التقييم (1-5)</label>
+                                            <select id="feedbackRating" class="w-full px-3 py-2 border rounded">
+                                                <option value="">اختر التقييم</option>
+                                                <option value="1">1 - سيء جداً</option>
+                                                <option value="2">2 - سيء</option>
+                                                <option value="3">3 - متوسط</option>
+                                                <option value="4">4 - جيد</option>
+                                                <option value="5">5 - ممتاز</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">القسم المعني</label>
+                                            <select id="feedbackDepartment" class="w-full px-3 py-2 border rounded">
+                                                <option value="">اختر القسم</option>
+                                                <option value="service">الخدمة</option>
+                                                <option value="quality">الجودة</option>
+                                                <option value="delivery">التوصيل</option>
+                                                <option value="pricing">الأسعار</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">نص الملاحظة *</label>
+                                        <textarea id="feedbackText" class="w-full px-3 py-2 border rounded" rows="4" required></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">الإجراءات المتخذة</label>
+                                        <textarea id="feedbackActions" class="w-full px-3 py-2 border rounded" rows="3"></textarea>
+                                    </div>
+                                    <div class="flex justify-end gap-3">
+                                        <button type="button" onclick="app.resetFeedbackForm()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">إلغاء</button>
+                                        <button type="submit" class="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600">حفظ الملاحظة</button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </section>
@@ -1138,6 +1385,9 @@
                 this.charts = {};
                 this.isAuthenticated = false;
                 this.offers = JSON.parse(localStorage.getItem('offers')) || this.getDefaultOffers();
+                this.weeklyData = JSON.parse(localStorage.getItem('weeklyData')) || [];
+                this.marketingData = JSON.parse(localStorage.getItem('marketingData')) || [];
+                this.customerFeedback = JSON.parse(localStorage.getItem('customerFeedback')) || [];
                 this.currentOfferId = null;
                 this.deleteOfferId = null;
                 this.chartConfigs = {
@@ -1182,17 +1432,17 @@
                             }
                         }
                     },
-                    performance: {
+                    weeklyPerformance: {
                         type: 'bar',
                         data: {
-                            labels: ['عرض الاثنين والثلاثاء', 'عرض سريع 20%', 'وجبة العائلة', 'عرض نهاية الأسبوع'],
+                            labels: ['الأسبوع 1', 'الأسبوع 2', 'الأسبوع 3', 'الأسبوع 4'],
                             datasets: [{
-                                label: 'المشاهدات',
-                                data: [8456, 6234, 5432, 4321],
+                                label: 'عدد الطلبات',
+                                data: [120, 189, 156, 145],
                                 backgroundColor: '#3B82F6'
                             }, {
-                                label: 'النقرات',
-                                data: [2345, 1876, 1234, 987],
+                                label: 'الإيرادات',
+                                data: [3000, 4725, 3900, 3625],
                                 backgroundColor: '#10B981'
                             }]
                         },
@@ -1206,25 +1456,76 @@
                             }
                         }
                     },
-                    conversion: {
-                        type: 'radar',
+                    weeklyOffers: {
+                        type: 'line',
                         data: {
-                            labels: ['عروض ثابتة', 'عروض محدودة', 'قيمة مضافة', 'عروض منصات'],
+                            labels: ['الأسبوع 1', 'الأسبوع 2', 'الأسبوع 3', 'الأسبوع 4'],
                             datasets: [{
-                                label: 'معدل التحويل',
-                                data: [27.7, 30.1, 22.7, 18.5],
-                                backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                                label: '12 قطعة',
+                                data: [45, 78, 89, 67],
                                 borderColor: '#F59E0B',
-                                pointBackgroundColor: '#F59E0B'
+                                tension: 0.4
+                            }, {
+                                label: '8 قطع',
+                                data: [35, 56, 34, 45],
+                                borderColor: '#3B82F6',
+                                tension: 0.4
+                            }, {
+                                label: 'وجبة عائلية',
+                                data: [40, 55, 33, 33],
+                                borderColor: '#10B981',
+                                tension: 0.4
                             }]
                         },
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
-                            scales: {
-                                r: {
-                                    beginAtZero: true,
-                                    max: 40
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
+                        }
+                    },
+                    campaignPerformance: {
+                        type: 'bar',
+                        data: {
+                            labels: ['وسائل التواصل', 'بريد إلكتروني', 'رسائل نصية', 'إعلانات'],
+                            datasets: [{
+                                label: 'الوصول',
+                                data: [24568, 18234, 9876, 15432],
+                                backgroundColor: '#3B82F6'
+                            }, {
+                                label: 'التحويلات',
+                                data: [456, 345, 234, 387],
+                                backgroundColor: '#10B981'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
+                        }
+                    },
+                    campaignROI: {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['وسائل التواصل', 'بريد إلكتروني', 'رسائل نصية', 'إعلانات'],
+                            datasets: [{
+                                data: [380, 252, 168, 294],
+                                backgroundColor: ['#F59E0B', '#3B82F6', '#10B981', '#EC4899']
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
                                 }
                             }
                         }
@@ -1239,27 +1540,33 @@
                         id: 'OFF001',
                         name: 'عرض الاثنين والثلاثاء',
                         type: 'fixed',
-                        description: '12 قطع دجاج + 3 ثوم',
-                        startDate: '2023-01-01',
-                        endDate: '2023-12-31',
+                        description: '12 قطعة دجاج + 3 ثوم',
+                        startDate: '2025-01-01',
+                        endDate: '2025-12-31',
                         originalPrice: 45,
                         discountPrice: 30,
                         isActive: true,
-                        usage: 245,
-                        createdAt: '2023-01-01T00:00:00Z'
+                        orderCount: 245,
+                        totalRevenue: 7350,
+                        avgWaitTime: 15.5,
+                        satisfactionRate: 92,
+                        createdAt: '2025-01-01T00:00:00Z'
                     },
                     {
                         id: 'OFF002',
                         name: 'عرض سريع 20%',
                         type: 'flash',
                         description: 'خصم 20% على جميع الطلبات',
-                        startDate: '2023-07-01',
-                        endDate: '2023-12-31',
+                        startDate: '2025-01-01',
+                        endDate: '2025-06-30',
                         originalPrice: 50,
                         discountPrice: 40,
                         isActive: true,
-                        usage: 178,
-                        createdAt: '2023-07-01T00:00:00Z'
+                        orderCount: 178,
+                        totalRevenue: 7120,
+                        avgWaitTime: 12.3,
+                        satisfactionRate: 88,
+                        createdAt: '2025-01-01T00:00:00Z'
                     }
                 ];
             }
@@ -1270,6 +1577,7 @@
                 this.initCharts();
                 this.loadSectionFromURL();
                 this.loadOffers();
+                this.loadWeeklyData();
             }
             
             checkAuth() {
@@ -1397,6 +1705,33 @@
                     });
                 }
                 
+                // Weekly performance form
+                const weeklyPerformanceForm = document.getElementById('weeklyPerformanceForm');
+                if (weeklyPerformanceForm) {
+                    weeklyPerformanceForm.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.saveWeeklyPerformance(e.target);
+                    });
+                }
+                
+                // Marketing data form
+                const marketingDataForm = document.getElementById('marketingDataForm');
+                if (marketingDataForm) {
+                    marketingDataForm.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.saveMarketingData(e.target);
+                    });
+                }
+                
+                // Customer feedback form
+                const customerFeedbackForm = document.getElementById('customerFeedbackForm');
+                if (customerFeedbackForm) {
+                    customerFeedbackForm.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.saveCustomerFeedback(e.target);
+                    });
+                }
+                
                 // Initialize datepickers
                 this.initDatePickers();
                 
@@ -1424,7 +1759,7 @@
                                 <button class="p-2 rounded-full hover:bg-gray-200">
                                     <i class="fas fa-chevron-right"></i>
                                 </button>
-                                <h4 class="text-lg font-semibold">سبتمبر 2023</h4>
+                                <h4 class="text-lg font-semibold">يناير 2025</h4>
                                 <button class="p-2 rounded-full hover:bg-gray-200">
                                     <i class="fas fa-chevron-left"></i>
                                 </button>
@@ -1504,12 +1839,15 @@
                 if (sectionName === 'analytics') {
                     setTimeout(() => {
                         this.initAnalyticsCharts();
+                        this.renderWeeklyPerformanceTable();
                         this.showToast('تم تحميل بيانات التحليلات', 'info');
                     }, 500);
                 } else if (sectionName === 'offers') {
                     this.renderOffers();
                 } else if (sectionName === 'sheets') {
                     this.renderSheetsData();
+                } else if (sectionName === 'dataEntry') {
+                    this.renderDataEntryTables();
                 }
             }
             
@@ -1541,8 +1879,10 @@
             }
             
             initAnalyticsCharts() {
-                this.initChart('performanceChart', this.chartConfigs.performance);
-                this.initChart('conversionChart', this.chartConfigs.conversion);
+                this.initChart('weeklyPerformanceChart', this.chartConfigs.weeklyPerformance);
+                this.initChart('weeklyOffersChart', this.chartConfigs.weeklyOffers);
+                this.initChart('campaignPerformanceChart', this.chartConfigs.campaignPerformance);
+                this.initChart('campaignROIChart', this.chartConfigs.campaignROI);
             }
             
             initChart(canvasId, config) {
@@ -1581,7 +1921,12 @@
                     endDate: formData.get('endDate') || document.getElementById('endDate').value,
                     originalPrice: parseFloat(formData.get('originalPrice') || document.getElementById('originalPrice').value),
                     discountPrice: parseFloat(formData.get('discountPrice') || document.getElementById('discountPrice').value),
-                    isActive: document.getElementById('isActive').checked
+                    isActive: document.getElementById('isActive').checked,
+                    // Performance data
+                    orderCount: parseInt(document.getElementById('orderCount').value) || 0,
+                    totalRevenue: parseFloat(document.getElementById('totalRevenue').value) || 0,
+                    avgWaitTime: parseFloat(document.getElementById('avgWaitTime').value) || 0,
+                    satisfactionRate: parseInt(document.getElementById('satisfactionRate').value) || 0
                 };
                 
                 // Validate form
@@ -1608,7 +1953,6 @@
                         const newOffer = {
                             id: 'OFF' + String(this.offers.length + 1).padStart(3, '0'),
                             ...offerData,
-                            usage: 0,
                             createdAt: new Date().toISOString()
                         };
                         this.offers.push(newOffer);
@@ -1671,6 +2015,16 @@
                     isValid = false;
                 }
                 
+                if (!data.orderCount || data.orderCount < 0) {
+                    errors.orderCount = 'يرجى إدخال عدد الطلبات';
+                    isValid = false;
+                }
+                
+                if (!data.totalRevenue || data.totalRevenue < 0) {
+                    errors.totalRevenue = 'يرجى إدخال الإيرادات';
+                    isValid = false;
+                }
+                
                 return { isValid, errors };
             }
             
@@ -1711,6 +2065,96 @@
                 this.clearFormErrors();
             }
             
+            saveWeeklyPerformance(form) {
+                this.showLoading(true);
+                
+                const weeklyData = {
+                    week: parseInt(document.getElementById('weekNumber').value),
+                    month: parseInt(document.getElementById('monthNumber').value),
+                    mainOffer: document.getElementById('mainOffer').value,
+                    orders: parseInt(document.getElementById('weeklyOrders').value),
+                    revenue: parseFloat(document.getElementById('weeklyRevenue').value),
+                    waitTime: parseFloat(document.getElementById('weeklyWaitTime').value) || 0,
+                    satisfaction: parseInt(document.getElementById('weeklySatisfaction').value) || 0,
+                    complaints: parseInt(document.getElementById('weeklyComplaints').value) || 0,
+                    notes: document.getElementById('weeklyNotes').value,
+                    date: new Date().toISOString()
+                };
+                
+                setTimeout(() => {
+                    this.weeklyData.push(weeklyData);
+                    localStorage.setItem('weeklyData', JSON.stringify(this.weeklyData));
+                    
+                    this.resetWeeklyForm();
+                    this.showToast('تم حفظ بيانات الأداء الأسبوعي بنجاح', 'success');
+                    this.showLoading(false);
+                    
+                    // Update analytics if on analytics section
+                    if (this.currentSection === 'analytics') {
+                        this.updateAnalytics();
+                    }
+                }, 1000);
+            }
+            
+            saveMarketingData(form) {
+                this.showLoading(true);
+                
+                const marketingEntry = {
+                    campaign: document.getElementById('marketingCampaign').value,
+                    date: document.getElementById('marketingDate').value,
+                    reach: parseInt(document.getElementById('marketingReach').value),
+                    engagement: parseInt(document.getElementById('marketingEngagement').value),
+                    conversions: parseInt(document.getElementById('marketingConversions').value),
+                    cost: parseFloat(document.getElementById('marketingCost').value),
+                    notes: document.getElementById('marketingNotes').value,
+                    timestamp: new Date().toISOString()
+                };
+                
+                setTimeout(() => {
+                    this.marketingData.push(marketingEntry);
+                    localStorage.setItem('marketingData', JSON.stringify(this.marketingData));
+                    
+                    this.resetMarketingForm();
+                    this.showToast('تم حفظ بيانات التسويق بنجاح', 'success');
+                    this.showLoading(false);
+                }, 1000);
+            }
+            
+            saveCustomerFeedback(form) {
+                this.showLoading(true);
+                
+                const feedback = {
+                    date: document.getElementById('feedbackDate').value,
+                    type: document.getElementById('feedbackType').value,
+                    rating: parseInt(document.getElementById('feedbackRating').value) || 0,
+                    department: document.getElementById('feedbackDepartment').value,
+                    text: document.getElementById('feedbackText').value,
+                    actions: document.getElementById('feedbackActions').value,
+                    timestamp: new Date().toISOString()
+                };
+                
+                setTimeout(() => {
+                    this.customerFeedback.push(feedback);
+                    localStorage.setItem('customerFeedback', JSON.stringify(this.customerFeedback));
+                    
+                    this.resetFeedbackForm();
+                    this.showToast('تم حفظ ملاحظة العميل بنجاح', 'success');
+                    this.showLoading(false);
+                }, 1000);
+            }
+            
+            resetWeeklyForm() {
+                document.getElementById('weeklyPerformanceForm').reset();
+            }
+            
+            resetMarketingForm() {
+                document.getElementById('marketingDataForm').reset();
+            }
+            
+            resetFeedbackForm() {
+                document.getElementById('customerFeedbackForm').reset();
+            }
+            
             editOffer(offerId) {
                 const offer = this.offers.find(o => o.id === offerId);
                 if (offer) {
@@ -1727,6 +2171,12 @@
                     document.getElementById('originalPrice').value = offer.originalPrice;
                     document.getElementById('discountPrice').value = offer.discountPrice;
                     document.getElementById('isActive').checked = offer.isActive;
+                    
+                    // Performance data
+                    document.getElementById('orderCount').value = offer.orderCount || 0;
+                    document.getElementById('totalRevenue').value = offer.totalRevenue || 0;
+                    document.getElementById('avgWaitTime').value = offer.avgWaitTime || 0;
+                    document.getElementById('satisfactionRate').value = offer.satisfactionRate || 0;
                     
                     // Re-initialize datepickers
                     this.initDatePickers();
@@ -1777,6 +2227,10 @@
                 this.updateDashboardOffers();
             }
             
+            loadWeeklyData() {
+                this.renderWeeklyPerformanceTable();
+            }
+            
             renderOffers() {
                 const grid = document.getElementById('offersGrid');
                 if (!grid) return;
@@ -1801,14 +2255,22 @@
                                 <p class="text-2xl font-bold text-orange-600">${offer.discountPrice.toFixed(2)} درهم</p>
                             </div>
                         </div>
+                        <div class="grid grid-cols-2 gap-2 mb-4 text-sm">
+                            <div>
+                                <p class="text-gray-500">الطلبات: ${offer.orderCount || 0}</p>
+                                <p class="text-gray-500">الإيرادات: $${(offer.totalRevenue || 0).toFixed(2)}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">الانتظار: ${offer.avgWaitTime || 0} دقيقة</p>
+                                <p class="text-gray-500">الرضا: ${offer.satisfactionRate || 0}%</p>
+                            </div>
+                        </div>
                         <div class="flex justify-between text-sm mb-4">
                             <div>
                                 <p class="text-gray-500">المدة: ${this.formatDateRange(offer.startDate, offer.endDate)}</p>
-                                <p class="text-gray-500">الاستخدامات: ${offer.usage}</p>
                             </div>
                             <div>
                                 <p class="${offer.isActive ? 'text-green-600' : 'text-red-600'} font-medium">${offer.isActive ? 'نشط' : 'منتهي'}</p>
-                                <p class="text-gray-500">${offer.startDate} - ${offer.endDate}</p>
                             </div>
                         </div>
                         <div class="flex gap-2">
@@ -1845,6 +2307,122 @@
                 this.showToast('تم تطبيق الفلاتر', 'info');
             }
             
+            updateAnalytics() {
+                // Update weekly performance chart
+                if (this.charts.weeklyPerformanceChart) {
+                    const weeklyOrders = this.weeklyData.map(d => d.orders);
+                    const weeklyRevenue = this.weeklyData.map(d => d.revenue);
+                    
+                    this.charts.weeklyPerformanceChart.data.datasets[0].data = weeklyOrders;
+                    this.charts.weeklyPerformanceChart.data.datasets[1].data = weeklyRevenue;
+                    this.charts.weeklyPerformanceChart.update();
+                }
+                
+                this.renderWeeklyPerformanceTable();
+            }
+            
+            renderWeeklyPerformanceTable() {
+                const tbody = document.getElementById('weeklyPerformanceTable');
+                if (!tbody) return;
+                
+                tbody.innerHTML = this.weeklyData.map(data => {
+                    const previousWeek = this.weeklyData.find(d => 
+                        d.month === data.month && d.week === data.week - 1
+                    );
+                    const comparison = previousWeek ? 
+                        ((data.orders - previousWeek.orders) / previousWeek.orders * 100).toFixed(1) : 
+                        '0';
+                    
+                    return `
+                        <tr class="border-b">
+                            <td class="p-2">الأسبوع ${data.week}</td>
+                            <td class="p-2">${this.getOfferLabel(data.mainOffer)}</td>
+                            <td class="p-2">${data.orders}</td>
+                            <td class="p-2">$${data.revenue.toFixed(2)}</td>
+                            <td class="p-2">
+                                <span class="${comparison > 0 ? 'text-green-600' : 'text-red-600'}">
+                                    ${comparison > 0 ? '+' : ''}${comparison}%
+                                </span>
+                            </td>
+                            <td class="p-2">${data.notes || '-'}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            
+            renderSheetsData() {
+                // Offers data table
+                const offersTbody = document.getElementById('offersDataTable');
+                if (offersTbody) {
+                    offersTbody.innerHTML = this.offers.map(offer => `
+                        <tr class="border-b">
+                            <td class="p-2">${offer.id}</td>
+                            <td class="p-2">${offer.name}</td>
+                            <td class="p-2"><span class="badge-${offer.type} px-2 py-1 rounded text-sm">${this.getTypeLabel(offer.type)}</span></td>
+                            <td class="p-2">${offer.orderCount || 0}</td>
+                            <td class="p-2">$${(offer.totalRevenue || 0).toFixed(2)}</td>
+                            <td class="p-2">${offer.avgWaitTime || 0} دقيقة</td>
+                            <td class="p-2">${offer.satisfactionRate || 0}%</td>
+                            <td class="p-2"><span class="badge-${offer.isActive ? 'active' : 'inactive'} px-2 py-1 rounded text-sm">${offer.isActive ? 'نشط' : 'منتهي'}</span></td>
+                        </tr>
+                    `).join('');
+                }
+                
+                // Weekly data table
+                const weeklyTbody = document.getElementById('weeklyDataTable');
+                if (weeklyTbody) {
+                    weeklyTbody.innerHTML = this.weeklyData.map(data => {
+                        const previousWeek = this.weeklyData.find(d => 
+                            d.month === data.month && d.week === data.week - 1
+                        );
+                        const comparison = previousWeek ? 
+                            ((data.orders - previousWeek.orders) / previousWeek.orders * 100).toFixed(1) : 
+                            '0';
+                        
+                        return `
+                            <tr class="border-b">
+                                <td class="p-2">الأسبوع ${data.week}</td>
+                                <td class="p-2">${this.getOfferLabel(data.mainOffer)}</td>
+                                <td class="p-2">${data.orders}</td>
+                                <td class="p-2">$${data.revenue.toFixed(2)}</td>
+                                <td class="p-2">
+                                    <span class="${comparison > 0 ? 'text-green-600' : 'text-red-600'}">
+                                        ${comparison > 0 ? '+' : ''}${comparison}%
+                                    </span>
+                                </td>
+                                <td class="p-2">${data.notes || '-'}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+                
+                // Campaign data table
+                const campaignTbody = document.getElementById('campaignDataTable');
+                if (campaignTbody) {
+                    campaignTbody.innerHTML = this.marketingData.map(data => {
+                        const roi = data.cost > 0 ? 
+                            ((data.conversions * 25) / data.cost * 100).toFixed(1) : 
+                            '0';
+                        
+                        return `
+                            <tr class="border-b">
+                                <td class="p-2">${this.getCampaignLabel(data.campaign)}</td>
+                                <td class="p-2">${data.date}</td>
+                                <td class="p-2">${data.reach}</td>
+                                <td class="p-2">${data.conversions}</td>
+                                <td class="p-2">$${data.cost.toFixed(2)}</td>
+                                <td class="p-2">${roi}%</td>
+                                <td class="p-2"><span class="badge-active px-2 py-1 rounded text-sm">نشط</span></td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            }
+            
+            renderDataEntryTables() {
+                // This method can be used to display summary tables in the data entry section
+            }
+            
             updateDashboardOffers() {
                 const tbody = document.getElementById('dashboardOffersTable');
                 if (!tbody) return;
@@ -1868,24 +2446,6 @@
                 `).join('');
             }
             
-            renderSheetsData() {
-                const tbody = document.getElementById('offersDataTable');
-                if (!tbody) return;
-                
-                tbody.innerHTML = this.offers.map(offer => `
-                    <tr class="border-b">
-                        <td class="p-2">${offer.id}</td>
-                        <td class="p-2">${offer.name}</td>
-                        <td class="p-2"><span class="badge-${offer.type} px-2 py-1 rounded text-sm">${this.getTypeLabel(offer.type)}</span></td>
-                        <td class="p-2">${offer.startDate}</td>
-                        <td class="p-2">${offer.endDate}</td>
-                        <td class="p-2">${offer.usage}</td>
-                        <td class="p-2">$${(offer.usage * offer.discountPrice).toFixed(2)}</td>
-                        <td class="p-2"><span class="badge-${offer.isActive ? 'active' : 'inactive'} px-2 py-1 rounded text-sm">${offer.isActive ? 'نشط' : 'منتهي'}</span></td>
-                    </tr>
-                `).join('');
-            }
-            
             getTypeLabel(type) {
                 const labels = {
                     fixed: 'ثابت',
@@ -1893,6 +2453,26 @@
                     value: 'قيمة مضافة'
                 };
                 return labels[type] || type;
+            }
+            
+            getOfferLabel(offer) {
+                const labels = {
+                    '12-piece': '12 قطعة',
+                    '8-piece': '8 قطع',
+                    'family': 'وجبة عائلية',
+                    'none': 'لا يوجد عرض'
+                };
+                return labels[offer] || offer;
+            }
+            
+            getCampaignLabel(campaign) {
+                const labels = {
+                    'social': 'وسائل التواصل',
+                    'email': 'بريد إلكتروني',
+                    'sms': 'رسائل نصية',
+                    'ads': 'إعلانات'
+                };
+                return labels[campaign] || campaign;
             }
             
             formatDateRange(start, end) {
