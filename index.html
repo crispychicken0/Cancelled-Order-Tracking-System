@@ -294,6 +294,27 @@
         .week-comparison .negative {
             color: #dc2626;
         }
+        
+        /* Analytics loading state */
+        .analytics-loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            color: #6b7280;
+        }
+        
+        .analytics-empty {
+            text-align: center;
+            padding: 3rem;
+            color: #6b7280;
+        }
+        
+        .analytics-empty i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #d1d5db;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -491,18 +512,18 @@
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div class="week-comparison">
                                     <div class="week-label">الأسبوع الحالي</div>
-                                    <div class="comparison-value">156 طلب</div>
-                                    <div class="text-sm positive">+12% عن الأسبوع الماضي</div>
+                                    <div class="comparison-value" id="currentWeekOrders">156 طلب</div>
+                                    <div class="text-sm positive" id="currentWeekComparison">+12% عن الأسبوع الماضي</div>
                                 </div>
                                 <div class="week-comparison">
                                     <div class="week-label">الأسبوع الماضي</div>
-                                    <div class="comparison-value">139 طلب</div>
-                                    <div class="text-sm negative">-5% عن أسبوعين</div>
+                                    <div class="comparison-value" id="lastWeekOrders">139 طلب</div>
+                                    <div class="text-sm negative" id="lastWeekComparison">-5% عن أسبوعين</div>
                                 </div>
                                 <div class="week-comparison">
                                     <div class="week-label">متوسط الشهر</div>
-                                    <div class="comparison-value">142 طلب</div>
-                                    <div class="text-sm positive">+8% عن الشهر الماضي</div>
+                                    <div class="comparison-value" id="monthAverageOrders">142 طلب</div>
+                                    <div class="text-sm positive" id="monthComparison">+8% عن الشهر الماضي</div>
                                 </div>
                             </div>
                         </div>
@@ -544,6 +565,149 @@
                             </div>
                         </div>
                     </section>
+                    
+                    <!-- Analytics Section -->
+                    <section id="analyticsSection" class="section hidden">
+                        <h2 class="text-2xl font-bold mb-6">التحليلات</h2>
+                        
+                        <!-- Analytics Filters -->
+                        <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+                            <div class="flex flex-wrap gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">الفترة</label>
+                                    <select id="analyticsPeriod" class="w-full px-3 py-2 border rounded">
+                                        <option value="week">أسبوعي</option>
+                                        <option value="month">شهري</option>
+                                        <option value="quarter">ربع سنوي</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">نوع العرض</label>
+                                    <select id="analyticsOfferType" class="w-full px-3 py-2 border rounded">
+                                        <option value="">الكل</option>
+                                        <option value="fixed">عروض ثابتة</option>
+                                        <option value="flash">عروض محدودة</option>
+                                        <option value="value">عروض القيمة المضافة</option>
+                                    </select>
+                                </div>
+                                <div class="ml-auto">
+                                    <button onclick="app.updateAnalytics()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+                                        <i class="fas fa-filter ml-2"></i>تحديث التحليل
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Weekly Comparison Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div class="bg-white p-6 rounded-lg shadow">
+                                <h3 class="text-lg font-semibold mb-4">مقارنة الأسبوع الحالي</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between">
+                                        <span>عدد الطلبات</span>
+                                        <span class="font-bold" id="analyticsCurrentWeekOrders">156</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>مقارنة بالأسبوع الماضي</span>
+                                        <span class="text-green-600" id="analyticsWeekComparison">+12%</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>مقارنة بمتوسط الشهر</span>
+                                        <span class="text-green-600" id="analyticsMonthComparison">+9.8%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-6 rounded-lg shadow">
+                                <h3 class="text-lg font-semibold mb-4">أفضل أداء أسبوعي</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between">
+                                        <span>الأسبوع</span>
+                                        <span class="font-bold" id="bestPerformingWeek">الأسبوع 2</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>عدد الطلبات</span>
+                                        <span class="font-bold" id="bestPerformingWeekOrders">189</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>الإيرادات</span>
+                                        <span class="font-bold" id="bestPerformingWeekRevenue">$4,725</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-6 rounded-lg shadow">
+                                <h3 class="text-lg font-semibold mb-4">توقعات الأسبوع القادم</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between">
+                                        <span>عدد الطلبات المتوقع</span>
+                                        <span class="font-bold" id="predictedNextWeekOrders">165</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>نمو متوقع</span>
+                                        <span class="text-green-600" id="predictedGrowth">+5.8%</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>العروض المخططة</span>
+                                        <span class="font-bold" id="plannedOffers">3 عروض</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Analytics Charts -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                            <div class="bg-white p-6 rounded-lg shadow">
+                                <h3 class="text-lg font-semibold mb-4">مقارنة الأداء الأسبوعي</h3>
+                                <div class="chart-container">
+                                    <canvas id="weeklyPerformanceChart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-6 rounded-lg shadow">
+                                <h3 class="text-lg font-semibold mb-4">توزيع العروض حسب الأسبوع</h3>
+                                <div class="chart-container">
+                                    <canvas id="weeklyOffersChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Detailed Weekly Table -->
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold mb-4">تفاصيل الأداء الأسبوعي</h3>
+                            <div id="weeklyTableContainer">
+                                <div class="analytics-loading" id="weeklyTableLoading">
+                                    <div class="spinner mx-auto mb-2"></div>
+                                    <p>جاري تحميل البيانات...</p>
+                                </div>
+                                <div class="analytics-empty hidden" id="weeklyTableEmpty">
+                                    <i class="fas fa-chart-line"></i>
+                                    <p>لا توجد بيانات أسبوعية متاحة</p>
+                                    <p class="text-sm mt-2">يرجى إدخال البيانات من قسم "إدخال البيانات"</p>
+                                </div>
+                                <div class="data-table hidden" id="weeklyTableData">
+                                    <table class="w-full">
+                                        <thead>
+                                            <tr class="border-b">
+                                                <th class="text-right p-2">الأسبوع</th>
+                                                <th class="text-right p-2">العرض</th>
+                                                <th class="text-right p-2">عدد الطلبات</th>
+                                                <th class="text-right p-2">الإيرادات</th>
+                                                <th class="text-right p-2">مقارنة بالأسبوع السابق</th>
+                                                <th class="text-right p-2">ملاحظات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="weeklyPerformanceTable">
+                                            <!-- Will be populated by JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <!-- Other sections remain the same -->
+                    <!-- ... (offers, marketing, sheets, data-entry sections) ... -->
                     
                     <!-- Offers Section -->
                     <section id="offersSection" class="section hidden">
@@ -684,135 +848,6 @@
                             <div class="bg-white rounded-lg shadow p-6">
                                 <h3 class="text-lg font-semibold mb-4">تقويم العروض</h3>
                                 <div id="calendar" class="calendar-container"></div>
-                            </div>
-                        </div>
-                    </section>
-                    
-                    <!-- Analytics Section -->
-                    <section id="analyticsSection" class="section hidden">
-                        <h2 class="text-2xl font-bold mb-6">التحليلات</h2>
-                        
-                        <!-- Analytics Filters -->
-                        <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
-                            <div class="flex flex-wrap gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium mb-1">الفترة</label>
-                                    <select id="analyticsPeriod" class="w-full px-3 py-2 border rounded">
-                                        <option value="week">أسبوعي</option>
-                                        <option value="month">شهري</option>
-                                        <option value="quarter">ربع سنوي</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium mb-1">نوع العرض</label>
-                                    <select id="analyticsOfferType" class="w-full px-3 py-2 border rounded">
-                                        <option value="">الكل</option>
-                                        <option value="fixed">عروض ثابتة</option>
-                                        <option value="flash">عروض محدودة</option>
-                                        <option value="value">عروض القيمة المضافة</option>
-                                    </select>
-                                </div>
-                                <div class="ml-auto">
-                                    <button onclick="app.updateAnalytics()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
-                                        <i class="fas fa-filter ml-2"></i>تحديث التحليل
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Weekly Comparison Cards -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                            <div class="bg-white p-6 rounded-lg shadow">
-                                <h3 class="text-lg font-semibold mb-4">مقارنة الأسبوع الحالي</h3>
-                                <div class="space-y-3">
-                                    <div class="flex justify-between">
-                                        <span>عدد الطلبات</span>
-                                        <span class="font-bold">156</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span>مقارنة بالأسبوع الماضي</span>
-                                        <span class="text-green-600">+12%</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span>مقارنة بمتوسط الشهر</span>
-                                        <span class="text-green-600">+9.8%</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="bg-white p-6 rounded-lg shadow">
-                                <h3 class="text-lg font-semibold mb-4">أفضل أداء أسبوعي</h3>
-                                <div class="space-y-3">
-                                    <div class="flex justify-between">
-                                        <span>الأسبوع</span>
-                                        <span class="font-bold">الأسبوع 2</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span>عدد الطلبات</span>
-                                        <span class="font-bold">189</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span>الإيرادات</span>
-                                        <span class="font-bold">$4,725</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="bg-white p-6 rounded-lg shadow">
-                                <h3 class="text-lg font-semibold mb-4">توقعات الأسبوع القادم</h3>
-                                <div class="space-y-3">
-                                    <div class="flex justify-between">
-                                        <span>عدد الطلبات المتوقع</span>
-                                        <span class="font-bold">165</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span>نمو متوقع</span>
-                                        <span class="text-green-600">+5.8%</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span>العروض المخططة</span>
-                                        <span class="font-bold">3 عروض</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Analytics Charts -->
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                            <div class="bg-white p-6 rounded-lg shadow">
-                                <h3 class="text-lg font-semibold mb-4">مقارنة الأداء الأسبوعي</h3>
-                                <div class="chart-container">
-                                    <canvas id="weeklyPerformanceChart"></canvas>
-                                </div>
-                            </div>
-                            
-                            <div class="bg-white p-6 rounded-lg shadow">
-                                <h3 class="text-lg font-semibold mb-4">توزيع العروض حسب الأسبوع</h3>
-                                <div class="chart-container">
-                                    <canvas id="weeklyOffersChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Detailed Weekly Table -->
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <h3 class="text-lg font-semibold mb-4">تفاصيل الأداء الأسبوعي</h3>
-                            <div class="data-table">
-                                <table class="w-full">
-                                    <thead>
-                                        <tr class="border-b">
-                                            <th class="text-right p-2">الأسبوع</th>
-                                            <th class="text-right p-2">العرض</th>
-                                            <th class="text-right p-2">عدد الطلبات</th>
-                                            <th class="text-right p-2">الإيرادات</th>
-                                            <th class="text-right p-2">مقارنة بالأسبوع السابق</th>
-                                            <th class="text-right p-2">ملاحظات</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="weeklyPerformanceTable">
-                                        <!-- Will be populated by JavaScript -->
-                                    </tbody>
-                                </table>
                             </div>
                         </div>
                     </section>
@@ -1385,7 +1420,7 @@
                 this.charts = {};
                 this.isAuthenticated = false;
                 this.offers = JSON.parse(localStorage.getItem('offers')) || this.getDefaultOffers();
-                this.weeklyData = JSON.parse(localStorage.getItem('weeklyData')) || [];
+                this.weeklyData = JSON.parse(localStorage.getItem('weeklyData')) || this.getDefaultWeeklyData();
                 this.marketingData = JSON.parse(localStorage.getItem('marketingData')) || [];
                 this.customerFeedback = JSON.parse(localStorage.getItem('customerFeedback')) || [];
                 this.currentOfferId = null;
@@ -1571,6 +1606,59 @@
                 ];
             }
             
+            getDefaultWeeklyData() {
+                return [
+                    {
+                        week: 1,
+                        month: 1,
+                        mainOffer: '12-piece',
+                        orders: 120,
+                        revenue: 3000,
+                        waitTime: 15.2,
+                        satisfaction: 90,
+                        complaints: 5,
+                        notes: 'بداية جيدة للشهر',
+                        date: '2025-01-07T00:00:00Z'
+                    },
+                    {
+                        week: 2,
+                        month: 1,
+                        mainOffer: '8-piece',
+                        orders: 189,
+                        revenue: 4725,
+                        waitTime: 12.8,
+                        satisfaction: 94,
+                        complaints: 3,
+                        notes: 'أفضل أداء هذا الشهر',
+                        date: '2025-01-14T00:00:00Z'
+                    },
+                    {
+                        week: 3,
+                        month: 1,
+                        mainOffer: 'family',
+                        orders: 156,
+                        revenue: 3900,
+                        waitTime: 14.5,
+                        satisfaction: 91,
+                        complaints: 4,
+                        notes: 'أداء مستقر',
+                        date: '2025-01-21T00:00:00Z'
+                    },
+                    {
+                        week: 4,
+                        month: 1,
+                        mainOffer: 'none',
+                        orders: 145,
+                        revenue: 3625,
+                        waitTime: 16.1,
+                        satisfaction: 87,
+                        complaints: 7,
+                        notes: 'انخفاض في الطلبات بدون عرض',
+                        date: '2025-01-28T00:00:00Z'
+                    }
+                ];
+            }
+            
             init() {
                 this.checkAuth();
                 this.setupEventListeners();
@@ -1578,6 +1666,7 @@
                 this.loadSectionFromURL();
                 this.loadOffers();
                 this.loadWeeklyData();
+                this.updateDashboardStats();
             }
             
             checkAuth() {
@@ -1838,8 +1927,7 @@
             lazyLoadSection(sectionName) {
                 if (sectionName === 'analytics') {
                     setTimeout(() => {
-                        this.initAnalyticsCharts();
-                        this.renderWeeklyPerformanceTable();
+                        this.loadAnalyticsData();
                         this.showToast('تم تحميل بيانات التحليلات', 'info');
                     }, 500);
                 } else if (sectionName === 'offers') {
@@ -1889,6 +1977,10 @@
                 const ctx = document.getElementById(canvasId);
                 if (ctx) {
                     try {
+                        // Destroy existing chart if it exists
+                        if (this.charts[canvasId]) {
+                            this.charts[canvasId].destroy();
+                        }
                         this.charts[canvasId] = new Chart(ctx, config);
                     } catch (error) {
                         console.error(`Error initializing chart ${canvasId}:`, error);
@@ -1967,6 +2059,7 @@
                     this.showTab('offers-list');
                     this.renderOffers();
                     this.updateDashboardOffers();
+                    this.updateDashboardStats();
                     this.showLoading(false);
                 }, 1000);
             }
@@ -2082,7 +2175,23 @@
                 };
                 
                 setTimeout(() => {
-                    this.weeklyData.push(weeklyData);
+                    // Check if week already exists for this month
+                    const existingIndex = this.weeklyData.findIndex(d => 
+                        d.month === weeklyData.month && d.week === weeklyData.week
+                    );
+                    
+                    if (existingIndex !== -1) {
+                        this.weeklyData[existingIndex] = weeklyData;
+                    } else {
+                        this.weeklyData.push(weeklyData);
+                    }
+                    
+                    // Sort by week
+                    this.weeklyData.sort((a, b) => {
+                        if (a.month !== b.month) return a.month - b.month;
+                        return a.week - b.week;
+                    });
+                    
                     localStorage.setItem('weeklyData', JSON.stringify(this.weeklyData));
                     
                     this.resetWeeklyForm();
@@ -2091,8 +2200,11 @@
                     
                     // Update analytics if on analytics section
                     if (this.currentSection === 'analytics') {
-                        this.updateAnalytics();
+                        this.loadAnalyticsData();
                     }
+                    
+                    // Update dashboard stats
+                    this.updateDashboardStats();
                 }, 1000);
             }
             
@@ -2205,6 +2317,7 @@
                         
                         this.renderOffers();
                         this.updateDashboardOffers();
+                        this.updateDashboardStats();
                         this.closeDeleteModal();
                         this.showLoading(false);
                         this.showToast('تم حذف العرض بنجاح', 'success');
@@ -2228,102 +2341,172 @@
             }
             
             loadWeeklyData() {
-                this.renderWeeklyPerformanceTable();
+                // This method is now handled in loadAnalyticsData
             }
             
-            renderOffers() {
-                const grid = document.getElementById('offersGrid');
-                if (!grid) return;
+            loadAnalyticsData() {
+                // Show loading state
+                document.getElementById('weeklyTableLoading').classList.remove('hidden');
+                document.getElementById('weeklyTableEmpty').classList.add('hidden');
+                document.getElementById('weeklyTableData').classList.add('hidden');
                 
-                const filteredOffers = this.getFilteredOffers();
+                // Initialize analytics charts
+                this.initAnalyticsCharts();
                 
-                grid.innerHTML = filteredOffers.map(offer => `
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <div class="flex justify-between mb-4">
-                            <span class="badge-${offer.type} px-3 py-1 rounded text-sm">${this.getTypeLabel(offer.type)}</span>
-                            <span class="badge-${offer.isActive ? 'active' : 'inactive'} px-3 py-1 rounded text-sm">${offer.isActive ? 'نشط' : 'منتهي'}</span>
-                        </div>
-                        <h3 class="text-lg font-semibold mb-2">${offer.name}</h3>
-                        <p class="text-gray-600 mb-4">${offer.description}</p>
-                        <div class="flex justify-between mb-4">
-                            <div>
-                                <p class="text-sm text-gray-500">السعر الأصلي</p>
-                                <p class="text-lg font-bold text-gray-400 line-through">${offer.originalPrice.toFixed(2)} درهم</p>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-500">السعر بعد الخصم</p>
-                                <p class="text-2xl font-bold text-orange-600">${offer.discountPrice.toFixed(2)} درهم</p>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 mb-4 text-sm">
-                            <div>
-                                <p class="text-gray-500">الطلبات: ${offer.orderCount || 0}</p>
-                                <p class="text-gray-500">الإيرادات: $${(offer.totalRevenue || 0).toFixed(2)}</p>
-                            </div>
-                            <div>
-                                <p class="text-gray-500">الانتظار: ${offer.avgWaitTime || 0} دقيقة</p>
-                                <p class="text-gray-500">الرضا: ${offer.satisfactionRate || 0}%</p>
-                            </div>
-                        </div>
-                        <div class="flex justify-between text-sm mb-4">
-                            <div>
-                                <p class="text-gray-500">المدة: ${this.formatDateRange(offer.startDate, offer.endDate)}</p>
-                            </div>
-                            <div>
-                                <p class="${offer.isActive ? 'text-green-600' : 'text-red-600'} font-medium">${offer.isActive ? 'نشط' : 'منتهي'}</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="app.editOffer('${offer.id}')" class="flex-1 px-3 py-2 bg-orange-100 text-orange-700 rounded hover:bg-orange-200">
-                                <i class="fas fa-edit ml-1"></i>تعديل
-                            </button>
-                            <button onclick="app.viewAnalytics('${offer.id}')" class="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">
-                                <i class="fas fa-chart-bar ml-1"></i>تحليل
-                            </button>
-                            <button onclick="app.deleteOffer('${offer.id}')" class="px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-            }
-            
-            getFilteredOffers() {
-                const typeFilter = document.getElementById('filterType')?.value || '';
-                const statusFilter = document.getElementById('filterStatus')?.value || '';
-                
-                return this.offers.filter(offer => {
-                    const typeMatch = !typeFilter || offer.type === typeFilter;
-                    const statusMatch = !statusFilter || 
-                        (statusFilter === 'active' && offer.isActive) ||
-                        (statusFilter === 'inactive' && !offer.isActive);
+                // Update analytics data
+                setTimeout(() => {
+                    this.updateAnalyticsData();
+                    this.renderWeeklyPerformanceTable();
                     
-                    return typeMatch && statusMatch;
-                });
+                    // Hide loading state
+                    document.getElementById('weeklyTableLoading').classList.add('hidden');
+                    
+                    // Check if we have data
+                    if (this.weeklyData.length === 0) {
+                        document.getElementById('weeklyTableEmpty').classList.remove('hidden');
+                    } else {
+                        document.getElementById('weeklyTableData').classList.remove('hidden');
+                    }
+                }, 1000);
             }
             
-            applyFilters() {
-                this.renderOffers();
-                this.showToast('تم تطبيق الفلاتر', 'info');
-            }
-            
-            updateAnalytics() {
+            updateAnalyticsData() {
                 // Update weekly performance chart
-                if (this.charts.weeklyPerformanceChart) {
-                    const weeklyOrders = this.weeklyData.map(d => d.orders);
-                    const weeklyRevenue = this.weeklyData.map(d => d.revenue);
+                if (this.charts.weeklyPerformanceChart && this.weeklyData.length > 0) {
+                    const labels = this.weeklyData.map(d => `الأسبوع ${d.week}`);
+                    const orders = this.weeklyData.map(d => d.orders);
+                    const revenue = this.weeklyData.map(d => d.revenue);
                     
-                    this.charts.weeklyPerformanceChart.data.datasets[0].data = weeklyOrders;
-                    this.charts.weeklyPerformanceChart.data.datasets[1].data = weeklyRevenue;
+                    this.charts.weeklyPerformanceChart.data.labels = labels;
+                    this.charts.weeklyPerformanceChart.data.datasets[0].data = orders;
+                    this.charts.weeklyPerformanceChart.data.datasets[1].data = revenue;
                     this.charts.weeklyPerformanceChart.update();
                 }
                 
-                this.renderWeeklyPerformanceTable();
+                // Update weekly offers chart
+                if (this.charts.weeklyOffersChart && this.weeklyData.length > 0) {
+                    const labels = this.weeklyData.map(d => `الأسبوع ${d.week}`);
+                    
+                    // Group by offer type
+                    const offerTypes = ['12-piece', '8-piece', 'family', 'none'];
+                    const datasets = offerTypes.map(type => ({
+                        label: this.getOfferLabel(type),
+                        data: this.weeklyData.map(d => d.mainOffer === type ? d.orders : 0),
+                        borderColor: this.getOfferColor(type),
+                        tension: 0.4
+                    }));
+                    
+                    this.charts.weeklyOffersChart.data.labels = labels;
+                    this.charts.weeklyOffersChart.data.datasets = datasets;
+                    this.charts.weeklyOffersChart.update();
+                }
+                
+                // Update analytics cards
+                this.updateAnalyticsCards();
+            }
+            
+            updateAnalyticsCards() {
+                if (this.weeklyData.length === 0) return;
+                
+                // Get current week data (last entry)
+                const currentWeek = this.weeklyData[this.weeklyData.length - 1];
+                const previousWeek = this.weeklyData.length > 1 ? this.weeklyData[this.weeklyData.length - 2] : null;
+                
+                // Update current week stats
+                document.getElementById('analyticsCurrentWeekOrders').textContent = `${currentWeek.orders} طلب`;
+                
+                // Calculate comparisons
+                if (previousWeek) {
+                    const weekComparison = ((currentWeek.orders - previousWeek.orders) / previousWeek.orders * 100).toFixed(1);
+                    const comparisonElement = document.getElementById('analyticsWeekComparison');
+                    comparisonElement.textContent = `${weekComparison > 0 ? '+' : ''}${weekComparison}%`;
+                    comparisonElement.className = weekComparison > 0 ? 'text-green-600' : 'text-red-600';
+                }
+                
+                // Find best performing week
+                const bestWeek = this.weeklyData.reduce((best, current) => 
+                    current.orders > best.orders ? current : best
+                );
+                
+                document.getElementById('bestPerformingWeek').textContent = `الأسبوع ${bestWeek.week}`;
+                document.getElementById('bestPerformingWeekOrders').textContent = bestWeek.orders;
+                document.getElementById('bestPerformingWeekRevenue').textContent = `$${bestWeek.revenue.toFixed(2)}`;
+                
+                // Calculate predictions (simple average growth)
+                const avgOrders = this.weeklyData.reduce((sum, d) => sum + d.orders, 0) / this.weeklyData.length;
+                const growthRate = previousWeek ? ((currentWeek.orders - previousWeek.orders) / previousWeek.orders) : 0;
+                const predictedOrders = Math.round(avgOrders * (1 + growthRate * 0.5));
+                
+                document.getElementById('predictedNextWeekOrders').textContent = predictedOrders;
+                document.getElementById('predictedGrowth').textContent = `${((predictedOrders - avgOrders) / avgOrders * 100).toFixed(1)}%`;
+            }
+            
+            getOfferColor(offer) {
+                const colors = {
+                    '12-piece': '#F59E0B',
+                    '8-piece': '#3B82F6',
+                    'family': '#10B981',
+                    'none': '#6B7280'
+                };
+                return colors[offer] || '#6B7280';
+            }
+            
+            updateDashboardStats() {
+                if (this.weeklyData.length === 0) return;
+                
+                // Get current and previous week data
+                const currentWeek = this.weeklyData[this.weeklyData.length - 1];
+                const previousWeek = this.weeklyData.length > 1 ? this.weeklyData[this.weeklyData.length - 2] : null;
+                
+                // Update dashboard cards
+                document.getElementById('currentWeekOrders').textContent = `${currentWeek.orders} طلب`;
+                
+                if (previousWeek) {
+                    const weekComparison = ((currentWeek.orders - previousWeek.orders) / previousWeek.orders * 100).toFixed(1);
+                    const comparisonElement = document.getElementById('currentWeekComparison');
+                    comparisonElement.textContent = `${weekComparison > 0 ? '+' : ''}${weekComparison}% عن الأسبوع الماضي`;
+                    comparisonElement.className = weekComparison > 0 ? 'text-sm positive' : 'text-sm negative';
+                }
+                
+                // Update previous week
+                if (previousWeek) {
+                    document.getElementById('lastWeekOrders').textContent = `${previousWeek.orders} طلب`;
+                    
+                    const twoWeeksAgo = this.weeklyData.length > 2 ? this.weeklyData[this.weeklyData.length - 3] : null;
+                    if (twoWeeksAgo) {
+                        const twoWeekComparison = ((previousWeek.orders - twoWeeksAgo.orders) / twoWeeksAgo.orders * 100).toFixed(1);
+                        const comparisonElement = document.getElementById('lastWeekComparison');
+                        comparisonElement.textContent = `${twoWeekComparison > 0 ? '+' : ''}${twoWeekComparison}% عن أسبوعين`;
+                        comparisonElement.className = twoWeekComparison > 0 ? 'text-sm positive' : 'text-sm negative';
+                    }
+                }
+                
+                // Update month average
+                const currentMonth = currentWeek.month;
+                const monthData = this.weeklyData.filter(d => d.month === currentMonth);
+                const monthAvg = Math.round(monthData.reduce((sum, d) => sum + d.orders, 0) / monthData.length);
+                
+                document.getElementById('monthAverageOrders').textContent = `${monthAvg} طلب`;
+                
+                // Compare with previous month
+                const previousMonthData = this.weeklyData.filter(d => d.month === currentMonth - 1);
+                if (previousMonthData.length > 0) {
+                    const previousMonthAvg = previousMonthData.reduce((sum, d) => sum + d.orders, 0) / previousMonthData.length;
+                    const monthComparison = ((monthAvg - previousMonthAvg) / previousMonthAvg * 100).toFixed(1);
+                    const comparisonElement = document.getElementById('monthComparison');
+                    comparisonElement.textContent = `${monthComparison > 0 ? '+' : ''}${monthComparison}% عن الشهر الماضي`;
+                    comparisonElement.className = monthComparison > 0 ? 'text-sm positive' : 'text-sm negative';
+                }
             }
             
             renderWeeklyPerformanceTable() {
                 const tbody = document.getElementById('weeklyPerformanceTable');
                 if (!tbody) return;
+                
+                if (this.weeklyData.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4">لا توجد بيانات متاحة</td></tr>';
+                    return;
+                }
                 
                 tbody.innerHTML = this.weeklyData.map(data => {
                     const previousWeek = this.weeklyData.find(d => 
@@ -2444,6 +2627,87 @@
                         </td>
                     </tr>
                 `).join('');
+            }
+            
+            renderOffers() {
+                const grid = document.getElementById('offersGrid');
+                if (!grid) return;
+                
+                const filteredOffers = this.getFilteredOffers();
+                
+                grid.innerHTML = filteredOffers.map(offer => `
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex justify-between mb-4">
+                            <span class="badge-${offer.type} px-3 py-1 rounded text-sm">${this.getTypeLabel(offer.type)}</span>
+                            <span class="badge-${offer.isActive ? 'active' : 'inactive'} px-3 py-1 rounded text-sm">${offer.isActive ? 'نشط' : 'منتهي'}</span>
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">${offer.name}</h3>
+                        <p class="text-gray-600 mb-4">${offer.description}</p>
+                        <div class="flex justify-between mb-4">
+                            <div>
+                                <p class="text-sm text-gray-500">السعر الأصلي</p>
+                                <p class="text-lg font-bold text-gray-400 line-through">${offer.originalPrice.toFixed(2)} درهم</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">السعر بعد الخصم</p>
+                                <p class="text-2xl font-bold text-orange-600">${offer.discountPrice.toFixed(2)} درهم</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mb-4 text-sm">
+                            <div>
+                                <p class="text-gray-500">الطلبات: ${offer.orderCount || 0}</p>
+                                <p class="text-gray-500">الإيرادات: $${(offer.totalRevenue || 0).toFixed(2)}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">الانتظار: ${offer.avgWaitTime || 0} دقيقة</p>
+                                <p class="text-gray-500">الرضا: ${offer.satisfactionRate || 0}%</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between text-sm mb-4">
+                            <div>
+                                <p class="text-gray-500">المدة: ${this.formatDateRange(offer.startDate, offer.endDate)}</p>
+                            </div>
+                            <div>
+                                <p class="${offer.isActive ? 'text-green-600' : 'text-red-600'} font-medium">${offer.isActive ? 'نشط' : 'منتهي'}</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="app.editOffer('${offer.id}')" class="flex-1 px-3 py-2 bg-orange-100 text-orange-700 rounded hover:bg-orange-200">
+                                <i class="fas fa-edit ml-1"></i>تعديل
+                            </button>
+                            <button onclick="app.viewAnalytics('${offer.id}')" class="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">
+                                <i class="fas fa-chart-bar ml-1"></i>تحليل
+                            </button>
+                            <button onclick="app.deleteOffer('${offer.id}')" class="px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            getFilteredOffers() {
+                const typeFilter = document.getElementById('filterType')?.value || '';
+                const statusFilter = document.getElementById('filterStatus')?.value || '';
+                
+                return this.offers.filter(offer => {
+                    const typeMatch = !typeFilter || offer.type === typeFilter;
+                    const statusMatch = !statusFilter || 
+                        (statusFilter === 'active' && offer.isActive) ||
+                        (statusFilter === 'inactive' && !offer.isActive);
+                    
+                    return typeMatch && statusMatch;
+                });
+            }
+            
+            applyFilters() {
+                this.renderOffers();
+                this.showToast('تم تطبيق الفلاتر', 'info');
+            }
+            
+            updateAnalytics() {
+                // This method is now handled by updateAnalyticsData
+                this.loadAnalyticsData();
             }
             
             getTypeLabel(type) {
