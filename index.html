@@ -1,3701 +1,930 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة العروض المتقدم - Crispy Chicken</title>
+    <title>Crispy Chicken Dashboard (AED)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        :root {
-            --primary-color: #667eea;
-            --secondary-color: #764ba2;
-            --success-color: #4CAF50;
-            --warning-color: #FF9800;
-            --danger-color: #f44336;
-            --info-color: #2196F3;
-            --dark-color: #1a202c;
-            --light-bg: #f8f9fa;
-            --white: #ffffff;
-            --text-primary: #333333;
-            --text-secondary: #666666;
-            --border-color: #e0e0e0;
-            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
-            --shadow-md: 0 4px 8px rgba(0,0,0,0.12);
-            --shadow-lg: 0 8px 16px rgba(0,0,0,0.15);
-            --shadow-xl: 0 12px 24px rgba(0,0,0,0.18);
-            --transition: all 0.3s ease;
-            --gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            --gradient-success: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-            --gradient-warning: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
-            --gradient-danger: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
-            --gradient-info: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
-        }
-        
         body {
-            background: #f0f2f5;
-            min-height: 100vh;
-            color: var(--text-primary);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-        
-        /* Professional Loading Screen */
-        .loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--gradient-primary);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease;
-        }
-        
-        .loading-screen.hide {
-            opacity: 0;
-            pointer-events: none;
-        }
-        
-        .loading-content {
-            text-align: center;
-            color: var(--white);
-        }
-        
-        .loading-logo {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            animation: pulse 2s infinite;
-        }
-        
-        .loading-text {
-            font-size: 1.5rem;
-            font-weight: 300;
-            margin-bottom: 10px;
-        }
-        
-        .loading-bar {
-            width: 200px;
-            height: 4px;
-            background: rgba(255,255,255,0.3);
-            border-radius: 2px;
-            overflow: hidden;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            max-width: 1400px;
             margin: 0 auto;
+            padding: 20px;
+            background-color: #f9fafb;
+            color: #1f2937;
         }
-        
-        .loading-progress {
-            height: 100%;
-            background: var(--white);
-            border-radius: 2px;
-            animation: loading 2s infinite;
-        }
-        
-        @keyframes loading {
-            0% { width: 0; }
-            50% { width: 70%; }
-            100% { width: 100%; }
-        }
-        
-        /* Main Container */
-        .main-container {
-            display: flex;
-            min-height: 100vh;
-        }
-        
-        /* Sidebar */
-        .sidebar {
-            width: 280px;
-            background: var(--white);
-            box-shadow: var(--shadow-md);
-            position: fixed;
-            right: 0;
-            top: 0;
-            height: 100vh;
-            z-index: 1000;
-            transition: var(--transition);
-            overflow-y: auto;
-        }
-        
-        .sidebar.collapsed {
-            width: 80px;
-        }
-        
-        .sidebar-header {
-            background: var(--gradient-primary);
-            color: var(--white);
-            padding: 25px 20px;
+        h1, h2 {
             text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .sidebar-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: pulse 15s ease-in-out infinite;
-        }
-        
-        .sidebar-logo {
-            font-size: 2rem;
-            margin-bottom: 10px;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .sidebar-title {
-            font-size: 1.1rem;
-            font-weight: 300;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .sidebar-menu {
-            padding: 20px 0;
-        }
-        
-        .menu-section {
-            margin-bottom: 30px;
-        }
-        
-        .menu-section-title {
-            padding: 0 20px 10px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .menu-item {
-            display: flex;
-            align-items: center;
-            padding: 15px 20px;
-            cursor: pointer;
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .menu-item::before {
-            content: '';
-            position: absolute;
-            right: 0;
-            top: 0;
-            height: 100%;
-            width: 4px;
-            background: var(--primary-color);
-            transform: translateX(100%);
-            transition: var(--transition);
-        }
-        
-        .menu-item:hover {
-            background: rgba(102, 126, 234, 0.05);
-        }
-        
-        .menu-item:hover::before {
-            transform: translateX(0);
-        }
-        
-        .menu-item.active {
-            background: rgba(102, 126, 234, 0.1);
-            color: var(--primary-color);
-            font-weight: 600;
-        }
-        
-        .menu-item.active::before {
-            transform: translateX(0);
-        }
-        
-        .menu-item i {
-            margin-left: 15px;
-            width: 20px;
-            text-align: center;
-            font-size: 1.1rem;
-        }
-        
-        .menu-item span {
-            flex: 1;
-            transition: var(--transition);
-        }
-        
-        .sidebar.collapsed .menu-item span {
-            opacity: 0;
-        }
-        
-        .menu-badge {
-            background: var(--danger-color);
-            color: var(--white);
-            font-size: 0.7rem;
-            padding: 2px 8px;
-            border-radius: 10px;
-            min-width: 18px;
-            text-align: center;
-        }
-        
-        /* Content Area */
-        .content-area {
-            flex: 1;
-            margin-right: 280px;
-            transition: var(--transition);
-            min-height: 100vh;
-        }
-        
-        .content-area.expanded {
-            margin-right: 80px;
-        }
-        
-        /* Top Bar */
-        .top-bar {
-            background: var(--white);
-            box-shadow: var(--shadow-sm);
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        
-        .top-bar-left {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        
-        .menu-toggle {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            color: var(--text-primary);
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 8px;
-            transition: var(--transition);
-        }
-        
-        .menu-toggle:hover {
-            background: var(--light-bg);
-        }
-        
-        .search-box {
-            position: relative;
-            flex: 1;
-            max-width: 500px;
-        }
-        
-        .search-box input {
-            width: 100%;
-            padding: 10px 45px 10px 20px;
-            border: 2px solid var(--border-color);
-            border-radius: 25px;
-            font-size: 0.9rem;
-            transition: var(--transition);
-        }
-        
-        .search-box input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        
-        .search-box i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-secondary);
-        }
-        
-        .top-bar-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        
-        /* Notifications */
-        .notification-center {
-            position: relative;
-            cursor: pointer;
-        }
-        
-        .notification-bell {
-            font-size: 1.2rem;
-            color: var(--text-primary);
-            transition: var(--transition);
-        }
-        
-        .notification-bell:hover {
-            color: var(--primary-color);
-        }
-        
-        .notification-badge {
-            position: absolute;
-            top: -8px;
-            left: -8px;
-            background: var(--danger-color);
-            color: var(--white);
-            font-size: 0.7rem;
-            padding: 2px 6px;
-            border-radius: 10px;
-            min-width: 18px;
-            text-align: center;
-            animation: pulse 2s infinite;
-        }
-        
-        .notification-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background: var(--white);
-            border-radius: 12px;
-            box-shadow: var(--shadow-xl);
-            width: 350px;
-            max-height: 400px;
-            overflow-y: auto;
-            margin-top: 10px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: var(--transition);
-        }
-        
-        .notification-dropdown.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        
-        .notification-header {
-            padding: 15px 20px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .notification-item {
-            padding: 15px 20px;
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        
-        .notification-item:hover {
-            background: var(--light-bg);
-        }
-        
-        .notification-item.unread {
-            background: rgba(102, 126, 234, 0.05);
-        }
-        
-        .notification-title {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: var(--text-primary);
-        }
-        
-        .notification-text {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            margin-bottom: 5px;
-        }
-        
-        .notification-time {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-        
-        /* User Menu */
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            padding: 8px 15px;
-            border-radius: 25px;
-            transition: var(--transition);
-        }
-        
-        .user-menu:hover {
-            background: var(--light-bg);
-        }
-        
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--gradient-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--white);
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-        
-        .user-info {
-            text-align: right;
-        }
-        
-        .user-name {
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        
-        .user-role {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-        
-        /* Page Content */
-        .page-content {
-            padding: 30px;
-        }
-        
-        .page-header {
-            margin-bottom: 30px;
-        }
-        
-        .page-title {
-            font-size: 2rem;
+            color: #1f2937;
             font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .page-title i {
-            color: var(--primary-color);
-        }
-        
-        .page-subtitle {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-        }
-        
-        /* Breadcrumb */
-        .breadcrumb {
-            display: flex;
-            align-items: center;
             margin-bottom: 20px;
-            font-size: 0.9rem;
         }
-        
-        .breadcrumb-item {
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        h1 {
+            font-size: 2.8em;
+            letter-spacing: -0.025em;
         }
-        
-        .breadcrumb-item:not(:last-child)::after {
-            content: '/';
-            color: var(--border-color);
-            margin-right: 8px;
+        h2 {
+            font-size: 1.8em;
         }
-        
-        .breadcrumb-item.active {
-            color: var(--primary-color);
-            font-weight: 600;
-        }
-        
-        /* Cards */
-        .card {
-            background: var(--white);
-            border-radius: 16px;
-            box-shadow: var(--shadow-md);
-            padding: 25px;
-            margin-bottom: 25px;
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .card:hover {
-            box-shadow: var(--shadow-lg);
-            transform: translateY(-2px);
-        }
-        
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--border-color);
-        }
-        
-        .card-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .card-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        /* Stats Cards */
-        .stats-grid {
+        .dashboard {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-card {
-            background: var(--white);
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: var(--shadow-md);
-            position: relative;
-            overflow: hidden;
-            transition: var(--transition);
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-xl);
-        }
-        
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-        }
-        
-        .stat-card.primary::before {
-            background: var(--gradient-primary);
-        }
-        
-        .stat-card.success::before {
-            background: var(--gradient-success);
-        }
-        
-        .stat-card.warning::before {
-            background: var(--gradient-warning);
-        }
-        
-        .stat-card.danger::before {
-            background: var(--gradient-danger);
-        }
-        
-        .stat-card.info::before {
-            background: var(--gradient-info);
-        }
-        
-        .stat-icon {
-            width: 60px;
-            height: 60px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+            background: white;
+            padding: 24px;
             border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
-        
-        .stat-card.primary .stat-icon {
-            background: rgba(102, 126, 234, 0.1);
-            color: var(--primary-color);
+        .dashboard-card {
+            padding: 16px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            text-align: center;
         }
-        
-        .stat-card.success .stat-icon {
-            background: rgba(76, 175, 80, 0.1);
-            color: var(--success-color);
+        .dashboard-card h3 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+            color: #374151;
         }
-        
-        .stat-card.warning .stat-icon {
-            background: rgba(255, 152, 0, 0.1);
-            color: var(--warning-color);
-        }
-        
-        .stat-card.danger .stat-icon {
-            background: rgba(244, 67, 54, 0.1);
-            color: var(--danger-color);
-        }
-        
-        .stat-card.info .stat-icon {
-            background: rgba(33, 150, 243, 0.1);
-            color: var(--info-color);
-        }
-        
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 5px;
-        }
-        
-        .stat-label {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-        }
-        
-        .stat-change {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.85rem;
+        .dashboard-card p {
+            font-size: 1.5em;
             font-weight: 600;
+            color: #10b981;
         }
-        
-        .stat-change.up {
-            color: var(--success-color);
-        }
-        
-        .stat-change.down {
-            color: var(--danger-color);
-        }
-        
-        /* Charts */
-        .chart-container {
-            background: var(--white);
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: var(--shadow-md);
-            margin-bottom: 25px;
-            position: relative;
-        }
-        
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .tab-container {
             margin-bottom: 20px;
+            text-align: center;
         }
-        
-        .chart-title {
-            font-size: 1.2rem;
+        .tab-button {
+            background-color: #f1f5f9;
+            color: #1f2937;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
             font-weight: 600;
-            color: var(--text-primary);
+            margin: 0 5px;
+            transition: background-color 0.2s ease;
         }
-        
-        .chart-actions {
+        .tab-button.active {
+            background-color: #10b981;
+            color: white;
+        }
+        .tab-button:hover {
+            background-color: #059669;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .offer-container, .manage-offers, .report-container, .branches-container {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 40px;
+        }
+        .item, .form-group {
+            margin-bottom: 20px;
             display: flex;
-            gap: 10px;
-        }
-        
-        .chart-wrapper {
-            position: relative;
-            height: 400px;
-        }
-        
-        .chart-wrapper.small {
-            height: 300px;
-        }
-        
-        /* Tables */
-        .table-container {
-            background: var(--white);
-            border-radius: 16px;
-            box-shadow: var(--shadow-md);
-            overflow: hidden;
-            margin-bottom: 25px;
-        }
-        
-        .table-header {
-            padding: 20px 25px;
-            border-bottom: 2px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
             align-items: center;
-        }
-        
-        .table-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        
-        .table-actions {
-            display: flex;
             gap: 10px;
+            position: relative;
         }
-        
-        .data-table {
+        label {
+            display: inline-block;
+            width: 160px;
+            font-weight: 600;
+            color: #374151;
+        }
+        select, input[type="text"], input[type="date"], input[type="number"] {
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            width: 200px;
+            background-color: #f9fafb;
+            transition: border-color 0.2s ease;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: #10b981;
+        }
+        button {
+            background-color: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+        button:hover {
+            background-color: #059669;
+        }
+        button.edit-btn, button.export-btn {
+            background-color: #2563eb;
+        }
+        button.edit-btn:hover, button.export-btn:hover {
+            background-color: #1e40af;
+        }
+        #total {
+            font-size: 1.3em;
+            margin-top: 20px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .filter-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .filter-container select {
+            width: 200px;
+            font-size: 1em;
+        }
+        table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 40px;
+            overflow: hidden;
         }
-        
-        .data-table th,
-        .data-table td {
-            padding: 15px 25px;
-            text-align: right;
-            border-bottom: 1px solid var(--border-color);
+        th, td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
         }
-        
-        .data-table th {
-            background: var(--light-bg);
+        th {
+            background-color: #10b981;
+            color: white;
             font-weight: 600;
-            color: var(--text-primary);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            font-size: 0.9rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            font-size: 0.9em;
+            letter-spacing: 0.05em;
         }
-        
-        .data-table tr:hover {
-            background: rgba(102, 126, 234, 0.05);
+        .report-table th {
+            background-color: #2563eb;
         }
-        
-        .data-table .actions {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
+        tr:last-child td {
+            border-bottom: none;
         }
-        
-        .data-table .actions button {
-            padding: 6px 12px;
-            font-size: 0.8rem;
+        tr:hover {
+            background-color: #f1f5f9;
+            transition: background-color 0.2s ease;
         }
-        
-        /* Forms */
-        .form-container {
-            background: var(--white);
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: var(--shadow-md);
-            margin-bottom: 25px;
+        a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
         }
-        
-        .form-header {
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--border-color);
+        a:hover {
+            text-decoration: underline;
+            color: #1e40af;
         }
-        
-        .form-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--primary-color);
+        .platforms, .offers {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 40px;
         }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-row {
+        .platform-list, .offer-list {
+            list-style: none;
+            padding: 0;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            gap: 16px;
         }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--text-primary);
-            font-size: 0.9rem;
-        }
-        
-        .required {
-            color: var(--danger-color);
-        }
-        
-        input,
-        select,
-        textarea {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid var(--border-color);
+        .platform-list li, .offer-list li {
+            padding: 16px;
+            background: #f1f5f9;
             border-radius: 8px;
-            font-size: 1rem;
-            transition: var(--transition);
-            background: var(--white);
-        }
-        
-        input:focus,
-        select:focus,
-        textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        
-        textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-        
-        /* Buttons */
-        .btn {
-            background: var(--gradient-primary);
-            color: var(--white);
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
+            display: flex;
+            flex-direction: column;
             gap: 8px;
-            position: relative;
-            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.2);
-            transition: var(--transition);
-        }
-        
-        .btn:hover::before {
-            left: 100%;
-        }
-        
-        .btn:hover {
+        .platform-list li:hover, .offer-list li:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        
-        .btn:active {
-            transform: translateY(0);
+        .platform-list span, .platform-list a, .offer-list span, .offer-list a {
+            font-size: 1em;
+            font-weight: 500;
+            color: #1f2937;
         }
-        
-        .btn-sm {
-            padding: 8px 16px;
-            font-size: 0.85rem;
+        .platform-list a, .offer-list a {
+            color: #10b981;
         }
-        
-        .btn-lg {
-            padding: 15px 30px;
-            font-size: 1.1rem;
+        .platform-list a:hover, .offer-list a:hover {
+            color: #059669;
         }
-        
-        .btn-block {
-            width: 100%;
-            justify-content: center;
-        }
-        
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--primary-color);
-            color: var(--primary-color);
-        }
-        
-        .btn-outline:hover {
-            background: var(--primary-color);
-            color: var(--white);
-        }
-        
-        .btn-success {
-            background: var(--gradient-success);
-        }
-        
-        .btn-warning {
-            background: var(--gradient-warning);
-        }
-        
-        .btn-danger {
-            background: var(--gradient-danger);
-        }
-        
-        .btn-info {
-            background: var(--gradient-info);
-        }
-        
-        .btn-icon {
-            padding: 10px;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* Status Badges */
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
+        .offer-list .offer-title {
             font-weight: 600;
+            color: #10b981;
         }
-        
-        .status-active {
-            background: rgba(76, 175, 80, 0.1);
-            color: var(--success-color);
+        .offer-list .offer-dates {
+            font-size: 0.9em;
+            color: #6b7280;
         }
-        
-        .status-inactive {
-            background: rgba(244, 67, 54, 0.1);
-            color: var(--danger-color);
+        .offer-list .offer-details {
+            font-size: 0.95em;
+            line-height: 1.4;
         }
-        
-        .status-pending {
-            background: rgba(255, 152, 0, 0.1);
-            color: var(--warning-color);
+        .offer-list .offer-availability {
+            font-weight: 500;
+            color: #374151;
         }
-        
-        /* Map Container */
-        .map-container {
-            background: var(--white);
-            border-radius: 16px;
-            box-shadow: var(--shadow-md);
-            overflow: hidden;
+        .offer-list .active {
+            background: #ecfdf5;
+            border: 2px solid #10b981;
+        }
+        .offer-list .active .offer-title {
+            color: #059669;
+        }
+        .chart-container {
+            margin-top: 20px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .tooltip {
             position: relative;
-            height: 500px;
         }
-        
-        .map-controls {
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
             position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
-            background: var(--white);
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .map-controls button {
-            padding: 8px 15px;
-            font-size: 0.9rem;
-            border-radius: 8px;
-        }
-        
-        #branchesMap {
-            width: 100%;
-            height: 100%;
-        }
-        
-        /* Toast Notifications */
-        .toast-container {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            z-index: 2000;
-        }
-        
-        .toast {
-            background: var(--white);
-            border-radius: 12px;
-            padding: 15px 20px;
-            margin-bottom: 10px;
-            box-shadow: var(--shadow-xl);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            min-width: 300px;
-            animation: slideInRight 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .toast::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 4px;
-            height: 100%;
-        }
-        
-        .toast.success::before {
-            background: var(--success-color);
-        }
-        
-        .toast.error::before {
-            background: var(--danger-color);
-        }
-        
-        .toast.warning::before {
-            background: var(--warning-color);
-        }
-        
-        .toast.info::before {
-            background: var(--info-color);
-        }
-        
-        .toast-icon {
-            font-size: 1.5rem;
-        }
-        
-        .toast.success .toast-icon {
-            color: var(--success-color);
-        }
-        
-        .toast.error .toast-icon {
-            color: var(--danger-color);
-        }
-        
-        .toast.warning .toast-icon {
-            color: var(--warning-color);
-        }
-        
-        .toast.info .toast-icon {
-            color: var(--info-color);
-        }
-        
-        .toast-content {
-            flex: 1;
-        }
-        
-        .toast-title {
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-        
-        .toast-message {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-        
-        .toast-close {
-            cursor: pointer;
-            color: var(--text-secondary);
-            transition: var(--transition);
-        }
-        
-        .toast-close:hover {
-            color: var(--text-primary);
-        }
-        
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            backdrop-filter: blur(5px);
-        }
-        
-        .modal.active {
-            display: flex;
-        }
-        
-        .modal-content {
-            background: var(--white);
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 900px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-            animation: modalSlideIn 0.3s ease;
-        }
-        
-        @keyframes modalSlideIn {
-            from {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--border-color);
-        }
-        
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-        
-        .modal-close {
-            background: var(--danger-color);
-            color: var(--white);
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            font-size: 1.2rem;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: var(--transition);
-        }
-        
-        .modal-close:hover {
-            transform: rotate(90deg);
-        }
-        
-        /* Loading Spinner */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            opacity: 0;
-            visibility: hidden;
-            transition: var(--transition);
-        }
-        
-        .loading-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid var(--border-color);
-            border-top-color: var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        /* Filter Section */
-        .filter-section {
-            background: var(--white);
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: var(--shadow-md);
-            margin-bottom: 25px;
-        }
-        
-        .filter-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .filter-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        
-        .filter-controls {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-        
-        /* Branch Cards */
-        .branch-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 25px;
-        }
-        
-        .branch-card {
-            background: var(--white);
-            border-radius: 16px;
-            box-shadow: var(--shadow-md);
-            overflow: hidden;
-            transition: var(--transition);
-            position: relative;
-        }
-        
-        .branch-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-xl);
-        }
-        
-        .branch-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: var(--gradient-primary);
-        }
-        
-        .branch-header {
-            padding: 20px;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-        }
-        
-        .branch-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 5px;
-        }
-        
-        .branch-location {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .branch-body {
-            padding: 20px;
-        }
-        
-        .branch-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .branch-stat {
-            text-align: center;
-            padding: 15px;
-            background: var(--light-bg);
-            border-radius: 12px;
-        }
-        
-        .branch-stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-        
-        .branch-stat-label {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            margin-top: 5px;
-        }
-        
-        .branch-info {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .branch-info-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-        
-        .branch-info-item i {
-            color: var(--primary-color);
-            width: 20px;
-        }
-        
-        .branch-actions {
-            padding: 15px 20px;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            gap: 10px;
-        }
-        
-        /* Quick Actions */
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .quick-action {
-            background: var(--white);
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: var(--shadow-md);
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .quick-action::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--gradient-primary);
-            opacity: 0;
-            transition: var(--transition);
-        }
-        
-        .quick-action:hover::before {
-            opacity: 0.1;
-        }
-        
-        .quick-action:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-xl);
-        }
-        
-        .quick-action-icon {
-            font-size: 3rem;
-            color: var(--primary-color);
-            margin-bottom: 15px;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .quick-action-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            position: relative;
-            z-index: 1;
-        }
-        
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .stats-grid {
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            }
-            
-            .branch-grid {
-                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            }
-        }
-        
-        @media (max-width: 992px) {
-            .sidebar {
-                transform: translateX(100%);
-            }
-            
-            .sidebar.show {
-                transform: translateX(0);
-            }
-            
-            .content-area {
-                margin-right: 0;
-            }
-            
-            .content-area.expanded {
-                margin-right: 0;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            }
-            
-            .quick-actions {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .page-content {
-                padding: 15px;
-            }
-            
-            .page-title {
-                font-size: 1.5rem;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .branch-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-            
-            .filter-controls {
-                grid-template-columns: 1fr;
-            }
-            
-            .table-container {
-                overflow-x: auto;
-            }
-            
-            .data-table {
-                min-width: 600px;
-            }
-            
-            .toast {
-                min-width: 250px;
-                font-size: 0.9rem;
-            }
-            
-            .notification-dropdown {
-                width: 300px;
-            }
-        }
-        
-        @media (max-width: 576px) {
-            .top-bar {
-                padding: 10px 15px;
-            }
-            
-            .search-box {
-                display: none;
-            }
-            
-            .user-info {
-                display: none;
-            }
-            
-            .card {
-                padding: 15px;
-            }
-            
-            .btn {
-                padding: 10px 20px;
-                font-size: 0.9rem;
-            }
-        }
-        
-        /* Dark Mode */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --light-bg: #2d3748;
-                --white: #1a202c;
-                --text-primary: #e2e8f0;
-                --text-secondary: #a0aec0;
-                --border-color: #4a5568;
-            }
-            
-            body {
-                background: #1a202c;
-            }
-            
-            .sidebar,
-            .top-bar,
-            .card,
-            .stat-card,
-            .chart-container,
-            .table-container,
-            .form-container,
-            .filter-section,
-            .branch-card,
-            .quick-action,
-            .toast,
-            .modal-content,
-            .map-controls {
-                background: #2d3748;
-            }
-            
-            input,
-            select,
-            textarea {
-                background: #2d3748;
-                color: var(--text-primary);
-                border-color: var(--border-color);
-            }
-            
-            .data-table th {
-                background: var(--light-bg);
-            }
-            
-            .branch-stat {
-                background: var(--light-bg);
-            }
-        }
-        
-        /* Animations */
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.1); opacity: 0.8; }
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.5s ease;
-        }
-        
-        /* Print Styles */
-        @media print {
-            .sidebar,
-            .top-bar,
-            .toast-container,
-            .loading-overlay,
-            .modal {
-                display: none !important;
-            }
-            
-            .content-area {
-                margin-right: 0 !important;
-            }
-            
-            .card,
-            .chart-container,
-            .table-container {
-                box-shadow: none !important;
-                border: 1px solid var(--border-color) !important;
-                break-inside: avoid;
-            }
-            
-            .page-break {
-                page-break-before: always;
-            }
-        }
-        
-        /* Accessibility */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0,0,0,0);
+            background: #1f2937;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            z-index: 10;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
             white-space: nowrap;
-            border: 0;
         }
-        
-        /* Focus styles */
-        button:focus,
-        input:focus,
-        select:focus,
-        textarea:focus {
-            outline: 2px solid var(--primary-color);
-            outline-offset: 2px;
+        .month-filter {
+            text-align: center;
+            margin-bottom: 20px;
         }
-        
-        /* Skip to main content */
-        .skip-link {
-            position: absolute;
-            top: -40px;
-            left: 0;
-            background: var(--primary-color);
-            color: var(--white);
-            padding: 8px;
-            text-decoration: none;
-            z-index: 100;
-        }
-        
-        .skip-link:focus {
-            top: 0;
+        .month-filter select {
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background-color: #f9fafb;
         }
     </style>
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div class="loading-screen" id="loadingScreen">
-        <div class="loading-content">
-            <div class="loading-logo">
-                <i class="fas fa-drumstick-bite"></i>
-            </div>
-            <div class="loading-text">نظام إدارة العروض المتقدم</div>
-            <div class="loading-bar">
-                <div class="loading-progress"></div>
-            </div>
+    <h1>Crispy Chicken Dashboard (AED)</h1>
+    <div class="dashboard">
+        <div class="dashboard-card">
+            <h3>Total Branches</h3>
+            <p id="branch-count">8</p>
+        </div>
+        <div class="dashboard-card">
+            <h3>Active Offers</h3>
+            <p id="active-offers">0</p>
+        </div>
+        <div class="dashboard-card">
+            <h3>Order Total</h3>
+            <p id="order-total">0.00 AED</p>
         </div>
     </div>
-    
-    <a href="#main-content" class="skip-link">تخطي إلى المحتوى الرئيسي</a>
-    
-    <div class="main-container">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">
-                    <i class="fas fa-drumstick-bite"></i>
-                </div>
-                <div class="sidebar-title">Crispy Chicken</div>
-            </div>
-            
-            <nav class="sidebar-menu">
-                <div class="menu-section">
-                    <div class="menu-section-title">الرئيسية</div>
-                    <div class="menu-item active" onclick="showPage('dashboard')">
-                        <i class="fas fa-tachometer-alt"></i>
-                        <span>لوحة التحكم</span>
-                    </div>
-                </div>
-                
-                <div class="menu-section">
-                    <div class="menu-section-title">الإدارة</div>
-                    <div class="menu-item" onclick="showPage('offers')">
-                        <i class="fas fa-tags"></i>
-                        <span>إدارة العروض</span>
-                    </div>
-                    <div class="menu-item" onclick="showPage('sales')">
-                        <i class="fas fa-chart-line"></i>
-                        <span>تسجيل المبيعات</span>
-                    </div>
-                    <div class="menu-item" onclick="showPage('branches')">
-                        <i class="fas fa-store"></i>
-                        <span>إدارة الفروع</span>
-                    </div>
-                    <div class="menu-item" onclick="showPage('platforms')">
-                        <i class="fas fa-globe"></i>
-                        <span>إدارة المنصات</span>
-                    </div>
-                </div>
-                
-                <div class="menu-section">
-                    <div class="menu-section-title">التحليلات</div>
-                    <div class="menu-item" onclick="showPage('analysis')">
-                        <i class="fas fa-analytics"></i>
-                        <span>التحليلات المتقدمة</span>
-                    </div>
-                    <div class="menu-item" onclick="showPage('reports')">
-                        <i class="fas fa-file-alt"></i>
-                        <span>التقارير</span>
-                    </div>
-                </div>
-                
-                <div class="menu-section">
-                    <div class="menu-section-title">أخرى</div>
-                    <div class="menu-item" onclick="showPage('pastOffers')">
-                        <i class="fas fa-history"></i>
-                        <span>العروض السابقة</span>
-                        <span class="menu-badge">9</span>
-                    </div>
-                    <div class="menu-item" onclick="showPage('settings')">
-                        <i class="fas fa-cog"></i>
-                        <span>الإعدادات</span>
-                    </div>
-                </div>
-            </nav>
-        </aside>
-        
-        <!-- Content Area -->
-        <main class="content-area" id="contentArea">
-            <!-- Top Bar -->
-            <header class="top-bar">
-                <div class="top-bar-left">
-                    <button class="menu-toggle" onclick="toggleSidebar()">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" placeholder="ابحث في النظام..." id="globalSearch">
-                    </div>
-                </div>
-                
-                <div class="top-bar-right">
-                    <!-- Notifications -->
-                    <div class="notification-center" onclick="toggleNotifications()">
-                        <i class="fas fa-bell notification-bell"></i>
-                        <span class="notification-badge" id="notificationCount">3</span>
-                        
-                        <div class="notification-dropdown" id="notificationDropdown">
-                            <div class="notification-header">
-                                <h3>الإشعارات</h3>
-                                <button class="btn btn-sm btn-outline" onclick="markAllAsRead()">
-                                    <i class="fas fa-check-double"></i> تحديد الكل كمقروء
-                                </button>
-                            </div>
-                            <div id="notificationList">
-                                <div class="notification-item unread">
-                                    <div class="notification-title">عرض ينتهي قريباً</div>
-                                    <div class="notification-text">عرض وجبة العائلة سينتهي خلال يومين</div>
-                                    <div class="notification-time">منذ ساعة</div>
-                                </div>
-                                <div class="notification-item unread">
-                                    <div class="notification-title">هدف المبيعات</div>
-                                    <div class="notification-text">لقد حققت 85% من هدف المبيعات الشهري</div>
-                                    <div class="notification-time">منذ 3 ساعات</div>
-                                </div>
-                                <div class="notification-item">
-                                    <div class="notification-title">تحديث النظام</div>
-                                    <div class="notification-text">تم إضافة ميزات جديدة للنظام</div>
-                                    <div class="notification-time">منذ يوم</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- User Menu -->
-                    <div class="user-menu">
-                        <div class="user-avatar">م</div>
-                        <div class="user-info">
-                            <div class="user-name">مدير النظام</div>
-                            <div class="user-role">Administrator</div>
-                        </div>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                </div>
-            </header>
-            
-            <!-- Page Content -->
-            <div class="page-content" id="main-content">
-                <!-- Dashboard Page -->
-                <div id="dashboard-page" class="page-content active">
-                    <div class="page-header">
-                        <h1 class="page-title">
-                            <i class="fas fa-tachometer-alt"></i>
-                            لوحة التحكم
-                        </h1>
-                        <p class="page-subtitle">نظرة عامة على أداء النظام والمبيعات</p>
-                    </div>
-                    
-                    <!-- Quick Actions -->
-                    <div class="quick-actions">
-                        <div class="quick-action" onclick="showPage('offers')">
-                            <div class="quick-action-icon">
-                                <i class="fas fa-plus-circle"></i>
-                            </div>
-                            <div class="quick-action-title">إضافة عرض جديد</div>
-                        </div>
-                        <div class="quick-action" onclick="showPage('sales')">
-                            <div class="quick-action-icon">
-                                <i class="fas fa-cash-register"></i>
-                            </div>
-                            <div class="quick-action-title">تسجيل مبيعات</div>
-                        </div>
-                        <div class="quick-action" onclick="showPage('branches')">
-                            <div class="quick-action-icon">
-                                <i class="fas fa-map-marker-alt"></i>
-                            </div>
-                            <div class="quick-action-title">عرض الفروع</div>
-                        </div>
-                        <div class="quick-action" onclick="generateQuickReport()">
-                            <div class="quick-action-icon">
-                                <i class="fas fa-file-export"></i>
-                            </div>
-                            <div class="quick-action-title">تقرير سريع</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Stats Cards -->
-                    <div class="stats-grid">
-                        <div class="stat-card primary">
-                            <div class="stat-icon">
-                                <i class="fas fa-money-bill-wave"></i>
-                            </div>
-                            <div class="stat-value" id="totalRevenue">0</div>
-                            <div class="stat-label">إجمالي الإيرادات (درهم)</div>
-                            <div class="stat-change up">
-                                <i class="fas fa-arrow-up"></i>
-                                <span>12.5%</span>
-                            </div>
-                        </div>
-                        
-                        <div class="stat-card success">
-                            <div class="stat-icon">
-                                <i class="fas fa-chart-pie"></i>
-                            </div>
-                            <div class="stat-value" id="totalProfit">0</div>
-                            <div class="stat-label">إجمالي الأرباح (درهم)</div>
-                            <div class="stat-change up">
-                                <i class="fas fa-arrow-up"></i>
-                                <span>8.3%</span>
-                            </div>
-                        </div>
-                        
-                        <div class="stat-card warning">
-                            <div class="stat-icon">
-                                <i class="fas fa-shopping-cart"></i>
-                            </div>
-                            <div class="stat-value" id="totalOrders">0</div>
-                            <div class="stat-label">إجمالي الطلبات</div>
-                            <div class="stat-change down">
-                                <i class="fas fa-arrow-down"></i>
-                                <span>3.2%</span>
-                            </div>
-                        </div>
-                        
-                        <div class="stat-card info">
-                            <div class="stat-icon">
-                                <i class="fas fa-store"></i>
-                            </div>
-                            <div class="stat-value" id="totalBranches">0</div>
-                            <div class="stat-label">عدد الفروع</div>
-                            <div class="stat-change up">
-                                <i class="fas fa-arrow-up"></i>
-                                <span>2</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Charts Row -->
-                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 25px; margin-bottom: 25px;">
-                        <!-- Revenue Chart -->
-                        <div class="chart-container">
-                            <div class="chart-header">
-                                <h3 class="chart-title">اتجاهات الإيرادات</h3>
-                                <div class="chart-actions">
-                                    <button class="btn btn-sm btn-outline" onclick="downloadChart('revenueChart')">
-                                        <i class="fas fa-download"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline" onclick="refreshChart('revenueChart')">
-                                        <i class="fas fa-sync"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="chart-wrapper">
-                                <canvas id="revenueChart"></canvas>
-                            </div>
-                        </div>
-                        
-                        <!-- Top Offers Chart -->
-                        <div class="chart-container">
-                            <div class="chart-header">
-                                <h3 class="chart-title">أفضل العروض</h3>
-                            </div>
-                            <div class="chart-wrapper small">
-                                <canvas id="topOffersChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Recent Activities -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h2 class="card-title">
-                                <i class="fas fa-clock"></i>
-                                آخر النشاطات
-                            </h2>
-                            <button class="btn btn-sm btn-outline" onclick="refreshActivities()">
-                                <i class="fas fa-sync"></i> تحديث
-                            </button>
-                        </div>
-                        <div id="recentActivities">
-                            <!-- Will be populated by JavaScript -->
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Offers Management Page -->
-                <div id="offers-page" class="page-content" style="display: none;">
-                    <div class="page-header">
-                        <h1 class="page-title">
-                            <i class="fas fa-tags"></i>
-                            إدارة العروض
-                        </h1>
-                        <p class="page-subtitle">إنشاء وإدارة عروض المنتجات والتخفيضات</p>
-                    </div>
-                    
-                    <!-- Add Offer Form -->
-                    <div class="form-container">
-                        <div class="form-header">
-                            <h2 class="form-title">إضافة عرض جديد</h2>
-                        </div>
-                        <form id="offerForm">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>اسم العرض <span class="required">*</span></label>
-                                    <input type="text" id="offerName" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>رمز العرض <span class="required">*</span></label>
-                                    <input type="text" id="offerCode" required>
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>تاريخ البدء <span class="required">*</span></label>
-                                    <input type="date" id="startDate" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>تاريخ الانتهاء <span class="required">*</span></label>
-                                    <input type="date" id="endDate" required>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>المنتجات المشمولة <span class="required">*</span></label>
-                                <textarea id="products" rows="3" required></textarea>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>السعر العادي (درهم) <span class="required">*</span></label>
-                                    <input type="number" id="regularPrice" min="0" step="0.01" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>سعر العرض (درهم) <span class="required">*</span></label>
-                                    <input type="number" id="offerPrice" min="0" step="0.01" required>
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>التكلفة التقديرية (درهم) <span class="required">*</span></label>
-                                    <input type="number" id="estimatedCost" min="0" step="0.01" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>الحد الأقصى للطلبات</label>
-                                    <input type="number" id="maxOrders" min="0">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>ملاحظات إضافية</label>
-                                <textarea id="offerNotes" rows="2"></textarea>
-                            </div>
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-lg">
-                                    <i class="fas fa-save"></i> حفظ العرض
-                                </button>
-                                <button type="button" class="btn btn-lg btn-outline" onclick="resetForm('offerForm')">
-                                    <i class="fas fa-times"></i> إلغاء
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                    
-                    <!-- Offers Table -->
-                    <div class="table-container">
-                        <div class="table-header">
-                            <h2 class="table-title">قائمة العروض النشطة</h2>
-                            <div class="table-actions">
-                                <button class="btn btn-sm" onclick="duplicateSelectedOffers()">
-                                    <i class="fas fa-copy"></i> نسخ
-                                </button>
-                                <button class="btn btn-sm btn-warning" onclick="archiveSelectedOffers()">
-                                    <i class="fas fa-archive"></i> أرشفة
-                                </button>
-                                <button class="btn btn-sm btn-danger" onclick="deleteSelectedOffers()">
-                                    <i class="fas fa-trash"></i> حذف
-                                </button>
-                            </div>
-                        </div>
-                        <div style="overflow-x: auto;">
-                            <table class="data-table" id="offersTable">
-                                <thead>
-                                    <tr>
-                                        <th>
-                                            <input type="checkbox" id="selectAllOffers" onchange="toggleSelectAll('offers')">
-                                        </th>
-                                        <th>اسم العرض</th>
-                                        <th>رمز العرض</th>
-                                        <th>الخصم</th>
-                                        <th>السعر</th>
-                                        <th>الربح</th>
-                                        <th>الحالة</th>
-                                        <th>الإجراءات</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Will be populated by JavaScript -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Branches Management Page -->
-                <div id="branches-page" class="page-content" style="display: none;">
-                    <div class="page-header">
-                        <h1 class="page-title">
-                            <i class="fas fa-store"></i>
-                            إدارة الفروع
-                        </h1>
-                        <p class="page-subtitle">إدارة فروع المطعم ومواقعها</p>
-                    </div>
-                    
-                    <!-- Map Section -->
-                    <div class="map-container">
-                        <div class="map-controls">
-                            <button class="btn btn-sm btn-outline" onclick="showAllBranches()">
-                                <i class="fas fa-globe"></i> الكل
-                            </button>
-                            <button class="btn btn-sm btn-outline" onclick="filterByCity('Abu Dhabi')">
-                                <i class="fas fa-city"></i> أبوظبي
-                            </button>
-                            <button class="btn btn-sm btn-outline" onclick="filterByCity('Dubai')">
-                                <i class="fas fa-city"></i> دبي
-                            </button>
-                            <button class="btn btn-sm btn-outline" onclick="centerMapOnUser()">
-                                <i class="fas fa-location-arrow"></i> موقعي
-                            </button>
-                        </div>
-                        <div id="branchesMap"></div>
-                    </div>
-                    
-                    <!-- Add Branch Form -->
-                    <div class="form-container">
-                        <div class="form-header">
-                            <h2 class="form-title">إضافة فرع جديد</h2>
-                        </div>
-                        <form id="branchForm">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>اسم الفرع <span class="required">*</span></label>
-                                    <input type="text" id="branchNameInput" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>المدينة <span class="required">*</span></label>
-                                    <select id="branchCity" required>
-                                        <option value="">اختر المدينة</option>
-                                        <option value="Abu Dhabi">أبوظبي</option>
-                                        <option value="Dubai">دبي</option>
-                                        <option value="Sharjah">الشارقة</option>
-                                        <option value="Ajman">عجمان</option>
-                                        <option value="Umm Al Quwain">أم القيوين</option>
-                                        <option value="Ras Al Khaimah">رأس الخيمة</option>
-                                        <option value="Fujairah">الفجيرة</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>الإحداثيات</label>
-                                    <input type="text" id="branchDirection" placeholder="مثال: 24.4958298421285, 54.37155779999593">
-                                </div>
-                                <div class="form-group">
-                                    <label>المنطقة <span class="required">*</span></label>
-                                    <input type="text" id="branchArea" required>
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>رقم الهاتف الأرضي</label>
-                                    <input type="tel" id="branchLandline" placeholder="مثال: (02) 641 1194">
-                                </div>
-                                <div class="form-group">
-                                    <label>رابط جوجل</label>
-                                    <input type="url" id="branchGoogleSite" placeholder="مثال: https://g.co/kgs/TrxJBJV">
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>التقييم</label>
-                                    <input type="number" id="branchRate" min="0" max="5" step="0.1" placeholder="مثال: 4.5">
-                                </div>
-                                <div class="form-group">
-                                    <label>اسم المدير <span class="required">*</span></label>
-                                    <input type="text" id="branchManager" required>
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>رقم المدير</label>
-                                    <input type="tel" id="branchManagerNumber" placeholder="مثال: 971 55 688 6650">
-                                </div>
-                                <div class="form-group">
-                                    <label>البريد الإلكتروني</label>
-                                    <input type="email" id="branchEmail" placeholder="مثال: crispychickenhamdan@gmail.com">
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>حالة التوصيل <span class="required">*</span></label>
-                                    <select id="branchDeliveryStatus" required>
-                                        <option value="">اختر الحالة</option>
-                                        <option value="Yes">متاح</option>
-                                        <option value="No">غير متاح</option>
-                                        <option value="N/A">غير متوفر</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>رابط الفرع الإلكتروني</label>
-                                    <input type="url" id="branchLinkOnline" placeholder="مثال: http://almarkaziya.crispychicken-uae.com/#_branch94929">
-                                </div>
-                            </div>
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-lg">
-                                    <i class="fas fa-save"></i> حفظ الفرع
-                                </button>
-                                <button type="button" class="btn btn-lg btn-outline" onclick="resetForm('branchForm')">
-                                    <i class="fas fa-times"></i> إلغاء
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                    
-                    <!-- Branches Grid -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h2 class="card-title">
-                                <i class="fas fa-th-large"></i>
-                                قائمة الفروع
-                            </h2>
-                            <div class="card-actions">
-                                <button class="btn btn-sm" onclick="exportBranchesData()">
-                                    <i class="fas fa-download"></i> تصدير
-                                </button>
-                            </div>
-                        </div>
-                        <div id="branchesList" class="branch-grid">
-                            <!-- Will be populated by JavaScript -->
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Analysis Page -->
-                <div id="analysis-page" class="page-content" style="display: none;">
-                    <div class="page-header">
-                        <h1 class="page-title">
-                            <i class="fas fa-analytics"></i>
-                            التحليلات المتقدمة
-                        </h1>
-                        <p class="page-subtitle">تحليلات مفصلة للأداء والمبيعات</p>
-                    </div>
-                    
-                    <!-- Filter Section -->
-                    <div class="filter-section">
-                        <div class="filter-header">
-                            <h3 class="filter-title">
-                                <i class="fas fa-filter"></i> فلاتر التحليل
-                            </h3>
-                            <button class="btn btn-sm btn-outline" onclick="resetAnalysisFilters()">
-                                <i class="fas fa-redo"></i> إعادة تعيين
-                            </button>
-                        </div>
-                        <div class="filter-controls">
-                            <div class="form-group">
-                                <label>من تاريخ</label>
-                                <input type="date" id="analysisDateFrom">
-                            </div>
-                            <div class="form-group">
-                                <label>إلى تاريخ</label>
-                                <input type="date" id="analysisDateTo">
-                            </div>
-                            <div class="form-group">
-                                <label>الفرع</label>
-                                <select id="analysisBranch">
-                                    <option value="">جميع الفروع</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>المنصة</label>
-                                <select id="analysisPlatform">
-                                    <option value="">جميع المنصات</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <button class="btn btn-block" onclick="applyAnalysisFilters()">
-                                    <i class="fas fa-search"></i> تطبيق الفلاتر
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Charts Grid -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px;">
-                        <!-- Sales Trend Chart -->
-                        <div class="chart-container">
-                            <div class="chart-header">
-                                <h3 class="chart-title">اتجاهات المبيعات</h3>
-                                <div class="chart-actions">
-                                    <button class="btn btn-sm btn-outline" onclick="downloadChart('salesTrendChart')">
-                                        <i class="fas fa-download"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="chart-wrapper">
-                                <canvas id="salesTrendChart"></canvas>
-                            </div>
-                        </div>
-                        
-                        <!-- Branch Performance Chart -->
-                        <div class="chart-container">
-                            <div class="chart-header">
-                                <h3 class="chart-title">أداء الفروع</h3>
-                                <div class="chart-actions">
-                                    <button class="btn btn-sm btn-outline" onclick="downloadChart('branchPerformanceChart')">
-                                        <i class="fas fa-download"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="chart-wrapper">
-                                <canvas id="branchPerformanceChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
-                        <!-- Offer Profitability Chart -->
-                        <div class="chart-container">
-                            <div class="chart-header">
-                                <h3 class="chart-title">ربحية العروض</h3>
-                                <div class="chart-actions">
-                                    <button class="btn btn-sm btn-outline" onclick="downloadChart('offerProfitabilityChart')">
-                                        <i class="fas fa-download"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="chart-wrapper">
-                                <canvas id="offerProfitabilityChart"></canvas>
-                            </div>
-                        </div>
-                        
-                        <!-- Platform Performance Chart -->
-                        <div class="chart-container">
-                            <div class="chart-header">
-                                <h3 class="chart-title">أداء المنصات</h3>
-                                <div class="chart-actions">
-                                    <button class="btn btn-sm btn-outline" onclick="downloadChart('platformPerformanceChart')">
-                                        <i class="fas fa-download"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="chart-wrapper">
-                                <canvas id="platformPerformanceChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
+
+    <div class="tab-container">
+        <button class="tab-button active" onclick="showTab('branches')">Branch Management</button>
+        <button class="tab-button" onclick="showTab('offers')">Offer Management</button>
+        <button class="tab-button" onclick="showTab('report')">Report</button>
     </div>
-    
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner"></div>
+
+    <div id="branches-tab" class="tab-content active branches-container">
+        <h2>Our Branches</h2>
+        <div class="filter-container">
+            <label for="city-filter">Filter by City: </label>
+            <select id="city-filter" onchange="filterBranches()">
+                <option value="all">All Cities</option>
+                <option value="Abu Dhabi">Abu Dhabi</option>
+                <option value="Dubai">Dubai</option>
+            </select>
+        </div>
+        <table id="branch-table">
+            <thead>
+                <tr>
+                    <th>Branch Name</th>
+                    <th>City</th>
+                    <th>Coordinates</th>
+                    <th>Area</th>
+                    <th>Land Line</th>
+                    <th>Google Site</th>
+                    <th>Rate</th>
+                    <th>Manager Name</th>
+                    <th>Manager Number</th>
+                    <th>Email Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr data-city="Abu Dhabi">
+                    <td>Crispy Chicken-Hamdan St</td>
+                    <td>Abu Dhabi</td>
+                    <td>24.4958298421285, 54.37155779999593</td>
+                    <td>Hamdan Opposite Sun and San Sports</td>
+                    <td>(02) 641 1194</td>
+                    <td><a href="https://g.co/kgs/TrxJBJV" target="_blank">View on Google</a></td>
+                    <td>4</td>
+                    <td>Mr. Mahmoud</td>
+                    <td>971 55 688 6650</td>
+                    <td>crispychickenhamdan@gmail.com</td>
+                </tr>
+                <tr data-city="Abu Dhabi">
+                    <td>Crispy chicken Shabiya 11</td>
+                    <td>Abu Dhabi</td>
+                    <td>24.328366371847554, 54.535004577124376</td>
+                    <td>Mohamed Bin Zayed City - ME-11</td>
+                    <td>(02) 554 9889</td>
+                    <td><a href="https://g.co/kgs/QQh8CXL" target="_blank">View on Google</a></td>
+                    <td>3.7</td>
+                    <td>Mr. Zakaria</td>
+                    <td>971 56 269 0688</td>
+                    <td>shabiha@crispychicken.rest</td>
+                </tr>
+                <tr data-city="Abu Dhabi">
+                    <td>Crispy chicken khaldia</td>
+                    <td>Abu Dhabi</td>
+                    <td>24.47955696172264, 54.353930808868604</td>
+                    <td>Khalidiya Tower - Al Khalidiya Street - opp. Grand Store</td>
+                    <td>(02) 546 0900</td>
+                    <td><a href="https://g.co/kgs/Du9UqrY" target="_blank">View on Google</a></td>
+                    <td>3.9</td>
+                    <td>Mr. Adel</td>
+                    <td>971 56 949 4764</td>
+                    <td>crispychicken.khalidia@gmail.com</td>
+                </tr>
+                <tr data-city="Abu Dhabi">
+                    <td>Crispy chicken Elactra</td>
+                    <td>Abu Dhabi</td>
+                    <td>-</td>
+                    <td>Electra street opp LLH hospital</td>
+                    <td>(02) 8826902</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>Mr. RJ</td>
+                    <td>971 56 386 6859</td>
+                    <td>electra@crispychicken.rest</td>
+                </tr>
+                <tr data-city="Abu Dhabi">
+                    <td>Crispy chicken Muroor</td>
+                    <td>Abu Dhabi</td>
+                    <td>24.434503442604896, 54.43866580679551</td>
+                    <td>31 Muroor Rd - Al Sa'adah - Zone 1</td>
+                    <td>(02) 563 3359</td>
+                    <td><a href="https://g.co/kgs/qS1e4Bi" target="_blank">View on Google</a></td>
+                    <td>4</td>
+                    <td>Mr. Tariq</td>
+                    <td>971 50 541 4641</td>
+                    <td>mouroor@crispychicken.rest</td>
+                </tr>
+                <tr data-city="Dubai">
+                    <td>Crispy chicken Al Barsha</td>
+                    <td>Dubai</td>
+                    <td>25.11589564435004, 55.20455565397946</td>
+                    <td>Al Barsha 1</td>
+                    <td>(04) 835 8195</td>
+                    <td><a href="https://g.co/kgs/6xh7DNw" target="_blank">View on Google</a></td>
+                    <td>4.4</td>
+                    <td>Mr. Zaid</td>
+                    <td>971 56 740 5572</td>
+                    <td>barsha@crispychicken.rest</td>
+                </tr>
+                <tr data-city="Dubai">
+                    <td>Crispy chicken Al Satwa</td>
+                    <td>Dubai</td>
+                    <td>25.232522002773372, 55.2694237276173</td>
+                    <td>Satwa street Dubai</td>
+                    <td>(04) 3265878</td>
+                    <td><a href="https://maps.app.goo.gl/XnyngSy4wgtSLRfc8" target="_blank">View on Google</a></td>
+                    <td>4.5</td>
+                    <td>Mr. Musab</td>
+                    <td>971 56 797 0685</td>
+                    <td>satwa@crispychicken.rest</td>
+                </tr>
+                <tr data-city="Dubai">
+                    <td>Crispy chicken Al Regga</td>
+                    <td>Dubai</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
-    
-    <!-- Modals -->
-    <!-- Branch Details Modal -->
-    <div id="branchDetailsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">تفاصيل الفرع</h2>
-                <button class="modal-close" onclick="closeModal('branchDetailsModal')">×</button>
-            </div>
-            <div id="branchDetailsContent">
-                <!-- Will be populated by JavaScript -->
-            </div>
+
+    <div id="offers-tab" class="tab-content manage-offers">
+        <h2>Offer Management</h2>
+        <h3>Add/Edit Offer</h3>
+        <div class="form-group tooltip" data-tooltip="Enter the offer name">
+            <label for="offer-title">Offer Title:</label>
+            <input type="text" id="offer-title" placeholder="e.g., Chicken Day Offer" required>
+        </div>
+        <div class="form-group tooltip" data-tooltip="Select start and end dates">
+            <label for="offer-start-date">Date Range:</label>
+            <input type="date" id="offer-start-date" required> to <input type="date" id="offer-end-date" required>
+        </div>
+        <div class="form-group tooltip" data-tooltip="Describe the offer details">
+            <label for="offer-details">Details:</label>
+            <input type="text" id="offer-details" placeholder="e.g., 8 pieces + 2 sauces, 29 AED" required>
+        </div>
+        <div class="form-group tooltip" data-tooltip="Specify platform or availability">
+            <label for="offer-availability">Availability:</label>
+            <input type="text" id="offer-availability" placeholder="e.g., Talabat, Dine-in" required>
+        </div>
+        <div class="form-group tooltip" data-tooltip="Choose the offer type">
+            <label for="offer-type">Offer Type:</label>
+            <select id="offer-type">
+                <option value="fixed">Fixed</option>
+                <option value="weekly">Weekly (Monday & Tuesday)</option>
+                <option value="platform">Platform</option>
+                <option value="delivery">Delivery</option>
+            </select>
+        </div>
+        <div class="form-group tooltip" data-tooltip="Enter sales amount in AED">
+            <label for="offer-sales">Sales (AED):</label>
+            <input type="number" id="offer-sales" placeholder="e.g., 500" step="0.01">
+        </div>
+        <button onclick="addOrUpdateOffer()">Add/Update Offer</button>
+        <button onclick="addWeeklyOffer()">Add Weekly Monday-Tuesday Offer</button>
+
+        <h2>Current Month Offers (September 2025)</h2>
+        <div class="offers">
+            <ul class="offer-list" id="offer-list">
+                <!-- Offers will be dynamically populated -->
+            </ul>
         </div>
     </div>
-    
+
+    <div id="report-tab" class="tab-content report-container">
+        <h2>Offer Sales Report</h2>
+        <div class="month-filter">
+            <label for="month-select">Select Month for Analysis: </label>
+            <select id="month-select" onchange="renderReport()">
+                <option value="all">All Months</option>
+                <option value="09" selected>September 2025</option>
+            </select>
+        </div>
+        <button class="export-btn" onclick="exportReport()">Export Report as CSV</button>
+        <table class="report-table" id="report-table">
+            <thead>
+                <tr>
+                    <th>Offer Title</th>
+                    <th>Date Range</th>
+                    <th>Type</th>
+                    <th>Availability</th>
+                    <th>Sales (AED)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="report-table-body">
+                <!-- Report rows will be dynamically populated -->
+            </tbody>
+        </table>
+        <div class="report-summary">
+            <h3>Summary</h3>
+            <p>Total Sales: <span id="total-sales">0.00 AED</span></p>
+            <p>Platform Sales: <span id="platform-sales">0.00 AED</span></p>
+            <p>Delivery Sales: <span id="delivery-sales">0.00 AED</span></p>
+        </div>
+        <div class="chart-container">
+            <canvas id="salesChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="typeChart"></canvas>
+        </div>
+    </div>
+
+    <h2>Online Delivery Platforms</h2>
+    <div class="platforms">
+        <ul class="platform-list">
+            <li>
+                <span>Online</span>
+                <span>Direct website/app ordering</span>
+            </li>
+            <li>
+                <span>Deliveroo</span>
+                <a href="https://deliveroo.ae/" target="_blank">Order on Deliveroo</a>
+            </li>
+            <li>
+                <span>Talabat</span>
+                <a href="https://www.talabat.com/uae" target="_blank">Order on Talabat</a>
+            </li>
+            <li>
+                <span>Smile</span>
+                <a href="https://smile2impress.com/" target="_blank">Order on Smile</a>
+            </li>
+            <li>
+                <span>Noon</span>
+                <a href="https://www.noon.com/uae-en/food/" target="_blank">Order on Noon Food</a>
+            </li>
+            <li>
+                <span>Careem</span>
+                <a href="https://www.careem.com/en-ae/" target="_blank">Order on Careem Now</a>
+            </li>
+            <li>
+                <span>Self Delivery</span>
+                <span>Pickup from nearest branch</span>
+            </li>
+        </ul>
+    </div>
+
     <script>
-        // System Data
-        let offers = JSON.parse(localStorage.getItem('crispyOffers')) || [];
-        let sales = JSON.parse(localStorage.getItem('crispySales')) || [];
-        let branches = JSON.parse(localStorage.getItem('crispyBranches')) || [
+        // Sample initial offers
+        const initialOffers = [
             {
                 id: 1,
-                name: 'Crispy Chicken-Hamdan St',
-                code: 'hamdan',
-                city: 'Abu Dhabi',
-                direction: '24.4958298421285, 54.37155779999593',
-                area: 'Hamdan Opposite Sun and San Sports',
-                landline: '(02) 641 1194',
-                googleSite: 'https://g.co/kgs/TrxJBJV',
-                rate: 4,
-                manager: 'Mr. Mahmoud',
-                managerNumber: '971 55 688 6650',
-                email: 'crispychickenhamdan@gmail.com',
-                deliveryStatus: 'Yes',
-                linkOnline: 'http://almarkaziya.crispychicken-uae.com/#_branch94929',
-                createdAt: new Date().toISOString()
+                title: "Talabat Offer (Chicken Day)",
+                startDate: "2025-09-09",
+                endDate: "2025-09-15",
+                details: "8 pieces of crispy chicken + 2 garlic sauces<br>Price: 29 AED",
+                availability: "Talabat",
+                type: "platform",
+                sales: 1500.00
             },
             {
                 id: 2,
-                name: 'Crispy chicken Shabiya 11',
-                code: 'shabiya',
-                city: 'Abu Dhabi',
-                direction: '24.328366371847554, 54.535004577124376',
-                area: 'Mohamed Bin Zayed City - ME-11',
-                landline: '(02) 554 9889',
-                googleSite: 'https://g.co/kgs/QQh8CXL',
-                rate: 3.7,
-                manager: 'Mr. Zakaria',
-                managerNumber: '971 56 269 0688',
-                email: 'shabiha@crispychicken.rest',
-                deliveryStatus: 'Yes',
-                linkOnline: 'http://crispychicken-uae.com/#_branch94472',
-                createdAt: new Date().toISOString()
+                title: "Weekend Offer on Smile",
+                startDate: "2025-09-13",
+                endDate: "2025-09-15",
+                details: "Discount from Smiles app (provided by Smiles, not Crispy Chicken)",
+                availability: "Smile",
+                type: "platform",
+                sales: 900.00
             },
             {
                 id: 3,
-                name: 'Crispy chicken khaldia',
-                code: 'khalidia',
-                city: 'Abu Dhabi',
-                direction: '24.47955696172264, 54.353930808868604',
-                area: 'Khalidiya Tower - Al Khalidiya Street - opp. Grand Store',
-                landline: '(02) 546 0900',
-                googleSite: 'https://g.co/kgs/Du9UqrY',
-                rate: 3.9,
-                manager: 'Mr. Adel',
-                managerNumber: '971 56 949 4764',
-                email: 'crispychicken.khalidia@gmail.com',
-                deliveryStatus: 'Yes',
-                linkOnline: 'http://alkhalidiyah.crispychicken-uae.com/#_branch94938',
-                createdAt: new Date().toISOString()
+                title: "Monday & Tuesday Special Offer",
+                startDate: "2025-09-16",
+                endDate: "2025-09-17",
+                details: "8 pieces of crispy chicken + 2 garlic sauces<br>Price: 25 AED<br>Order online via: <a href='https://www.crispychicken-uae.com' target='_blank'>www.crispychicken-uae.com</a>",
+                availability: "Dine-in, takeaway, and delivery",
+                type: "weekly",
+                sales: 800.00
             },
             {
                 id: 4,
-                name: 'Crispy chicken Elactra',
-                code: 'electra',
-                city: 'Abu Dhabi',
-                direction: '24.4666, 54.3666',
-                area: 'Electra street opp LLH hospital',
-                landline: '(02)8826902',
-                googleSite: '',
-                rate: 0,
-                manager: 'Mr. RJ',
-                managerNumber: '971 56 386 6859',
-                email: 'electra@crispychicken.rest',
-                deliveryStatus: 'N/A',
-                linkOnline: 'N/A',
-                createdAt: new Date().toISOString()
+                title: "Big Food Fest Offer",
+                startDate: "2025-09-18",
+                endDate: "2025-09-22",
+                details: "8 pieces of crispy chicken + 2 garlic sauces (Chicken Day)<br>Price: 29 AED",
+                availability: "Noon app",
+                type: "platform",
+                sales: 1100.00
             },
             {
                 id: 5,
-                name: 'Crispy chicken Muroor',
-                code: 'muroor',
-                city: 'Abu Dhabi',
-                direction: '24.434503442604896, 54.43866580679551',
-                area: '31 Muroor Rd - Al Sa\'adah - Zone 1',
-                landline: '(02) 563 3359',
-                googleSite: 'https://g.co/kgs/qS1e4Bi',
-                rate: 4,
-                manager: 'Mr. Tariq',
-                managerNumber: '971 50 541 4641',
-                email: 'MOUROOR@CRISPYCHICKEN.REST',
-                deliveryStatus: 'Yes',
-                linkOnline: 'http://almuroorroad.crispychicken-uae.com/#_branch102831',
-                createdAt: new Date().toISOString()
+                title: "Careem Offer",
+                startDate: "2025-09-19",
+                endDate: "2025-09-30",
+                details: "50% off up to 20 AED<br>Available in Abu Dhabi and Dubai",
+                availability: "Careem",
+                type: "delivery",
+                sales: 1200.00
             },
             {
                 id: 6,
-                name: 'Crispy chicken Al Barsha',
-                code: 'barsha',
-                city: 'Dubai',
-                direction: '25.11589564435004, 55.20455565397946',
-                area: 'Al Barsha 1',
-                landline: '(04) 835 8195',
-                googleSite: 'https://g.co/kgs/6xh7DNw',
-                rate: 4.4,
-                manager: 'Mr. Zaid',
-                managerNumber: '971 56 740 5572',
-                email: 'barsha@crispychicken.rest',
-                deliveryStatus: 'Yes',
-                linkOnline: 'http://albarsha.crispychicken-uae.com/#_branch124062',
-                createdAt: new Date().toISOString()
+                title: "Noon App Offer",
+                startDate: "2025-09-24",
+                endDate: "2025-09-30",
+                details: "30% off on selected items: Twin Twist, Twin Supreme, Tornado Combo",
+                availability: "Noon app",
+                type: "platform",
+                sales: 1300.00
             },
             {
                 id: 7,
-                name: 'Crispy chicken Al Satwa',
-                code: 'satwa',
-                city: 'Dubai',
-                direction: '25.232522002773372, 55.2694237276173',
-                area: 'Satwa street Dubai',
-                landline: '(04)3265878',
-                googleSite: 'https://maps.app.goo.gl/XnyngSy4wgtSLRfc8',
-                rate: 4.5,
-                manager: 'Mr. Musab',
-                managerNumber: '971 56 797 0685',
-                email: 'satwa@crispychicken.rest',
-                deliveryStatus: 'Yes',
-                linkOnline: 'http://satwa.crispychicken-uae.com/#_branch173500',
-                createdAt: new Date().toISOString()
+                title: "Chicken Day Offer",
+                startDate: "2025-09-29",
+                endDate: "2025-09-29",
+                details: "8 pieces of crispy chicken + 2 garlic sauces<br>Price: 29 AED",
+                availability: "Noon app",
+                type: "fixed",
+                sales: 700.00
             },
             {
                 id: 8,
-                name: 'Crispy chicken Al Regga',
-                code: 'rigga',
-                city: 'Dubai',
-                direction: '25.0765, 55.1456',
-                area: 'Al Rigga Street',
-                landline: '(04) 123 4567',
-                googleSite: 'https://g.co/kgs/AbCdEfG',
-                rate: 4.2,
-                manager: 'Mr. Ahmed',
-                managerNumber: '971 55 123 4567',
-                email: 'rigga@crispychicken.rest',
-                deliveryStatus: 'Yes',
-                linkOnline: 'http://alrigga.crispychicken-uae.com',
-                createdAt: new Date().toISOString()
+                title: "Talabat App Offer",
+                startDate: "2025-09-24",
+                endDate: "2025-09-30",
+                details: "30% off on selected items: Twin Twist, Saving Meal, Tornado Combo, Crispy Strips Meal",
+                availability: "Talabat app",
+                type: "platform",
+                sales: 1400.00
             }
         ];
-        
-        let platforms = JSON.parse(localStorage.getItem('crispyPlatforms')) || [
-            { id: 1, name: 'Self Delivery', code: 'self_delivery', url: '', commission: 0, status: 'active', notes: 'التوصيل الذاتي', priority: 'medium' },
-            { id: 2, name: 'Online', code: 'online', url: '', commission: 0, status: 'active', notes: 'الطلبات عبر الموقع الإلكتروني', priority: 'high' },
-            { id: 3, name: 'Deliveroo', code: 'deliveroo', url: 'https://deliveroo.ae', commission: 25, status: 'active', notes: 'منصة توصيل دولية', priority: 'high' },
-            { id: 4, name: 'Talabat', code: 'talabat', url: 'https://talabat.com', commission: 20, status: 'active', notes: 'منصة توصيل إقليمية', priority: 'high' },
-            { id: 5, name: 'Smile', code: 'smile', url: 'https://smile.com.ae', commission: 18, status: 'active', notes: 'خدمة التوصيل الممتازة', priority: 'medium' },
-            { id: 6, name: 'Noon', code: 'noon', url: 'https://noon.com', commission: 15, status: 'active', notes: 'منصة التوصيل الأكثر استخداماً', priority: 'high' },
-            { id: 7, name: 'Careem', code: 'careem', url: 'https://careem.com', commission: 20, status: 'active', notes: 'خدمة التوصيل السريعة', priority: 'high' }
-        ];
-        
-        let pastOffers = JSON.parse(localStorage.getItem('crispyPastOffers')) || [];
-        
-        // Global Variables
-        let map;
-        let markers = [];
-        let charts = {};
-        let selectedItems = {
-            offers: new Set(),
-            branches: new Set(),
-            sales: new Set()
-        };
-        
-        // Initialize System
-        document.addEventListener('DOMContentLoaded', function() {
-            // Hide loading screen after initialization
-            setTimeout(() => {
-                document.getElementById('loadingScreen').classList.add('hide');
-                initializeSystem();
-            }, 2000);
-        });
-        
-        function initializeSystem() {
-            // Initialize data
-            updateDashboardData();
-            updateOffersTable();
-            updateBranchesList();
-            updateAnalysisFilters();
-            
-            // Initialize charts
-            initializeDashboardCharts();
-            
-            // Initialize event listeners
-            setupEventListeners();
-            
-            // Load recent activities
-            loadRecentActivities();
-            
-            // Check for notifications
-            checkForNotifications();
-            
-            // Show welcome message
-            showToast('مرحباً بك في نظام إدارة العروض المتقدم - Crispy Chicken', 'success', 7000);
+
+        // Load offers from localStorage or initialize with sample data
+        let offers = JSON.parse(localStorage.getItem('offers')) || initialOffers;
+        let nextOfferId = Math.max(...offers.map(o => o.id), 0) + 1;
+
+        function saveOffers() {
+            localStorage.setItem('offers', JSON.stringify(offers));
         }
-        
-        function setupEventListeners() {
-            // Form submissions
-            document.getElementById('offerForm')?.addEventListener('submit', handleOfferSubmit);
-            document.getElementById('branchForm')?.addEventListener('submit', handleBranchSubmit);
-            
-            // Global search
-            document.getElementById('globalSearch')?.addEventListener('input', handleGlobalSearch);
-            
-            // Keyboard shortcuts
-            setupKeyboardShortcuts();
-            
-            // Auto-save
-            setupAutoSave();
-            
-            // Window events
-            window.addEventListener('resize', handleResize);
-            window.addEventListener('beforeprint', handleBeforePrint);
-            window.addEventListener('afterprint', handleAfterPrint);
+
+        function calculateTotal() {
+            const burgerPrice = 22.00;
+            const wingsPrice = 29.32;
+            const stripsPrice = 23.82;
+
+            const burgerQty = parseInt(document.getElementById('item1').value);
+            const wingsQty = parseInt(document.getElementById('item2').value);
+            const stripsQty = parseInt(document.getElementById('item3').value);
+
+            const total = (burgerQty * burgerPrice) + (wingsQty * wingsPrice) + (stripsQty * stripsPrice);
+            document.getElementById('total').textContent = `Total: ${total.toFixed(2)} AED`;
+            document.getElementById('order-total').textContent = `${total.toFixed(2)} AED`;
         }
-        
-        // Page Navigation
-        function showPage(pageName) {
-            // Hide all pages
-            document.querySelectorAll('.page-content').forEach(page => {
-                page.style.display = 'none';
+
+        function filterBranches() {
+            const filter = document.getElementById('city-filter').value;
+            const rows = document.querySelectorAll('#branch-table tbody tr');
+            rows.forEach(row => {
+                if (filter === 'all' || row.getAttribute('data-city') === filter) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
             });
-            
-            // Show selected page
-            const selectedPage = document.getElementById(`${pageName}-page`);
-            if (selectedPage) {
-                selectedPage.style.display = 'block';
-                selectedPage.classList.add('fade-in');
-            }
-            
-            // Update menu
-            document.querySelectorAll('.menu-item').forEach(item => {
-                item.classList.remove('active');
+        }
+
+        function renderOffers() {
+            const offerList = document.getElementById('offer-list');
+            offerList.innerHTML = '';
+            const currentDate = new Date('2025-09-11');
+            let activeCount = 0;
+
+            const filteredOffers = offers.filter(offer => offer.startDate.startsWith('2025-09') || offer.endDate.startsWith('2025-09'));
+            filteredOffers.forEach(offer => {
+                const startDate = new Date(offer.startDate);
+                const endDate = new Date(offer.endDate);
+                const isActive = currentDate >= startDate && currentDate <= endDate;
+                if (isActive) activeCount++;
+
+                const li = document.createElement('li');
+                li.className = isActive ? 'active' : '';
+                li.innerHTML = `
+                    <span class="offer-title">${offer.title}</span>
+                    <span class="offer-dates">${offer.startDate.split('-')[2]} - ${offer.endDate.split('-')[2]} Sep</span>
+                    <span class="offer-details">${offer.details}</span>
+                    <span class="offer-availability">Available on: ${offer.availability.includes('<a') ? offer.availability : `<a href="https://${offer.availability.toLowerCase().includes('talabat') ? 'www.talabat.com/uae' : offer.availability.toLowerCase().includes('noon') ? 'www.noon.com/uae-en/food' : offer.availability.toLowerCase().includes('careem') ? 'www.careem.com/en-ae' : 'smile2impress.com'}" target="_blank">${offer.availability}</a>`}</span>
+                    <span class="offer-type">Type: ${offer.type.charAt(0).toUpperCase() + offer.type.slice(1)}</span>
+                    <button class="edit-btn" onclick="editOffer(${offer.id})">Edit</button>
+                `;
+                offerList.appendChild(li);
             });
-            event.target.closest('.menu-item').classList.add('active');
-            
-            // Page-specific initialization
-            switch(pageName) {
-                case 'dashboard':
-                    updateDashboardData();
-                    initializeDashboardCharts();
-                    break;
-                case 'offers':
-                    updateOffersTable();
-                    break;
-                case 'branches':
-                    initializeMap();
-                    updateBranchesList();
-                    break;
-                case 'analysis':
-                    initializeAnalysisCharts();
-                    break;
+
+            document.getElementById('active-offers').textContent = activeCount;
+            renderReport();
+            renderCharts();
+        }
+
+        function addOrUpdateOffer() {
+            const title = document.getElementById('offer-title').value;
+            const startDate = document.getElementById('offer-start-date').value;
+            const endDate = document.getElementById('offer-end-date').value;
+            const details = document.getElementById('offer-details').value;
+            const availability = document.getElementById('offer-availability').value;
+            const type = document.getElementById('offer-type').value;
+            const sales = parseFloat(document.getElementById('offer-sales').value) || 0;
+
+            if (!title || !startDate || !endDate || !details || !availability) {
+                alert('Please fill in all required fields.');
+                return;
             }
-            
-            // Close sidebar on mobile
-            if (window.innerWidth < 992) {
-                toggleSidebar();
+
+            if (new Date(startDate) > new Date(endDate)) {
+                alert('End date must be after start date.');
+                return;
             }
-        }
-        
-        // Sidebar Toggle
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const contentArea = document.getElementById('contentArea');
-            
-            sidebar.classList.toggle('show');
-            contentArea.classList.toggle('expanded');
-        }
-        
-        // Dashboard Functions
-        function updateDashboardData() {
-            const totalRevenue = sales.reduce((sum, sale) => sum + sale.revenue, 0);
-            const totalProfit = sales.reduce((sum, sale) => sum + sale.profit, 0);
-            const totalOrders = sales.reduce((sum, sale) => sum + sale.orderCount, 0);
-            
-            document.getElementById('totalRevenue').textContent = totalRevenue.toLocaleString();
-            document.getElementById('totalProfit').textContent = totalProfit.toLocaleString();
-            document.getElementById('totalOrders').textContent = totalOrders.toLocaleString();
-            document.getElementById('totalBranches').textContent = branches.length;
-        }
-        
-        function initializeDashboardCharts() {
-            // Revenue Chart
-            const revenueCtx = document.getElementById('revenueChart');
-            if (revenueCtx && !charts.revenue) {
-                charts.revenue = new Chart(revenueCtx, {
-                    type: 'line',
-                    data: {
-                        labels: generateLast30Days(),
-                        datasets: [{
-                            label: 'الإيرادات اليومية',
-                            data: generateRandomData(30, 5000, 15000),
-                            borderColor: '#667eea',
-                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    callback: function(value) {
-                                        return value.toLocaleString() + ' درهم';
-                                    }
-                                }
-                            }
-                        }
-                    }
+
+            const offerId = document.getElementById('offer-title').dataset.id;
+            if (offerId) {
+                const offer = offers.find(o => o.id == offerId);
+                offer.title = title;
+                offer.startDate = startDate;
+                offer.endDate = endDate;
+                offer.details = details;
+                offer.availability = availability;
+                offer.type = type;
+                offer.sales = sales;
+            } else {
+                offers.push({
+                    id: nextOfferId++,
+                    title,
+                    startDate,
+                    endDate,
+                    details,
+                    availability,
+                    type,
+                    sales
                 });
             }
-            
-            // Top Offers Chart
-            const topOffersCtx = document.getElementById('topOffersChart');
-            if (topOffersCtx && !charts.topOffers) {
-                charts.topOffers = new Chart(topOffersCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['وجبة العائلة', 'وجبة الفرد', 'وجبة الأطفال', 'مشروبات', 'إضافات'],
-                        datasets: [{
-                            data: [30, 25, 20, 15, 10],
-                            backgroundColor: [
-                                '#667eea',
-                                '#764ba2',
-                                '#f093fb',
-                                '#f5576c',
-                                '#4facfe'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
-                        }
-                    }
-                });
-            }
+
+            saveOffers();
+            renderOffers();
+            clearForm();
         }
-        
-        // Offers Management
-        function handleOfferSubmit(e) {
-            e.preventDefault();
-            
-            const offer = {
-                id: Date.now(),
-                name: document.getElementById('offerName').value,
-                code: document.getElementById('offerCode').value,
-                startDate: document.getElementById('startDate').value,
-                endDate: document.getElementById('endDate').value,
-                products: document.getElementById('products').value,
-                regularPrice: parseFloat(document.getElementById('regularPrice').value),
-                offerPrice: parseFloat(document.getElementById('offerPrice').value),
-                estimatedCost: parseFloat(document.getElementById('estimatedCost').value),
-                maxOrders: parseInt(document.getElementById('maxOrders').value) || 0,
-                notes: document.getElementById('offerNotes').value,
-                status: 'نشط',
-                createdAt: new Date().toISOString()
-            };
-            
-            // Calculate discount and profit
-            offer.discount = ((offer.regularPrice - offer.offerPrice) / offer.regularPrice * 100).toFixed(1) + '%';
-            offer.profit = (offer.offerPrice - offer.estimatedCost).toFixed(2);
-            
-            offers.push(offer);
-            saveData();
-            updateOffersTable();
-            e.target.reset();
-            showToast('تم إضافة العرض بنجاح!', 'success');
-            
-            // Add to recent activities
-            addRecentActivity('fas fa-plus-circle', `إضافة عرض جديد: ${offer.name}`, 'success');
+
+        function addWeeklyOffer() {
+            const currentDate = new Date('2025-09-11');
+            const dayOfWeek = currentDate.getDay();
+            const daysToMonday = (dayOfWeek === 0 ? 1 : 8 - dayOfWeek);
+            const monday = new Date(currentDate);
+            monday.setDate(currentDate.getDate() + daysToMonday);
+            const tuesday = new Date(monday);
+            tuesday.setDate(monday.getDate() + 1);
+
+            const mondayStr = monday.toISOString().split('T')[0];
+            const tuesdayStr = tuesday.toISOString().split('T')[0];
+
+            offers.push({
+                id: nextOfferId++,
+                title: "Monday & Tuesday Special Offer",
+                startDate: mondayStr,
+                endDate: tuesdayStr,
+                details: "8 pieces of crispy chicken + 2 garlic sauces<br>Price: 25 AED<br>Order online via: <a href='https://www.crispychicken-uae.com' target='_blank'>www.crispychicken-uae.com</a>",
+                availability: "Dine-in, takeaway, and delivery",
+                type: "weekly",
+                sales: 0
+            });
+
+            saveOffers();
+            renderOffers();
         }
-        
-        function updateOffersTable() {
-            const tbody = document.querySelector('#offersTable tbody');
-            if (!tbody) return;
-            
-            tbody.innerHTML = '';
-            
-            const activeOffers = offers.filter(offer => offer.status === 'نشط');
-            
-            activeOffers.forEach(offer => {
+
+        function editOffer(id) {
+            const offer = offers.find(o => o.id == id);
+            document.getElementById('offer-title').value = offer.title;
+            document.getElementById('offer-title').dataset.id = offer.id;
+            document.getElementById('offer-start-date').value = offer.startDate;
+            document.getElementById('offer-end-date').value = offer.endDate;
+            document.getElementById('offer-details').value = offer.details.replace(/<[^>]+>/g, '');
+            document.getElementById('offer-availability').value = offer.availability.replace(/<[^>]+>/g, '');
+            document.getElementById('offer-type').value = offer.type;
+            document.getElementById('offer-sales').value = offer.sales;
+        }
+
+        function clearForm() {
+            document.getElementById('offer-title').value = '';
+            document.getElementById('offer-title').dataset.id = '';
+            document.getElementById('offer-start-date').value = '';
+            document.getElementById('offer-end-date').value = '';
+            document.getElementById('offer-details').value = '';
+            document.getElementById('offer-availability').value = '';
+            document.getElementById('offer-type').value = 'fixed';
+            document.getElementById('offer-sales').value = '';
+        }
+
+        function renderReport() {
+            const reportBody = document.getElementById('report-table-body');
+            reportBody.innerHTML = '';
+            const monthFilter = document.getElementById('month-select').value;
+            let totalSales = 0;
+            let platformSales = 0;
+            let deliverySales = 0;
+
+            const filteredOffers = offers.filter(offer => monthFilter === 'all' || offer.startDate.includes('-' + monthFilter) || offer.endDate.includes('-' + monthFilter));
+
+            filteredOffers.forEach(offer => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>
-                        <input type="checkbox" class="offer-checkbox" data-id="${offer.id}" onchange="toggleSelection('offers', ${offer.id})">
-                    </td>
-                    <td>${offer.name}</td>
-                    <td>${offer.code}</td>
-                    <td>${offer.discount}</td>
-                    <td>${offer.offerPrice} درهم</td>
-                    <td>${offer.profit} درهم</td>
-                    <td>
-                        <span class="status-badge status-active">${offer.status}</span>
-                    </td>
-                    <td>
-                        <div class="actions">
-                            <button class="btn btn-sm btn-outline" onclick="showOfferDetails(${offer.id})" title="عرض التفاصيل">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-warning" onclick="archiveOffer(${offer.id})" title="أرشفة">
-                                <i class="fas fa-archive"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteOffer(${offer.id})" title="حذف">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </td>
+                    <td>${offer.title}</td>
+                    <td>${offer.startDate.split('-')[2]} - ${offer.endDate.split('-')[2]} Sep</td>
+                    <td>${offer.type.charAt(0).toUpperCase() + offer.type.slice(1)}</td>
+                    <td>${offer.availability}</td>
+                    <td>${offer.sales.toFixed(2)} AED</td>
+                    <td><button class="edit-btn" onclick="editOffer(${offer.id})">Edit</button></td>
                 `;
-                tbody.appendChild(row);
+                reportBody.appendChild(row);
+
+                totalSales += offer.sales;
+                if (offer.type === 'platform') platformSales += offer.sales;
+                if (offer.type === 'delivery') deliverySales += offer.sales;
             });
+
+            document.getElementById('total-sales').textContent = `${totalSales.toFixed(2)} AED`;
+            document.getElementById('platform-sales').textContent = `${platformSales.toFixed(2)} AED`;
+            document.getElementById('delivery-sales').textContent = `${deliverySales.toFixed(2)} AED`;
+
+            renderCharts(filteredOffers);
         }
-        
-        // Branches Management
-        function handleBranchSubmit(e) {
-            e.preventDefault();
-            
-            // Generate automatic code
-            const branchName = document.getElementById('branchNameInput').value;
-            const city = document.getElementById('branchCity').value;
-            let code = branchName.toLowerCase().replace(/\s+/g, '_');
-            
-            // Ensure code uniqueness
-            let counter = 1;
-            let originalCode = code;
-            while (branches.some(b => b.code === code)) {
-                code = originalCode + '_' + counter;
-                counter++;
-            }
-            
-            const branch = {
-                id: Date.now(),
-                name: branchName,
-                code: code,
-                city: city,
-                direction: document.getElementById('branchDirection').value,
-                area: document.getElementById('branchArea').value,
-                landline: document.getElementById('branchLandline').value,
-                googleSite: document.getElementById('branchGoogleSite').value,
-                rate: parseFloat(document.getElementById('branchRate').value) || 0,
-                manager: document.getElementById('branchManager').value,
-                managerNumber: document.getElementById('branchManagerNumber').value,
-                email: document.getElementById('branchEmail').value,
-                deliveryStatus: document.getElementById('branchDeliveryStatus').value,
-                linkOnline: document.getElementById('branchLinkOnline').value,
-                createdAt: new Date().toISOString()
+
+        function renderCharts(filteredOffers) {
+            const salesData = filteredOffers.map(offer => ({
+                label: offer.title,
+                sales: offer.sales,
+                type: offer.type
+            }));
+
+            const salesByType = {
+                fixed: 0,
+                weekly: 0,
+                platform: 0,
+                delivery: 0
             };
-            
-            branches.push(branch);
-            saveData();
-            updateBranchesList();
-            
-            // Add marker to map if coordinates exist
-            if (branch.direction && map) {
-                addBranchMarker(branch);
-            }
-            
-            e.target.reset();
-            showToast('تم إضافة الفرع بنجاح!', 'success');
-            
-            // Add to recent activities
-            addRecentActivity('fas fa-store', `إضافة فرع جديد: ${branch.name}`, 'success');
-        }
-        
-        function updateBranchesList() {
-            const branchesList = document.getElementById('branchesList');
-            if (!branchesList) return;
-            
-            branchesList.innerHTML = '';
-            
-            branches.forEach(branch => {
-                const branchCard = document.createElement('div');
-                branchCard.className = 'branch-card';
-                
-                // Calculate branch performance
-                const branchSales = sales.filter(s => s.branch === branch.code);
-                const branchRevenue = branchSales.reduce((sum, s) => sum + s.revenue, 0);
-                const branchOrders = branchSales.reduce((sum, s) => sum + s.orderCount, 0);
-                
-                branchCard.innerHTML = `
-                    <div class="branch-header">
-                        <h3 class="branch-title">${branch.name}</h3>
-                        <div class="branch-location">
-                            <i class="fas fa-map-marker-alt"></i>
-                            ${getCityName(branch.city)}
-                        </div>
-                    </div>
-                    
-                    <div class="branch-body">
-                        <div class="branch-stats">
-                            <div class="branch-stat">
-                                <div class="branch-stat-value">${branchRevenue.toLocaleString()}</div>
-                                <div class="branch-stat-label">الإيرادات</div>
-                            </div>
-                            <div class="branch-stat">
-                                <div class="branch-stat-value">${branchOrders}</div>
-                                <div class="branch-stat-label">الطلبات</div>
-                            </div>
-                            <div class="branch-stat">
-                                <div class="branch-stat-value">${branch.rate > 0 ? branch.rate : '-'}</div>
-                                <div class="branch-stat-label">التقييم</div>
-                            </div>
-                        </div>
-                        
-                        <div class="branch-info">
-                            <div class="branch-info-item">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span>${branch.area}</span>
-                            </div>
-                            <div class="branch-info-item">
-                                <i class="fas fa-user-tie"></i>
-                                <span>${branch.manager}</span>
-                            </div>
-                            <div class="branch-info-item">
-                                <i class="fas fa-phone"></i>
-                                <span>${branch.landline || 'غير متوفر'}</span>
-                            </div>
-                            <div class="branch-info-item">
-                                <i class="fas fa-truck"></i>
-                                <span>${getDeliveryStatusBadge(branch.deliveryStatus)}</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="branch-actions">
-                        <button class="btn btn-sm btn-outline" onclick="showBranchDetails(${branch.id})">
-                            <i class="fas fa-info-circle"></i> التفاصيل
-                        </button>
-                        <button class="btn btn-sm btn-warning" onclick="editBranch(${branch.id})">
-                            <i class="fas fa-edit"></i> تعديل
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteBranch(${branch.id})">
-                            <i class="fas fa-trash"></i> حذف
-                        </button>
-                    </div>
-                `;
-                
-                branchesList.appendChild(branchCard);
+            filteredOffers.forEach(offer => {
+                salesByType[offer.type] += offer.sales;
             });
-        }
-        
-        // Map Functions
-        function initializeMap() {
-            const mapElement = document.getElementById('branchesMap');
-            if (!mapElement || map) return;
-            
-            // Create map centered on UAE
-            map = new google.maps.Map(mapElement, {
-                center: { lat: 24.0000, lng: 54.0000 },
-                zoom: 7,
-                styles: [
-                    {
-                        featureType: "poi",
-                        elementType: "labels",
-                        stylers: [{ visibility: "off" }]
-                    },
-                    {
-                        featureType: "transit",
-                        elementType: "labels",
-                        stylers: [{ visibility: "off" }]
-                    }
-                ],
-                mapTypeControl: false,
-                streetViewControl: false,
-                fullscreenControl: false
-            });
-            
-            // Add markers for each branch
-            branches.forEach(branch => {
-                if (branch.direction) {
-                    addBranchMarker(branch);
-                }
-            });
-            
-            // Fit map to show all markers
-            fitMapToMarkers();
-        }
-        
-        function addBranchMarker(branch) {
-            if (!map || !branch.direction) return;
-            
-            const coords = branch.direction.split(', ');
-            if (coords.length !== 2) return;
-            
-            const position = {
-                lat: parseFloat(coords[0]),
-                lng: parseFloat(coords[1])
-            };
-            
-            const marker = new google.maps.Marker({
-                position: position,
-                map: map,
-                title: branch.name,
-                icon: {
-                    url: branch.city === 'Abu Dhabi' ? 
-                        'https://maps.google.com/mapfiles/ms/icons/blue-dot.png' : 
-                        'https://maps.google.com/mapfiles/ms/icons/green-dot.png',
-                    scaledSize: new google.maps.Size(40, 40)
+
+            // Destroy existing charts if they exist
+            if (window.salesChart) window.salesChart.destroy();
+            if (window.typeChart) window.typeChart.destroy();
+
+            // Bar Chart
+            window.salesChart = new Chart(document.getElementById('salesChart'), {
+                type: 'bar',
+                data: {
+                    labels: salesData.map(data => data.label),
+                    datasets: [{
+                        label: 'Sales (AED)',
+                        data: salesData.map(data => data.sales),
+                        backgroundColor: '#10b981',
+                        borderColor: '#059669',
+                        borderWidth: 1
+                    }]
                 },
-                animation: google.maps.Animation.DROP
-            });
-            
-            // Create info window
-            const infoWindow = new google.maps.InfoWindow({
-                content: createBranchInfoWindow(branch)
-            });
-            
-            // Add click listener
-            marker.addListener('click', () => {
-                infoWindow.open(map, marker);
-            });
-            
-            markers.push(marker);
-        }
-        
-        function createBranchInfoWindow(branch) {
-            return `
-                <div style="padding: 15px; max-width: 300px;">
-                    <h3 style="margin: 0 0 10px 0; color: #667eea;">${branch.name}</h3>
-                    <p style="margin: 5px 0; color: #666;"><i class="fas fa-map-marker-alt"></i> ${branch.area}</p>
-                    <p style="margin: 5px 0; color: #666;"><i class="fas fa-phone"></i> ${branch.landline || 'غير متوفر'}</p>
-                    <p style="margin: 5px 0; color: #666;"><i class="fas fa-user-tie"></i> ${branch.manager}</p>
-                    <p style="margin: 5px 0; color: #666;"><i class="fas fa-star"></i> ${branch.rate > 0 ? branch.rate + '/5' : 'غير مقيم'}</p>
-                    <div style="margin-top: 10px;">${getDeliveryStatusBadge(branch.deliveryStatus)}</div>
-                    ${branch.googleSite ? `<a href="${branch.googleSite}" target="_blank" style="display: inline-block; margin-top: 10px; color: #667eea; text-decoration: none;"><i class="fas fa-external-link-alt"></i> عرض على جوجل</a>` : ''}
-                </div>
-            `;
-        }
-        
-        function fitMapToMarkers() {
-            if (!map || markers.length === 0) return;
-            
-            const bounds = new google.maps.LatLngBounds();
-            markers.forEach(marker => {
-                bounds.extend(marker.getPosition());
-            });
-            
-            map.fitBounds(bounds);
-            
-            // Add some padding
-            const listener = google.maps.event.addListener(map, 'idle', function() {
-                if (map.getZoom() > 12) {
-                    map.setZoom(12);
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Sales (AED)' }
+                        }
+                    }
                 }
-                google.maps.event.removeListener(listener);
             });
-        }
-        
-        function showAllBranches() {
-            if (!map) return;
-            
-            // Clear existing markers
-            markers.forEach(marker => marker.setMap(null));
-            markers = [];
-            
-            // Add all branch markers
-            branches.forEach(branch => {
-                addBranchMarker(branch);
-            });
-            
-            fitMapToMarkers();
-            showToast('تم عرض جميع الفروع', 'info');
-        }
-        
-        function filterByCity(city) {
-            if (!map) return;
-            
-            // Clear existing markers
-            markers.forEach(marker => marker.setMap(null));
-            markers = [];
-            
-            // Add markers for city branches
-            branches.filter(branch => branch.city === city).forEach(branch => {
-                addBranchMarker(branch);
-            });
-            
-            fitMapToMarkers();
-            showToast(`تم عرض فروع ${getCityName(city)}`, 'info');
-        }
-        
-        function centerMapOnUser() {
-            if (!map) return;
-            
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const userLocation = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude
-                        };
-                        
-                        map.setCenter(userLocation);
-                        map.setZoom(12);
-                        
-                        // Add user marker
-                        new google.maps.Marker({
-                            position: userLocation,
-                            map: map,
-                            title: 'موقعك الحالي',
-                            icon: {
-                                url: 'https://maps.google.com/mapfiles/ms/icons/yellow-dot.png',
-                                scaledSize: new google.maps.Size(40, 40)
-                            }
-                        });
-                        
-                        showToast('تم تحديد موقعك الحالي', 'success');
-                    },
-                    (error) => {
-                        showToast('لا يمكن الوصول إلى موقعك', 'error');
-                    }
-                );
-            } else {
-                showToast('المتصفح لا يدعم تحديد الموقع', 'error');
-            }
-        }
-        
-        // Analysis Functions
-        function initializeAnalysisCharts() {
-            // Sales Trend Chart
-            const salesTrendCtx = document.getElementById('salesTrendChart');
-            if (salesTrendCtx && !charts.salesTrend) {
-                charts.salesTrend = new Chart(salesTrendCtx, {
-                    type: 'line',
-                    data: {
-                        labels: generateLast7Days(),
-                        datasets: [{
-                            label: 'المبيعات',
-                            data: generateRandomData(7, 1000, 5000),
-                            borderColor: '#667eea',
-                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-            }
-            
-            // Branch Performance Chart
-            const branchPerformanceCtx = document.getElementById('branchPerformanceChart');
-            if (branchPerformanceCtx && !charts.branchPerformance) {
-                const branchNames = branches.slice(0, 5).map(b => b.name);
-                const branchData = generateRandomData(5, 10000, 50000);
-                
-                charts.branchPerformance = new Chart(branchPerformanceCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: branchNames,
-                        datasets: [{
-                            label: 'الأداء',
-                            data: branchData,
-                            backgroundColor: [
-                                'rgba(102, 126, 234, 0.8)',
-                                'rgba(118, 75, 162, 0.8)',
-                                'rgba(240, 147, 251, 0.8)',
-                                'rgba(245, 87, 108, 0.8)',
-                                'rgba(79, 172, 254, 0.8)'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-            }
-            
-            // Offer Profitability Chart
-            const offerProfitabilityCtx = document.getElementById('offerProfitabilityChart');
-            if (offerProfitabilityCtx && !charts.offerProfitability) {
-                charts.offerProfitability = new Chart(offerProfitabilityCtx, {
-                    type: 'pie',
-                    data: {
-                        labels: ['عرض 1', 'عرض 2', 'عرض 3', 'عرض 4', 'عرض 5'],
-                        datasets: [{
-                            data: [30, 25, 20, 15, 10],
-                            backgroundColor: [
-                                '#667eea',
-                                '#764ba2',
-                                '#f093fb',
-                                '#f5576c',
-                                '#4facfe'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'right'
-                            }
-                        }
-                    }
-                });
-            }
-            
-            // Platform Performance Chart
-            const platformPerformanceCtx = document.getElementById('platformPerformanceChart');
-            if (platformPerformanceCtx && !charts.platformPerformance) {
-                charts.platformPerformance = new Chart(platformPerformanceCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['تالابات', 'نون', 'كريم', 'ديليرو', 'سمايل'],
-                        datasets: [{
-                            data: [35, 25, 20, 15, 5],
-                            backgroundColor: [
-                                '#667eea',
-                                '#764ba2',
-                                '#f093fb',
-                                '#f5576c',
-                                '#4facfe'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'right'
-                            }
-                        }
-                    }
-                });
-            }
-        }
-        
-        function updateAnalysisFilters() {
-            const branchFilter = document.getElementById('analysisBranch');
-            const platformFilter = document.getElementById('analysisPlatform');
-            
-            if (branchFilter) {
-                branchFilter.innerHTML = '<option value="">جميع الفروع</option>';
-                branches.forEach(branch => {
-                    const option = document.createElement('option');
-                    option.value = branch.code;
-                    option.textContent = branch.name;
-                    branchFilter.appendChild(option);
-                });
-            }
-            
-            if (platformFilter) {
-                platformFilter.innerHTML = '<option value="">جميع المنصات</option>';
-                platforms.forEach(platform => {
-                    const option = document.createElement('option');
-                    option.value = platform.code;
-                    option.textContent = platform.name;
-                    platformFilter.appendChild(option);
-                });
-            }
-        }
-        
-        // Utility Functions
-        function saveData() {
-            localStorage.setItem('crispyOffers', JSON.stringify(offers));
-            localStorage.setItem('crispySales', JSON.stringify(sales));
-            localStorage.setItem('crispyBranches', JSON.stringify(branches));
-            localStorage.setItem('crispyPlatforms', JSON.stringify(platforms));
-            localStorage.setItem('crispyPastOffers', JSON.stringify(pastOffers));
-        }
-        
-        function showToast(message, type = 'success', duration = 5000) {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            
-            const icons = {
-                success: 'fas fa-check-circle',
-                error: 'fas fa-exclamation-circle',
-                warning: 'fas fa-exclamation-triangle',
-                info: 'fas fa-info-circle'
-            };
-            
-            toast.innerHTML = `
-                <i class="${icons[type]} toast-icon"></i>
-                <div class="toast-content">
-                    <div class="toast-title">${type === 'success' ? 'نجاح' : type === 'error' ? 'خطأ' : type === 'warning' ? 'تحذير' : 'معلومات'}</div>
-                    <div class="toast-message">${message}</div>
-                </div>
-                <i class="fas fa-times toast-close" onclick="this.parentElement.remove()"></i>
-            `;
-            
-            container.appendChild(toast);
-            
-            // Auto remove
-            setTimeout(() => {
-                if (toast.parentElement) {
-                    toast.remove();
+
+            // Pie Chart
+            window.typeChart = new Chart(document.getElementById('typeChart'), {
+                type: 'pie',
+                data: {
+                    labels: ['Fixed', 'Weekly', 'Platform', 'Delivery'],
+                    datasets: [{
+                        label: 'Sales by Type',
+                        data: [salesByType.fixed, salesByType.weekly, salesByType.platform, salesByType.delivery],
+                        backgroundColor: ['#10b981', '#059669', '#2563eb', '#1e40af'],
+                        borderColor: '#fff',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true
                 }
-            }, duration);
-        }
-        
-        function toggleNotifications() {
-            const dropdown = document.getElementById('notificationDropdown');
-            dropdown.classList.toggle('show');
-        }
-        
-        function markAllAsRead() {
-            document.querySelectorAll('.notification-item').forEach(item => {
-                item.classList.remove('unread');
-            });
-            document.getElementById('notificationCount').textContent = '0';
-            showToast('تم تحديد جميع الإشعارات كمقروء', 'success');
-        }
-        
-        function loadRecentActivities() {
-            const activities = [
-                { icon: 'fas fa-plus-circle', text: 'إضافة عرض جديد: وجبة العائلة', time: 'منذ 5 دقائق', type: 'success' },
-                { icon: 'fas fa-chart-line', text: 'تسجيل مبيعات: فرع الحمران', time: 'منذ 15 دقيقة', type: 'info' },
-                { icon: 'fas fa-store', text: 'تحديث بيانات فرع: الشارقة', time: 'منذ ساعة', type: 'warning' },
-                { icon: 'fas fa-file-export', text: 'تصدير تقرير المبيعات', time: 'منذ ساعتين', type: 'success' },
-                { icon: 'fas fa-archive', text: 'أرشفة عرض منتهي', time: 'منذ 3 ساعات', type: 'info' }
-            ];
-            
-            const container = document.getElementById('recentActivities');
-            if (!container) return;
-            
-            container.innerHTML = activities.map(activity => `
-                <div class="activity-item" style="display: flex; align-items: center; gap: 15px; padding: 15px; border-bottom: 1px solid var(--border-color);">
-                    <div class="activity-icon" style="width: 40px; height: 40px; border-radius: 50%; background: var(--light-bg); display: flex; align-items: center; justify-content: center;">
-                        <i class="${activity.icon}" style="color: var(--primary-color);"></i>
-                    </div>
-                    <div class="activity-content" style="flex: 1;">
-                        <p style="margin: 0; font-weight: 600;">${activity.text}</p>
-                        <small style="color: var(--text-secondary);">${activity.time}</small>
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        function refreshActivities() {
-            showLoading();
-            setTimeout(() => {
-                loadRecentActivities();
-                hideLoading();
-                showToast('تم تحديث النشاطات', 'success');
-            }, 1000);
-        }
-        
-        function addRecentActivity(icon, text, type) {
-            const container = document.getElementById('recentActivities');
-            if (!container) return;
-            
-            const newActivity = document.createElement('div');
-            newActivity.className = 'activity-item';
-            newActivity.style.display = 'flex';
-            newActivity.style.alignItems = 'center';
-            newActivity.style.gap = '15px';
-            newActivity.style.padding = '15px';
-            newActivity.style.borderBottom = '1px solid var(--border-color)';
-            newActivity.style.animation = 'slideInRight 0.3s ease';
-            
-            newActivity.innerHTML = `
-                <div class="activity-icon" style="width: 40px; height: 40px; border-radius: 50%; background: var(--light-bg); display: flex; align-items: center; justify-content: center;">
-                    <i class="${icon}" style="color: var(--primary-color);"></i>
-                </div>
-                <div class="activity-content" style="flex: 1;">
-                    <p style="margin: 0; font-weight: 600;">${text}</p>
-                    <small style="color: var(--text-secondary);">الآن</small>
-                </div>
-            `;
-            
-            container.insertBefore(newActivity, container.firstChild);
-            
-            // Keep only last 5 activities
-            while (container.children.length > 5) {
-                container.removeChild(container.lastChild);
-            }
-        }
-        
-        function checkForNotifications() {
-            // Check for expiring offers
-            const today = new Date();
-            const expiringOffers = offers.filter(offer => {
-                const endDate = new Date(offer.endDate);
-                const daysDiff = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
-                return daysDiff <= 3 && daysDiff >= 0 && offer.status === 'نشط';
-            });
-            
-            if (expiringOffers.length > 0) {
-                document.getElementById('notificationCount').textContent = expiringOffers.length;
-                showToast(`يوجد ${expiringOffers.length} عروض ستنتهي خلال 3 أيام`, 'warning', 10000);
-            }
-        }
-        
-        function generateQuickReport() {
-            showLoading();
-            setTimeout(() => {
-                const report = {
-                    totalRevenue: sales.reduce((sum, sale) => sum + sale.revenue, 0),
-                    totalProfit: sales.reduce((sum, sale) => sum + sale.profit, 0),
-                    totalOrders: sales.reduce((sum, sale) => sum + sale.orderCount, 0),
-                    activeOffers: offers.filter(o => o.status === 'نشط').length,
-                    totalBranches: branches.length,
-                    generatedAt: new Date().toLocaleString('ar-EG')
-                };
-                
-                console.log('Quick Report:', report);
-                hideLoading();
-                showToast('تم إنشاء التقرير السريع', 'success');
-            }, 1500);
-        }
-        
-        function showLoading() {
-            document.getElementById('loadingOverlay').classList.add('active');
-        }
-        
-        function hideLoading() {
-            document.getElementById('loadingOverlay').classList.remove('active');
-        }
-        
-        function resetForm(formId) {
-            document.getElementById(formId).reset();
-            showToast('تم إعادة تعيين النموذج', 'info');
-        }
-        
-        function toggleSelection(type, id) {
-            const checkbox = document.querySelector(`.${type}-checkbox[data-id="${id}"]`);
-            if (checkbox) {
-                if (checkbox.checked) {
-                    selectedItems[type].add(id);
-                } else {
-                    selectedItems[type].delete(id);
-                }
-            }
-        }
-        
-        function toggleSelectAll(type) {
-            const selectAll = document.getElementById(`selectAll${type.charAt(0).toUpperCase() + type.slice(1)}`);
-            const checkboxes = document.querySelectorAll(`.${type}-checkbox`);
-            
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = selectAll.checked;
-                toggleSelection(type, parseInt(checkbox.dataset.id));
             });
         }
-        
-        function getCityName(cityCode) {
-            const cities = {
-                'Abu Dhabi': 'أبوظبي',
-                'Dubai': 'دبي',
-                'Sharjah': 'الشارقة',
-                'Ajman': 'عجمان',
-                'Umm Al Quwain': 'أم القيوين',
-                'Ras Al Khaimah': 'رأس الخيمة',
-                'Fujairah': 'الفجيرة'
-            };
-            return cities[cityCode] || cityCode;
-        }
-        
-        function getDeliveryStatusBadge(status) {
-            if (status === 'Yes') {
-                return '<span class="status-badge status-active">متاح</span>';
-            } else if (status === 'No') {
-                return '<span class="status-badge status-inactive">غير متاح</span>';
-            } else {
-                return '<span class="status-badge status-pending">غير متوفر</span>';
-            }
-        }
-        
-        function generateLast30Days() {
-            const days = [];
-            for (let i = 29; i >= 0; i--) {
-                const date = new Date();
-                date.setDate(date.getDate() - i);
-                days.push(date.toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' }));
-            }
-            return days;
-        }
-        
-        function generateLast7Days() {
-            const days = [];
-            for (let i = 6; i >= 0; i--) {
-                const date = new Date();
-                date.setDate(date.getDate() - i);
-                days.push(date.toLocaleDateString('ar-EG', { weekday: 'short' }));
-            }
-            return days;
-        }
-        
-        function generateRandomData(count, min, max) {
-            const data = [];
-            for (let i = 0; i < count; i++) {
-                data.push(Math.floor(Math.random() * (max - min + 1)) + min);
-            }
-            return data;
-        }
-        
-        function downloadChart(chartId) {
-            showToast('جاري تحميل الرسم البياني...', 'info');
-            // Implementation for downloading chart
-        }
-        
-        function refreshChart(chartId) {
-            showToast('تم تحديث الرسم البياني', 'success');
-            // Implementation for refreshing chart
-        }
-        
-        function exportBranchesData() {
-            showLoading();
-            setTimeout(() => {
-                const csv = convertToCSV(branches);
-                downloadCSV(csv, 'branches_data.csv');
-                hideLoading();
-                showToast('تم تصدير بيانات الفروع', 'success');
-            }, 1000);
-        }
-        
-        function convertToCSV(data) {
-            if (data.length === 0) return '';
-            
-            const headers = Object.keys(data[0]);
-            const csvHeaders = headers.join(',');
-            const csvRows = data.map(row => {
-                return headers.map(header => {
-                    const value = row[header];
-                    return typeof value === 'string' && value.includes(',') ? `"${value}"` : value;
-                }).join(',');
-            });
-            
-            return csvHeaders + '\n' + csvRows.join('\n');
-        }
-        
-        function downloadCSV(csv, filename) {
-            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+
+        function exportReport() {
+            const monthFilter = document.getElementById('month-select').value;
+            const filteredOffers = offers.filter(offer => monthFilter === 'all' || offer.startDate.includes('-' + monthFilter) || offer.endDate.includes('-' + monthFilter));
+            const csvContent = [
+                'Title,Start Date,End Date,Type,Availability,Sales (AED)',
+                ...filteredOffers.map(offer => `"${offer.title.replace(/"/g, '""')}",${offer.startDate},${offer.endDate},${offer.type},"${offer.availability.replace(/<[^>]+>/g, '').replace(/"/g, '""')}",${offer.sales.toFixed(2)}`)
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = filename;
+            link.download = 'crispy_chicken_offer_report.csv';
             link.click();
         }
-        
-        function setupKeyboardShortcuts() {
-            const shortcuts = {
-                'Ctrl+s': () => document.querySelector('#offerForm')?.submit(),
-                'Ctrl+n': () => showPage('offers'),
-                'Ctrl+b': () => showPage('branches'),
-                'Ctrl+p': () => showPage('platforms'),
-                'Ctrl+a': () => showPage('analysis'),
-                'Ctrl+f': () => document.getElementById('globalSearch')?.focus(),
-                'Escape': () => closeAllModals()
-            };
-            
-            document.addEventListener('keydown', (e) => {
-                if (e.ctrlKey || e.metaKey) {
-                    const key = `${e.ctrlKey ? 'Ctrl' : 'Meta'}+${e.key.toLowerCase()}`;
-                    if (shortcuts[key]) {
-                        e.preventDefault();
-                        shortcuts[key]();
-                    }
-                } else if (e.key === 'Escape') {
-                    shortcuts['Escape']();
-                }
-            });
+
+        function showTab(tabId) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            document.getElementById(`${tabId}-tab`).classList.add('active');
+
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => button.classList.remove('active'));
+            document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
         }
-        
-        function setupAutoSave() {
-            let autoSaveTimer;
-            document.addEventListener('input', function(e) {
-                if (e.target.matches('input, textarea, select')) {
-                    clearTimeout(autoSaveTimer);
-                    autoSaveTimer = setTimeout(() => {
-                        saveData();
-                        showToast('تم الحفظ التلقائي', 'info', 2000);
-                    }, 5000);
-                }
-            });
-        }
-        
-        function handleResize() {
-            if (map) {
-                google.maps.event.trigger(map, 'resize');
-            }
-        }
-        
-        function handleBeforePrint() {
-            document.querySelectorAll('.card, .chart-container, .table-container').forEach(el => {
-                el.style.boxShadow = 'none';
-                el.style.border = '1px solid var(--border-color)';
-            });
-        }
-        
-        function handleAfterPrint() {
-            location.reload();
-        }
-        
-        function handleGlobalSearch(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            
-            if (searchTerm.length < 2) return;
-            
-            // Search in all data
-            const results = {
-                offers: offers.filter(offer => 
-                    offer.name.toLowerCase().includes(searchTerm) ||
-                    offer.code.toLowerCase().includes(searchTerm)
-                ),
-                branches: branches.filter(branch =>
-                    branch.name.toLowerCase().includes(searchTerm) ||
-                    branch.code.toLowerCase().includes(searchTerm) ||
-                    branch.area.toLowerCase().includes(searchTerm)
-                ),
-                platforms: platforms.filter(platform =>
-                    platform.name.toLowerCase().includes(searchTerm) ||
-                    platform.code.toLowerCase().includes(searchTerm)
-                )
-            };
-            
-            console.log('Search Results:', results);
-        }
-        
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-        
-        function closeAllModals() {
-            document.querySelectorAll('.modal').forEach(modal => {
-                modal.classList.remove('active');
-            });
-        }
-        
-        // Placeholder functions for missing features
-        function showOfferDetails(id) {
-            showToast('عرض تفاصيل العرض', 'info');
-        }
-        
-        function archiveOffer(id) {
-            showToast('أرشفة العرض', 'info');
-        }
-        
-        function deleteOffer(id) {
-            if (confirm('هل أنت متأكد من حذف هذا العرض؟')) {
-                offers = offers.filter(offer => offer.id !== id);
-                saveData();
-                updateOffersTable();
-                showToast('تم حذف العرض', 'success');
-            }
-        }
-        
-        function duplicateSelectedOffers() {
-            showToast('نسخ العروض المحددة', 'info');
-        }
-        
-        function archiveSelectedOffers() {
-            showToast('أرشفة العروض المحددة', 'info');
-        }
-        
-        function deleteSelectedOffers() {
-            if (confirm('هل أنت متأكد من حذف العروض المحددة؟')) {
-                showToast('حذف العروض المحددة', 'success');
-            }
-        }
-        
-        function showBranchDetails(id) {
-            const branch = branches.find(b => b.id === id);
-            if (!branch) return;
-            
-            const modal = document.getElementById('branchDetailsModal');
-            const content = document.getElementById('branchDetailsContent');
-            
-            content.innerHTML = `
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div>
-                        <h3 style="color: var(--primary-color); margin-bottom: 15px;">معلومات الفرع</h3>
-                        <p><strong>الاسم:</strong> ${branch.name}</p>
-                        <p><strong>المدينة:</strong> ${getCityName(branch.city)}</p>
-                        <p><strong>المنطقة:</strong> ${branch.area}</p>
-                        <p><strong>المدير:</strong> ${branch.manager}</p>
-                        <p><strong>هاتف المدير:</strong> ${branch.managerNumber}</p>
-                    </div>
-                    <div>
-                        <h3 style="color: var(--primary-color); margin-bottom: 15px;">معلومات الاتصال</h3>
-                        <p><strong>الهاتف الأرضي:</strong> ${branch.landline || 'غير متوفر'}</p>
-                        <p><strong>البريد الإلكتروني:</strong> ${branch.email || 'غير متوفر'}</p>
-                        <p><strong>حالة التوصيل:</strong> ${getDeliveryStatusBadge(branch.deliveryStatus)}</p>
-                        <p><strong>التقييم:</strong> ${branch.rate > 0 ? branch.rate + '/5' : 'غير متوفر'}</p>
-                    </div>
-                </div>
-                ${branch.googleSite ? `<div style="margin-top: 20px;"><a href="${branch.googleSite}" target="_blank" class="btn"><i class="fas fa-external-link-alt"></i> عرض على جوجل</a></div>` : ''}
-            `;
-            
-            modal.classList.add('active');
-        }
-        
-        function editBranch(id) {
-            const branch = branches.find(b => b.id === id);
-            if (branch) {
-                // Fill form with branch data
-                document.getElementById('branchNameInput').value = branch.name;
-                document.getElementById('branchCity').value = branch.city;
-                document.getElementById('branchDirection').value = branch.direction;
-                document.getElementById('branchArea').value = branch.area;
-                document.getElementById('branchLandline').value = branch.landline;
-                document.getElementById('branchGoogleSite').value = branch.googleSite;
-                document.getElementById('branchRate').value = branch.rate;
-                document.getElementById('branchManager').value = branch.manager;
-                document.getElementById('branchManagerNumber').value = branch.managerNumber;
-                document.getElementById('branchEmail').value = branch.email;
-                document.getElementById('branchDeliveryStatus').value = branch.deliveryStatus;
-                document.getElementById('branchLinkOnline').value = branch.linkOnline;
-                
-                // Remove old branch temporarily
-                branches = branches.filter(b => b.id !== id);
-                saveData();
-                updateBranchesList();
-                
-                showToast('تم تحميل بيانات الفرع للتعديل', 'info');
-                
-                // Scroll to form
-                document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-        
-        function deleteBranch(id) {
-            if (confirm('هل أنت متأكد من حذف هذا الفرع؟')) {
-                branches = branches.filter(branch => branch.id !== id);
-                saveData();
-                updateBranchesList();
-                showToast('تم حذف الفرع', 'success');
-            }
-        }
-        
-        function resetAnalysisFilters() {
-            document.getElementById('analysisDateFrom').value = '';
-            document.getElementById('analysisDateTo').value = '';
-            document.getElementById('analysisBranch').value = '';
-            document.getElementById('analysisPlatform').value = '';
-            showToast('تم إعادة تعيين الفلاتر', 'info');
-        }
-        
-        function applyAnalysisFilters() {
-            showToast('تم تطبيق الفلاتر', 'success');
-            // Implementation for applying filters
-        }
-        
-        // Initialize Google Maps API callback
-        window.initMap = function() {
-            if (document.getElementById('branches-page').style.display !== 'none') {
-                initializeMap();
-            }
+
+        // Initialize
+        window.onload = function() {
+            renderOffers();
+            renderReport();
         };
-    </script>
-    
-    <!-- Google Maps API -->
-    <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap&language=ar&region=AE">
     </script>
 </body>
 </html>
