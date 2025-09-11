@@ -530,6 +530,13 @@
             font-size: 0.9em;
         }
 
+        .no-offers {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+            font-style: italic;
+        }
+
         @media (max-width: 768px) {
             .dashboard {
                 grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -841,6 +848,11 @@
         <ul class="offer-list" id="offer-list">
             <!-- Offers will be dynamically populated -->
         </ul>
+        <div id="no-offers-message" class="no-offers" style="display: none;">
+            <i class="fas fa-tag" style="font-size: 3em; margin-bottom: 15px; color: #d1d5db;"></i>
+            <p>No special offers available at the moment.</p>
+            <p>Check back later or add a new offer!</p>
+        </div>
     </div>
 
     <h2>Offer Sales Report</h2>
@@ -986,7 +998,20 @@
         
         function renderOffers() {
             const offerList = document.getElementById('offer-list');
+            const noOffersMessage = document.getElementById('no-offers-message');
             offerList.innerHTML = '';
+            
+            // If no offers, show message
+            if (offers.length === 0) {
+                offerList.style.display = 'none';
+                noOffersMessage.style.display = 'block';
+                document.getElementById('active-offers').textContent = '0';
+                return;
+            }
+            
+            offerList.style.display = 'grid';
+            noOffersMessage.style.display = 'none';
+            
             const currentDate = new Date('2025-09-11');
             let activeCount = 0;
             
@@ -1051,17 +1076,35 @@
         function searchOffers() {
             const searchTerm = document.getElementById('offer-search').value.toLowerCase();
             const offerItems = document.querySelectorAll('.offer-list li');
+            const noOffersMessage = document.getElementById('no-offers-message');
             
+            let visibleCount = 0;
             offerItems.forEach(item => {
                 const title = item.querySelector('.offer-title').textContent.toLowerCase();
                 const details = item.querySelector('.offer-details').textContent.toLowerCase();
                 
                 if (title.includes(searchTerm) || details.includes(searchTerm)) {
                     item.style.display = '';
+                    visibleCount++;
                 } else {
                     item.style.display = 'none';
                 }
             });
+            
+            // If no offers match search, show message
+            if (visibleCount === 0 && searchTerm !== '') {
+                offerItems.forEach(item => item.style.display = 'none');
+                noOffersMessage.style.display = 'block';
+                noOffersMessage.innerHTML = `
+                    <i class="fas fa-search" style="font-size: 3em; margin-bottom: 15px; color: #d1d5db;"></i>
+                    <p>No offers match your search: "${searchTerm}"</p>
+                    <p>Try a different search term</p>
+                `;
+            } else if (searchTerm === '') {
+                renderOffers();
+            } else {
+                noOffersMessage.style.display = 'none';
+            }
         }
         
         function addOrUpdateOffer() {
