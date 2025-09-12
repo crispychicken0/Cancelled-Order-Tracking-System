@@ -416,6 +416,25 @@
             font-size: 0.9rem;
         }
 
+        /* Badge */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .badge.success {
+            background: var(--primary);
+            color: white;
+        }
+
+        .badge.danger {
+            background: var(--danger);
+            color: white;
+        }
+
         /* Tables */
         .table-container {
             overflow-x: auto;
@@ -650,6 +669,11 @@
             to { transform: translateX(0); opacity: 1; }
         }
 
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
         .notification.success {
             background: var(--primary);
         }
@@ -775,19 +799,19 @@
         <!-- Navigation -->
         <div class="nav-container">
             <div class="nav-tabs">
-                <button class="nav-tab active" data-section="dashboard">
+                <button class="nav-tab active" data-section="dashboard" aria-label="View Dashboard">
                     <i class="fas fa-tachometer-alt"></i> Dashboard
                 </button>
-                <button class="nav-tab" data-section="branches">
+                <button class="nav-tab" data-section="branches" aria-label="Manage Branches">
                     <i class="fas fa-store"></i> Branch Management
                 </button>
-                <button class="nav-tab" data-section="offers">
+                <button class="nav-tab" data-section="offers" aria-label="Manage Offers">
                     <i class="fas fa-tag"></i> Offers Management
                 </button>
-                <button class="nav-tab" data-section="analytics">
+                <button class="nav-tab" data-section="analytics" aria-label="View Analytics">
                     <i class="fas fa-chart-bar"></i> Analytics & Reports
                 </button>
-                <button class="nav-tab" data-section="platforms">
+                <button class="nav-tab" data-section="platforms" aria-label="Manage Delivery Platforms">
                     <i class="fas fa-globe"></i> Delivery Platforms
                 </button>
             </div>
@@ -798,7 +822,7 @@
             <div class="section-header">
                 <h2 class="section-title">Restaurant Performance Overview</h2>
                 <div class="action-buttons">
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary" aria-label="Export Dashboard Report">
                         <i class="fas fa-download"></i> Export Report
                     </button>
                 </div>
@@ -861,7 +885,7 @@
             <div class="section-header">
                 <h2 class="section-title">Branch Management</h2>
                 <div class="action-buttons">
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary" aria-label="Add New Branch">
                         <i class="fas fa-plus"></i> Add Branch
                     </button>
                 </div>
@@ -913,10 +937,10 @@
             <div class="section-header">
                 <h2 class="section-title">Offers Management</h2>
                 <div class="action-buttons">
-                    <button class="btn btn-primary" id="add-offer-btn">
+                    <button class="btn btn-primary" id="add-offer-btn" aria-label="Add New Offer">
                         <i class="fas fa-plus"></i> Add New Offer
                     </button>
-                    <button class="btn btn-secondary" id="add-weekly-btn">
+                    <button class="btn btn-secondary" id="add-weekly-btn" aria-label="Add Weekly Offer">
                         <i class="fas fa-calendar-week"></i> Add Weekly Offer
                     </button>
                 </div>
@@ -995,10 +1019,10 @@
                     </div>
                     
                     <div style="margin-top: 20px;">
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary" aria-label="Save Offer">
                             <i class="fas fa-save"></i> Save Offer
                         </button>
-                        <button type="button" class="btn btn-outline" id="cancel-offer-btn">
+                        <button type="button" class="btn btn-outline" id="cancel-offer-btn" aria-label="Cancel Offer Creation">
                             Cancel
                         </button>
                     </div>
@@ -1038,10 +1062,10 @@
             <div class="section-header">
                 <h2 class="section-title">Analytics & Reports</h2>
                 <div class="action-buttons">
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary" aria-label="Export Analytics Report">
                         <i class="fas fa-download"></i> Export Report
                     </button>
-                    <button class="btn btn-secondary">
+                    <button class="btn btn-secondary" aria-label="Generate PDF Report">
                         <i class="fas fa-file-pdf"></i> Generate PDF
                     </button>
                 </div>
@@ -1119,7 +1143,7 @@
             <div class="section-header">
                 <h2 class="section-title">Delivery Platforms</h2>
                 <div class="action-buttons">
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary" aria-label="Add New Platform">
                         <i class="fas fa-plus"></i> Add Platform
                     </button>
                 </div>
@@ -1169,162 +1193,170 @@
 
         // Initialize Application
         document.addEventListener('DOMContentLoaded', () => {
-            initializeApp();
-            setupEventListeners();
-            renderDashboard();
-            showSection('dashboard');
+            try {
+                initializeApp();
+                setupEventListeners();
+                renderDashboard();
+                showSection('dashboard');
+            } catch (error) {
+                showNotification('Error initializing application: ' + error.message, 'error');
+            }
         });
 
         function initializeApp() {
             // Load data from localStorage or initialize with sample data
-            const savedOffers = localStorage.getItem('crispyChickenOffers');
-            const savedBranches = localStorage.getItem('crispyChickenBranches');
-            const savedPlatforms = localStorage.getItem('crispyChickenPlatforms');
-            
-            if (savedOffers) {
-                state.offers = JSON.parse(savedOffers);
-            } else {
-                // Initialize sample offers
-                state.offers = [
-                    {
-                        id: 1,
-                        title: "Chicken Day Special",
-                        startDate: "2025-09-01",
-                        endDate: "2025-09-30",
-                        type: "fixed",
-                        details: "8 pieces of crispy chicken + 2 garlic sauces for 29 AED",
-                        platforms: ["Talabat", "Direct"],
-                        sales: 15000,
-                        active: true
-                    },
-                    {
-                        id: 2,
-                        title: "Monday & Tuesday Deal",
-                        startDate: "2025-09-01",
-                        endDate: "2025-09-30",
-                        type: "weekly",
-                        details: "25% off on all meals every Monday & Tuesday",
-                        platforms: ["Deliveroo", "Careem"],
-                        sales: 12000,
-                        active: true
-                    },
-                    {
-                        id: 3,
-                        title: "Noon App Exclusive",
-                        startDate: "2025-09-15",
-                        endDate: "2025-09-30",
-                        type: "platform",
-                        details: "30% off on selected items via Noon app",
-                        platforms: ["Noon"],
-                        sales: 9000,
-                        active: true
-                    },
-                    {
-                        id: 4,
-                        title: "Talabat Combo Deal",
-                        startDate: "2025-09-10",
-                        endDate: "2025-09-20",
-                        type: "platform",
-                        details: "Family meal combo for 99 AED",
-                        platforms: ["Talabat"],
-                        sales: 8000,
-                        active: false
-                    }
-                ];
-                localStorage.setItem('crispyChickenOffers', JSON.stringify(state.offers));
+            try {
+                const savedOffers = localStorage.getItem('crispyChickenOffers');
+                const savedBranches = localStorage.getItem('crispyChickenBranches');
+                const savedPlatforms = localStorage.getItem('crispyChickenPlatforms');
+                
+                if (savedOffers) {
+                    state.offers = JSON.parse(savedOffers);
+                } else {
+                    // Initialize sample offers
+                    state.offers = [
+                        {
+                            id: 1,
+                            title: "Chicken Day Special",
+                            startDate: "2025-09-01",
+                            endDate: "2025-09-30",
+                            type: "fixed",
+                            details: "8 pieces of crispy chicken + 2 garlic sauces for 29 AED",
+                            platforms: ["Talabat", "Direct"],
+                            sales: 15000,
+                            active: true
+                        },
+                        {
+                            id: 2,
+                            title: "Monday & Tuesday Deal",
+                            startDate: "2025-09-01",
+                            endDate: "2025-09-30",
+                            type: "weekly",
+                            details: "25% off on all meals every Monday & Tuesday",
+                            platforms: ["Deliveroo", "Careem"],
+                            sales: 12000,
+                            active: true
+                        },
+                        {
+                            id: 3,
+                            title: "Noon App Exclusive",
+                            startDate: "2025-09-15",
+                            endDate: "2025-09-30",
+                            type: "platform",
+                            details: "30% off on selected items via Noon app",
+                            platforms: ["Noon"],
+                            sales: 9000,
+                            active: true
+                        },
+                        {
+                            id: 4,
+                            title: "Talabat Combo Deal",
+                            startDate: "2025-09-10",
+                            endDate: "2025-09-20",
+                            type: "platform",
+                            details: "Family meal combo for 99 AED",
+                            platforms: ["Talabat"],
+                            sales: 8000,
+                            active: false
+                        }
+                    ];
+                    localStorage.setItem('crispyChickenOffers', JSON.stringify(state.offers));
+                }
+                
+                if (savedBranches) {
+                    state.branches = JSON.parse(savedBranches);
+                } else {
+                    // Initialize sample branches
+                    state.branches = [
+                        {
+                            id: 1,
+                            name: "Crispy Chicken-Hamdan St",
+                            city: "Abu Dhabi",
+                            area: "Hamdan Opposite Sun and San Sports",
+                            manager: "Mr. Mahmoud",
+                            phone: "(02) 641 1194",
+                            rating: 4.0,
+                            sales: 45000,
+                            status: "active"
+                        },
+                        {
+                            id: 2,
+                            name: "Crispy chicken Shabiya 11",
+                            city: "Abu Dhabi",
+                            area: "Mohamed Bin Zayed City - ME-11",
+                            manager: "Mr. Zakaria",
+                            phone: "(02) 554 9889",
+                            rating: 3.7,
+                            sales: 38000,
+                            status: "active"
+                        },
+                        {
+                            id: 3,
+                            name: "Crispy chicken Al Barsha",
+                            city: "Dubai",
+                            area: "Al Barsha 1",
+                            manager: "Mr. Zaid",
+                            phone: "(04) 835 8195",
+                            rating: 4.4,
+                            sales: 52000,
+                            status: "active"
+                        }
+                    ];
+                    localStorage.setItem('crispyChickenBranches', JSON.stringify(state.branches));
+                }
+                
+                if (savedPlatforms) {
+                    state.platforms = JSON.parse(savedPlatforms);
+                } else {
+                    // Initialize sample platforms
+                    state.platforms = [
+                        {
+                            id: 1,
+                            name: "Talabat",
+                            logo: "https://www.talabat.com/assets/images/logo.svg",
+                            commission: 15,
+                            active: true,
+                            sales: 35000
+                        },
+                        {
+                            id: 2,
+                            name: "Deliveroo",
+                            logo: "https://www.deliveroo.com/assets/images/logo.svg",
+                            commission: 18,
+                            active: true,
+                            sales: 28000
+                        },
+                        {
+                            id: 3,
+                            name: "Careem",
+                            logo: "https://www.careem.com/assets/images/logo.svg",
+                            commission: 12,
+                            active: true,
+                            sales: 22000
+                        },
+                        {
+                            id: 4,
+                            name: "Noon",
+                            logo: "https://www.noon.com/assets/images/logo.svg",
+                            commission: 20,
+                            active: true,
+                            sales: 18000
+                        }
+                    ];
+                    localStorage.setItem('crispyChickenPlatforms', JSON.stringify(state.platforms));
+                }
+                
+                // Update current date
+                const now = new Date();
+                document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            } catch (error) {
+                showNotification('Error loading data: ' + error.message, 'error');
             }
-            
-            if (savedBranches) {
-                state.branches = JSON.parse(savedBranches);
-            } else {
-                // Initialize sample branches
-                state.branches = [
-                    {
-                        id: 1,
-                        name: "Crispy Chicken-Hamdan St",
-                        city: "Abu Dhabi",
-                        area: "Hamdan Opposite Sun and San Sports",
-                        manager: "Mr. Mahmoud",
-                        phone: "(02) 641 1194",
-                        rating: 4.0,
-                        sales: 45000,
-                        status: "active"
-                    },
-                    {
-                        id: 2,
-                        name: "Crispy chicken Shabiya 11",
-                        city: "Abu Dhabi",
-                        area: "Mohamed Bin Zayed City - ME-11",
-                        manager: "Mr. Zakaria",
-                        phone: "(02) 554 9889",
-                        rating: 3.7,
-                        sales: 38000,
-                        status: "active"
-                    },
-                    {
-                        id: 3,
-                        name: "Crispy chicken Al Barsha",
-                        city: "Dubai",
-                        area: "Al Barsha 1",
-                        manager: "Mr. Zaid",
-                        phone: "(04) 835 8195",
-                        rating: 4.4,
-                        sales: 52000,
-                        status: "active"
-                    }
-                ];
-                localStorage.setItem('crispyChickenBranches', JSON.stringify(state.branches));
-            }
-            
-            if (savedPlatforms) {
-                state.platforms = JSON.parse(savedPlatforms);
-            } else {
-                // Initialize sample platforms
-                state.platforms = [
-                    {
-                        id: 1,
-                        name: "Talabat",
-                        logo: "https://www.talabat.com/assets/images/logo.svg",
-                        commission: 15,
-                        active: true,
-                        sales: 35000
-                    },
-                    {
-                        id: 2,
-                        name: "Deliveroo",
-                        logo: "https://www.deliveroo.com/assets/images/logo.svg",
-                        commission: 18,
-                        active: true,
-                        sales: 28000
-                    },
-                    {
-                        id: 3,
-                        name: "Careem",
-                        logo: "https://www.careem.com/assets/images/logo.svg",
-                        commission: 12,
-                        active: true,
-                        sales: 22000
-                    },
-                    {
-                        id: 4,
-                        name: "Noon",
-                        logo: "https://www.noon.com/assets/images/logo.svg",
-                        commission: 20,
-                        active: true,
-                        sales: 18000
-                    }
-                ];
-                localStorage.setItem('crispyChickenPlatforms', JSON.stringify(state.platforms));
-            }
-            
-            // Update current date
-            const now = new Date();
-            document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
         }
 
         function setupEventListeners() {
@@ -1365,7 +1397,10 @@
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.remove('active');
             });
-            document.getElementById(`${sectionId}-section`).classList.add('active');
+            const sectionElement = document.getElementById(`${sectionId}-section`);
+            if (sectionElement) {
+                sectionElement.classList.add('active');
+            }
             
             // Render section-specific content
             switch(sectionId) {
@@ -1389,26 +1424,38 @@
 
         // Dashboard Rendering
         function renderDashboard() {
-            // Update metrics
-            const activeOffers = state.offers.filter(offer => 
-                offer.active && isCurrentMonth(offer.startDate, offer.endDate)
-            ).length;
-            
-            const totalSales = state.offers.reduce((sum, offer) => 
-                offer.active ? sum + offer.sales : sum, 0
-            );
-            
-            document.getElementById('active-offers').textContent = activeOffers;
-            document.getElementById('monthly-sales').textContent = `${totalSales.toLocaleString()} AED`;
-            
-            // Render charts
-            renderSalesDistributionChart();
-            renderSalesTrendChart();
-            renderTopOffers();
+            try {
+                // Update metrics
+                const activeOffers = state.offers.filter(offer => 
+                    offer.active && isCurrentMonth(offer.startDate, offer.endDate)
+                ).length;
+                
+                const totalSales = state.offers.reduce((sum, offer) => 
+                    offer.active ? sum + (offer.sales || 0) : sum, 0
+                );
+                
+                document.getElementById('branch-count').textContent = state.branches.length;
+                document.getElementById('active-offers').textContent = activeOffers;
+                document.getElementById('monthly-sales').textContent = `${totalSales.toLocaleString()} AED`;
+                
+                // Render charts
+                renderSalesDistributionChart();
+                renderSalesTrendChart();
+                renderTopOffers();
+            } catch (error) {
+                showNotification('Error rendering dashboard: ' + error.message, 'error');
+            }
         }
 
         function renderSalesDistributionChart() {
-            const ctx = document.getElementById('sales-distribution-chart').getContext('2d');
+            const canvas = document.getElementById('sales-distribution-chart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                showNotification('Failed to initialize sales distribution chart', 'error');
+                return;
+            }
             
             if (state.charts.salesDistribution) {
                 state.charts.salesDistribution.destroy();
@@ -1456,7 +1503,14 @@
         }
 
         function renderSalesTrendChart() {
-            const ctx = document.getElementById('sales-trend-chart').getContext('2d');
+            const canvas = document.getElementById('sales-trend-chart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                showNotification('Failed to initialize sales trend chart', 'error');
+                return;
+            }
             
             if (state.charts.salesTrend) {
                 state.charts.salesTrend.destroy();
@@ -1502,6 +1556,8 @@
 
         function renderTopOffers() {
             const topOffersContainer = document.getElementById('top-offers');
+            if (!topOffersContainer) return;
+            
             topOffersContainer.innerHTML = '';
             
             const topOffers = state.offers
@@ -1526,7 +1582,7 @@
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
                         <div style="font-weight: 600; color: var(--primary);">${offer.sales.toLocaleString()} AED</div>
-                        <button class="btn btn-sm btn-outline">View Details</button>
+                        <button class="btn btn-sm btn-outline" onclick="viewOffer(${offer.id})" aria-label="View Offer Details for ${offer.title}">View Details</button>
                     </div>
                 `;
                 topOffersContainer.appendChild(offerCard);
@@ -1536,6 +1592,8 @@
         // Branch Management
         function renderBranches() {
             const tbody = document.querySelector('#branch-table tbody');
+            if (!tbody) return;
+            
             tbody.innerHTML = '';
             
             state.branches.forEach(branch => {
@@ -1561,10 +1619,10 @@
                     </td>
                     <td>
                         <div class="table-actions">
-                            <button class="btn btn-sm btn-outline" onclick="editBranch(${branch.id})">
+                            <button class="btn btn-sm btn-outline" onclick="editBranch(${branch.id})" aria-label="Edit Branch ${branch.name}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline" onclick="viewBranch(${branch.id})">
+                            <button class="btn btn-sm btn-outline" onclick="viewBranch(${branch.id})" aria-label="View Branch ${branch.name}">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
@@ -1591,6 +1649,8 @@
 
         function renderCurrentOffers() {
             const offersContainer = document.getElementById('current-offers');
+            if (!offersContainer) return;
+            
             offersContainer.innerHTML = '';
             
             const currentMonthOffers = state.offers.filter(offer => 
@@ -1618,10 +1678,10 @@
                             <div style="font-size: 0.9rem; color: var(--gray-600);">${offer.active ? 'Active' : 'Inactive'}</div>
                         </div>
                         <div class="offer-actions">
-                            <button class="btn btn-sm btn-secondary" onclick="editOffer(${offer.id})">
+                            <button class="btn btn-sm btn-secondary" onclick="editOffer(${offer.id})" aria-label="Edit Offer ${offer.title}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline" onclick="toggleOfferStatus(${offer.id})">
+                            <button class="btn btn-sm btn-outline" onclick="toggleOfferStatus(${offer.id})" aria-label="${offer.active ? 'Pause' : 'Activate'} Offer ${offer.title}">
                                 <i class="fas ${offer.active ? 'fa-pause' : 'fa-play'}"></i>
                             </button>
                         </div>
@@ -1632,82 +1692,93 @@
         }
 
         function saveOffer() {
-            const title = document.getElementById('offer-title').value;
-            const startDate = document.getElementById('offer-start-date').value;
-            const endDate = document.getElementById('offer-end-date').value;
-            const type = document.getElementById('offer-type').value;
-            const details = document.getElementById('offer-details').value;
-            const sales = parseFloat(document.getElementById('offer-sales').value) || 0;
-            
-            // Get selected platforms
-            const selectedPlatforms = [];
-            document.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
-                selectedPlatforms.push(checkbox.value);
-            });
-            
-            if (!title || !startDate || !endDate || !details || selectedPlatforms.length === 0) {
-                showNotification('Please fill in all required fields.', 'error');
-                return;
+            try {
+                const title = document.getElementById('offer-title').value.trim();
+                const startDate = document.getElementById('offer-start-date').value;
+                const endDate = document.getElementById('offer-end-date').value;
+                const type = document.getElementById('offer-type').value;
+                const details = document.getElementById('offer-details').value.trim();
+                const sales = parseFloat(document.getElementById('offer-sales').value) || 0;
+                
+                // Get selected platforms
+                const selectedPlatforms = [];
+                document.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
+                    selectedPlatforms.push(checkbox.value);
+                });
+                
+                if (!title || !startDate || !endDate || !details || selectedPlatforms.length === 0) {
+                    showNotification('Please fill in all required fields.', 'error');
+                    return;
+                }
+                
+                if (new Date(startDate) > new Date(endDate)) {
+                    showNotification('End date must be after start date.', 'error');
+                    return;
+                }
+                
+                const offer = {
+                    id: Date.now(),
+                    title,
+                    startDate,
+                    endDate,
+                    type,
+                    details,
+                    platforms: selectedPlatforms,
+                    sales,
+                    active: true
+                };
+                
+                state.offers.push(offer);
+                localStorage.setItem('crispyChickenOffers', JSON.stringify(state.offers));
+                
+                resetOfferForm();
+                renderOffers();
+                showNotification('Offer saved successfully!', 'success');
+            } catch (error) {
+                showNotification('Error saving offer: ' + error.message, 'error');
             }
-            
-            if (new Date(startDate) > new Date(endDate)) {
-                showNotification('End date must be after start date.', 'error');
-                return;
-            }
-            
-            const offer = {
-                id: Date.now(), // Simple ID generation
-                title,
-                startDate,
-                endDate,
-                type,
-                details,
-                platforms: selectedPlatforms,
-                sales,
-                active: true
-            };
-            
-            state.offers.push(offer);
-            localStorage.setItem('crispyChickenOffers', JSON.stringify(state.offers));
-            
-            resetOfferForm();
-            renderOffers();
-            showNotification('Offer saved successfully!', 'success');
         }
 
         function addWeeklyOffer() {
-            const currentDate = new Date();
-            const dayOfWeek = currentDate.getDay();
-            const monday = new Date(currentDate);
-            monday.setDate(currentDate.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-            const tuesday = new Date(monday);
-            tuesday.setDate(monday.getDate() + 1);
-            
-            const mondayStr = monday.toISOString().split('T')[0];
-            const tuesdayStr = tuesday.toISOString().split('T')[0];
-            
-            const weeklyOffer = {
-                id: Date.now(),
-                title: "Monday & Tuesday Special Offer",
-                startDate: mondayStr,
-                endDate: tuesdayStr,
-                type: "weekly",
-                details: "25% off on all meals every Monday & Tuesday",
-                platforms: ["Deliveroo", "Careem", "Direct"],
-                sales: 0,
-                active: true
-            };
-            
-            state.offers.push(weeklyOffer);
-            localStorage.setItem('crispyChickenOffers', JSON.stringify(state.offers));
-            
-            renderOffers();
-            showNotification('Weekly offer added successfully!', 'success');
+            try {
+                const currentDate = new Date();
+                const dayOfWeek = currentDate.getDay();
+                const monday = new Date(currentDate);
+                monday.setDate(currentDate.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+                const tuesday = new Date(monday);
+                tuesday.setDate(monday.getDate() + 1);
+                
+                const mondayStr = monday.toISOString().split('T')[0];
+                const tuesdayStr = tuesday.toISOString().split('T')[0];
+                
+                const weeklyOffer = {
+                    id: Date.now(),
+                    title: "Monday & Tuesday Special Offer",
+                    startDate: mondayStr,
+                    endDate: tuesdayStr,
+                    type: "weekly",
+                    details: "25% off on all meals every Monday & Tuesday",
+                    platforms: ["Deliveroo", "Careem", "Direct"],
+                    sales: 0,
+                    active: true
+                };
+                
+                state.offers.push(weeklyOffer);
+                localStorage.setItem('crispyChickenOffers', JSON.stringify(state.offers));
+                
+                renderOffers();
+                showNotification('Weekly offer added successfully!', 'success');
+            } catch (error) {
+                showNotification('Error adding weekly offer: ' + error.message, 'error');
+            }
         }
 
         function editOffer(id) {
             const offer = state.offers.find(o => o.id === id);
-            if (!offer) return;
+            if (!offer) {
+                showNotification('Offer not found.', 'error');
+                return;
+            }
             
             document.getElementById('offer-title').value = offer.title;
             document.getElementById('offer-start-date').value = offer.startDate;
@@ -1732,6 +1803,8 @@
                 localStorage.setItem('crispyChickenOffers', JSON.stringify(state.offers));
                 renderOffers();
                 showNotification(`Offer ${offer.active ? 'activated' : 'deactivated'} successfully!`, 'success');
+            } else {
+                showNotification('Offer not found.', 'error');
             }
         }
 
@@ -1747,7 +1820,14 @@
         }
 
         function renderMonthlyComparisonChart() {
-            const ctx = document.getElementById('monthly-comparison-chart').getContext('2d');
+            const canvas = document.getElementById('monthly-comparison-chart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                showNotification('Failed to initialize monthly comparison chart', 'error');
+                return;
+            }
             
             if (state.charts.monthlyComparison) {
                 state.charts.monthlyComparison.destroy();
@@ -1756,7 +1836,6 @@
             const months = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
             const revenue = [120000, 135000, 128000, 142000, 155000, 128000];
             const units = [1200, 1350, 1280, 1420, 1550, 1280];
-            const avgOrder = [100, 100, 100, 100, 100, 100];
             
             state.charts.monthlyComparison = new Chart(ctx, {
                 type: 'bar',
@@ -1811,7 +1890,14 @@
         }
 
         function renderPlatformPerformanceChart() {
-            const ctx = document.getElementById('platform-performance-chart').getContext('2d');
+            const canvas = document.getElementById('platform-performance-chart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                showNotification('Failed to initialize platform performance chart', 'error');
+                return;
+            }
             
             if (state.charts.platformPerformance) {
                 state.charts.platformPerformance.destroy();
@@ -1860,6 +1946,8 @@
 
         function renderDetailedReport() {
             const tbody = document.querySelector('#report-table tbody');
+            if (!tbody) return;
+            
             tbody.innerHTML = '';
             
             state.offers.forEach(offer => {
@@ -1875,10 +1963,10 @@
                     <td>${roi}%</td>
                     <td>
                         <div class="table-actions">
-                            <button class="btn btn-sm btn-secondary" onclick="editOffer(${offer.id})">
+                            <button class="btn btn-sm btn-secondary" onclick="editOffer(${offer.id})" aria-label="Edit Offer ${offer.title}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline" onclick="exportOfferData(${offer.id})">
+                            <button class="btn btn-sm btn-outline" onclick="exportOfferData(${offer.id})" aria-label="Export Offer Data for ${offer.title}">
                                 <i class="fas fa-download"></i>
                             </button>
                         </div>
@@ -1896,6 +1984,8 @@
 
         function renderPlatformsList() {
             const platformsContainer = document.getElementById('platforms-list');
+            if (!platformsContainer) return;
+            
             platformsContainer.innerHTML = '';
             
             state.platforms.forEach(platform => {
@@ -1904,7 +1994,7 @@
                 platformCard.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <img src="${platform.logo}" alt="${platform.name}" style="height: 40px;">
+                            <img src="${platform.logo}" alt="${platform.name} logo" style="height: 40px;">
                             <div>
                                 <div style="font-weight: 600; font-size: 1.1rem;">${platform.name}</div>
                                 <div style="font-size: 0.9rem; color: var(--gray-600);">Commission: ${platform.commission}%</div>
@@ -1920,10 +2010,10 @@
                             <div style="font-size: 0.9rem; color: var(--gray-600);">Monthly Sales</div>
                         </div>
                         <div class="table-actions">
-                            <button class="btn btn-sm btn-secondary" onclick="editPlatform(${platform.id})">
+                            <button class="btn btn-sm btn-secondary" onclick="editPlatform(${platform.id})" aria-label="Edit Platform ${platform.name}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline" onclick="togglePlatformStatus(${platform.id})">
+                            <button class="btn btn-sm btn-outline" onclick="togglePlatformStatus(${platform.id})" aria-label="${platform.active ? 'Pause' : 'Activate'} Platform ${platform.name}">
                                 <i class="fas ${platform.active ? 'fa-pause' : 'fa-play'}"></i>
                             </button>
                         </div>
@@ -1934,7 +2024,14 @@
         }
 
         function renderPlatformSalesChart() {
-            const ctx = document.getElementById('platform-sales-chart').getContext('2d');
+            const canvas = document.getElementById('platform-sales-chart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                showNotification('Failed to initialize platform sales chart', 'error');
+                return;
+            }
             
             if (state.charts.platformSales) {
                 state.charts.platformSales.destroy();
@@ -2010,26 +2107,24 @@
         // Utility Functions
         function isCurrentMonth(startDate, endDate) {
             const now = new Date();
-            const currentMonth = now.getMonth() + 1;
+            const currentMonth = now.getMonth();
             const currentYear = now.getFullYear();
             
             const start = new Date(startDate);
             const end = new Date(endDate);
             
-            return start.getMonth() + 1 === currentMonth && 
-                   start.getFullYear() === currentYear &&
-                   end.getMonth() + 1 === currentMonth && 
-                   end.getFullYear() === currentYear;
+            return (start.getFullYear() <= currentYear && end.getFullYear() >= currentYear) &&
+                   (start.getMonth() <= currentMonth && end.getMonth() >= currentMonth);
         }
 
         function formatDateRange(startDate, endDate) {
             const start = new Date(startDate);
             const end = new Date(endDate);
             
-            const startDay = start.getDate();
-            const endDay = end.getDate();
+            const startDay = start.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+            const endDay = end.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
             
-            return `${startDay}-${endDay} Sep`;
+            return `${startDay} - ${endDay}`;
         }
 
         function capitalizeFirst(str) {
@@ -2039,6 +2134,7 @@
         function showNotification(message, type = 'success') {
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
+            notification.setAttribute('role', 'alert');
             
             const icon = type === 'success' ? 'check-circle' : 
                         type === 'error' ? 'exclamation-circle' :
@@ -2057,25 +2153,94 @@
             }, 3000);
         }
 
-        // Placeholder functions for additional functionality
+        // Additional Functionality
         function editBranch(id) {
-            showNotification('Branch editing feature coming soon!', 'info');
+            const branch = state.branches.find(b => b.id === id);
+            if (!branch) {
+                showNotification('Branch not found.', 'error');
+                return;
+            }
+            
+            // Simulate editing by prompting for new values (replace with a form in production)
+            const newName = prompt('Enter new branch name:', branch.name);
+            if (newName && newName.trim()) {
+                branch.name = newName.trim();
+                localStorage.setItem('crispyChickenBranches', JSON.stringify(state.branches));
+                renderBranches();
+                showNotification('Branch updated successfully!', 'success');
+            }
         }
 
         function viewBranch(id) {
-            showNotification('Branch details feature coming soon!', 'info');
+            const branch = state.branches.find(b => b.id === id);
+            if (!branch) {
+                showNotification('Branch not found.', 'error');
+                return;
+            }
+            
+            // Simulate viewing details
+            alert(`Branch Details:\nName: ${branch.name}\nCity: ${branch.city}\nArea: ${branch.area}\nManager: ${branch.manager}\nContact: ${branch.phone}\nRating: ${branch.rating}\nSales: ${branch.sales.toLocaleString()} AED\nStatus: ${branch.status}`);
+        }
+
+        function viewOffer(id) {
+            const offer = state.offers.find(o => o.id === id);
+            if (!offer) {
+                showNotification('Offer not found.', 'error');
+                return;
+            }
+            
+            alert(`Offer Details:\nTitle: ${offer.title}\nType: ${capitalizeFirst(offer.type)}\nDuration: ${formatDateRange(offer.startDate, offer.endDate)}\nDetails: ${offer.details}\nPlatforms: ${offer.platforms.join(', ')}\nSales: ${offer.sales.toLocaleString()} AED\nStatus: ${offer.active ? 'Active' : 'Inactive'}`);
         }
 
         function editPlatform(id) {
-            showNotification('Platform editing feature coming soon!', 'info');
+            const platform = state.platforms.find(p => p.id === id);
+            if (!platform) {
+                showNotification('Platform not found.', 'error');
+                return;
+            }
+            
+            // Simulate editing by prompting for new commission
+            const newCommission = prompt('Enter new commission percentage:', platform.commission);
+            if (newCommission && !isNaN(newCommission) && newCommission >= 0) {
+                platform.commission = parseFloat(newCommission);
+                localStorage.setItem('crispyChickenPlatforms', JSON.stringify(state.platforms));
+                renderPlatforms();
+                showNotification('Platform updated successfully!', 'success');
+            } else {
+                showNotification('Invalid commission value.', 'error');
+            }
         }
 
         function togglePlatformStatus(id) {
-            showNotification('Platform status toggle feature coming soon!', 'info');
+            const platform = state.platforms.find(p => p.id === id);
+            if (!platform) {
+                showNotification('Platform not found.', 'error');
+                return;
+            }
+            
+            platform.active = !platform.active;
+            localStorage.setItem('crispyChickenPlatforms', JSON.stringify(state.platforms));
+            renderPlatforms();
+            showNotification(`Platform ${platform.active ? 'activated' : 'deactivated'} successfully!`, 'success');
         }
 
         function exportOfferData(id) {
-            showNotification('Export feature coming soon!', 'info');
+            const offer = state.offers.find(o => o.id === id);
+            if (!offer) {
+                showNotification('Offer not found.', 'error');
+                return;
+            }
+            
+            // Simulate export by generating a JSON file
+            const dataStr = JSON.stringify(offer, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${offer.title}_export.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            showNotification('Offer data exported successfully!', 'success');
         }
     </script>
 </body>
